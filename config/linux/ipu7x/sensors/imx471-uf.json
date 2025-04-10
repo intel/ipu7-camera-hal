@@ -1,0 +1,214 @@
+//
+// Copyright (C) 2022 Intel Corporation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+
+{
+  "CameraSettings": {
+    "Sensor": [
+      {
+        "name": "imx471-uf",
+        "description": "imx471 as sensor.",
+        "MediaCtlConfig": [
+          {
+            "id":  0 ,
+            "configMode": "AUTO",
+            "output": [1928, 1088],
+            "format": "V4L2_PIX_FMT_SRGGB10",
+            "formats": [
+              {
+                "name": "imx471 $I2CBUS", "pad": 0, "width": 1928, "height": 1088,
+                "format": "V4L2_MBUS_FMT_SRGGB10_1X10"
+              },
+              {
+                "name": "Intel IPU7 CSI2 $CSI_PORT", "pad": 0, "width": 1928, "height": 1088,
+                "format": "V4L2_MBUS_FMT_SRGGB10_1X10"
+              }
+            ],
+            "link": [
+              {
+                "srcName": "imx471 $I2CBUS", "srcPad": 0, "sinkName": "Intel IPU7 CSI2 $CSI_PORT",
+                "sinkPad": 0, "enable": true
+              },
+              {
+                "srcName": "Intel IPU7 CSI2 $CSI_PORT", "srcPad": 1,
+                "sinkName": "Intel IPU7 ISYS Capture $CAP_N", "sinkPad": 0, "enable": true
+              }
+            ],
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture $CAP_N", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 $CSI_PORT", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "name": "imx471 $I2CBUS", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          }
+        ],
+        "StaticMetadata": {
+          "supportedStreamConfig": [
+            {
+              "format": "V4L2_PIX_FMT_NV12", "size": [1920, 1080], "field": 0, "mcId": 0
+            },
+            {
+              "format": "V4L2_PIX_FMT_NV12", "size": [1280, 720], "field": 0, "mcId": 0
+            },
+            {
+              "format": "V4L2_PIX_FMT_NV12", "size": [640, 480], "field": 0, "mcId": 0
+            },
+            {
+              "format": "V4L2_PIX_FMT_NV12", "size": [640, 360], "field": 0, "mcId": 0
+            }
+          ],
+          "supportedFeatures": [
+            "MANUAL_EXPOSURE", "MANUAL_WHITE_BALANCE", "IMAGE_ENHANCEMENT",
+            "NOISE_REDUCTION", "PER_FRAME_CONTROL", "SCENE_MODE" ],
+          "fpsRange": [ 15, 15, 15, 30, 30, 30 ],
+          "evRange": [ -6, 6 ],
+          "evStep": [ 1, 3 ],
+          "supportedAeMode": [ "AUTO", "MANUAL" ],
+          "supportedVideoStabilizationModes": ["OFF"],
+          "supportedSceneMode": ["NORMAL"],
+          "supportedAntibandingMode": [ "AUTO", "50Hz", "60Hz", "OFF" ],
+          "supportedAwbMode": [ "AUTO", "INCANDESCENT", "FLUORESCENT", "DAYLIGHT", "FULL_OVERCAST",
+            "PARTLY_OVERCAST", "SUNSET", "VIDEO_CONFERENCE", "MANUAL_CCT_RANGE", "MANUAL_WHITE_POINT",
+            "MANUAL_GAIN", "MANUAL_COLOR_TRANSFORM" ],
+          "supportedAfMode": [ "OFF" ],
+          "metadata":{
+            "ae.lockAvailable": [1],
+            "awb.lockAvailable": [1],
+            // 0: OFF, 1: AUTO, 2: USE_SCENE_MODE, 3: OFF_KEEP_STATE
+            "control.availableModes" : [ 0, 1 ],
+            // 0: DISABLE, 1: FACE_PRIORITY
+            "control.availableSceneModes": [0],
+            "control.maxRegions" : [ 1, 0, 0 ],
+            // 0: OFF, 1: SMPLE, 2: FULL
+            "statistics.info.availableFaceDetectModes" : [0],
+            // align with supportedAeExposureTimeRange
+            "sensor.info.exposureTimeRange": [ 100, 100000 ],
+            "sensor.info.activeArraySize": [ 0, 0, 1928, 1088 ],
+            "sensor.info.pixelArraySize": [1928, 1088],
+            // 0:RGGB, 1:GRBG, 2:GBRG, 3:BGGR, 4:RGB
+            "sensor.info.colorFilterArrangement": [0],
+            // raw, yuv, jpeg
+            "request.maxNumOutputStreams": [ 1, 3, 1 ],
+            // 0: No input, 1: 1 input stream (YUV or RAW), 2: 2 input streams (YUV and RAW)
+            "request.maxNumInputStreams": [1],
+            "request.pipelineMaxDepth": [7],
+            // 0:backward, 1:manual_sensor, 2:manual_pso_processing, 3:raw, 4:zsl, 5:read_sensor_settings, 6:burst_capture, 7: yuv reprocessing
+            "request.availableCapabilities": [ 0, 1, 2, 4, 5, 6 ],
+            // input fmt, output fmt number, output fmts; fmt: YCbCr_420_888:0x23 (35), IMPLEMENTATION_DEFINED:0x22 (34), Blob:0x21 (33)
+            "scaler.availableInputOutputFormatsMap": [ 34, 2, 33, 35 ],
+            "sensor.opaqueRawSize": [1928, 1088, 100],
+            // available stream configurations: format: IMPLEMENTATION_DEFINED(34)|YCbCr_420_888:0x23(35)|BLOB(33), widthxheight, type: output(0)|input(1)
+            "scaler.availableStreamConfigurations": [
+              33,1920,1080,0,
+              33,1280,720,0,
+              33,640,480,0,
+              33,640,360,0,
+              35,1920,1080,0,
+              35,1280,720,0,
+              35,640,480,0,
+              35,640,360,0,
+              34,1920,1080,0,
+              34,1280,720,0,
+              34,640,480,0,
+              34,640,360,0
+            ],
+            // minimum frame duration: format: IMPLEMENTATION_DEFINED(34)|YCbCr_420_888:0x23(35)|BLOB(33), widthxheight, duration:(ns)
+            "scaler.availableMinFrameDurations": [
+              33,1920,1080,33333333,
+              33,1280,720,33333333,
+              33,640,480,33333333,
+              33,640,360,33333333,
+              35,1920,1080,33333333,
+              35,1280,720,33333333,
+              35,640,480,33333333,
+              35,640,360,33333333,
+              34,1920,1080,33333333,
+              34,1280,720,33333333,
+              34,640,480,33333333,
+              34,640,360,33333333
+            ],
+            // maximum stall duration: format: IMPLEMENTATION_DEFINED(34)|YCbCr_420_888:0x23(35)|BLOB(33), widthxheight, duration:(ns)
+            "scaler.availableStallDurations": [
+              33,1920,1080,33333333,
+              33,1280,720,33333333,
+              33,640,480,33333333,
+              33,640,360,33333333
+            ],
+            // INCREASING ORDER
+            "jpeg.availableThumbnailSizes": [ 0, 0, 320, 180, 320, 240 ],
+            // 0:off, 1:fast, 2:high_quality, 3:zero_shutter_lag
+            "edge.availableEdgeModes": [ 0, 1, 2, 3 ],
+            // 0:off, 1:fast, 2:high_quality
+            "hotPixel.availableHotPixelModes": [ 1, 2 ],
+            // 0:off, 1:fast, 2:high_quality, 3:minimal, 4:zero_shutter_lag
+            "noiseReduction.availableNoiseReductionModes": [ 0, 1, 2, 4 ],
+            "tonemap.maxCurvePoints": [1024],
+            // 0:contrast_curve, 1:fast, 2:high_quality, 3:gamma_value, 4:preset_curve
+            "tonemap.availableToneMapModes": [ 1, 2, 3, 4 ],
+            //  Number of frames
+            "reprocess.maxCaptureStall": [4],
+            // 0:limited, 1:full, 2:legacy, 3:level3
+            "info.supportedHardwareLevel": [1],
+            // 0:per-frame, -1:unknown, other positive number:frame count
+            "sync.maxLatency": [0]
+          }
+        },
+        "supportedTuningConfig": [ ["NORMAL", "VIDEO", "IMX471_AAJH5-D_LNL"], ["STILL_CAPTURE", "VIDEO", "IMX471_AAJH5-D_LNL"]],
+        // The lard tags configuration. Every tag should be 4-characters.
+        // TuningMode, cmc tag, aiq tag, isp tag, others tag
+        "lardTags": [[ "VIDEO", "DFLT", "DFLT", "DFLT", "DFLT" ]],
+        // ascending order request
+        "supportedISysSizes": [[1928, 1088]],
+        "supportedISysFormat": ["V4L2_PIX_FMT_SRGGB10"],
+        "enableAIQ": true,
+        "iSysRawFormat": "V4L2_PIX_FMT_SRGGB10",
+        "maxRawDataNum": 32,
+        "initialSkipFrame": 0,
+        "exposureLag":  2,
+        "gainLag": 2,
+        "digitalGainLag": 0,
+        "ltmGainLag": 1,
+        // There are 2 yuv color range mode, like full, reduced.
+        "yuvColorRangeMode": "full",
+        "pipeSwitchDelayFrame": 60,
+        "graphSettingsFile": "IMX471_AAJH5-D.IPU7X.bin",
+        "graphSettingsType": "dispersed",
+        "enablePSysProcessor": true,
+        "dvsType": "IMG_TRANS",
+        "testPatternMap": { "Off": 0, "ColorBars": 1
+        },
+        "enableAiqd": true,
+        "useCrlModule": false,
+        "pslOutputMapForRotation": [
+          [[1920, 1080], [1920, 1080]],
+          [[1280, 720], [1280, 720]],
+          [[640, 480], [1280, 960]],
+          [[640, 360], [1280, 960]]
+        ],
+        "maxRequestsInflight": 6,
+        "psysBundleWithAic": false,
+        "skipFrameV4L2Error": true,
+        "isISYSCompression": false,
+        "isPSACompression": false,
+        "usingMockPSys": false
+      }
+    ]
+  }
+}

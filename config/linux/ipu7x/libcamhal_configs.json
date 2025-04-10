@@ -27,7 +27,8 @@
             "ov02c10-uf-1",
             "ov05c10-uf-0",
             "ov05c10-uf-1",
-            "ov08x40-uf-0"
+            "ov08x40-uf-0",
+            "imx471-uf-0"
         ],
         "videoStreamNum" : 2
     }
