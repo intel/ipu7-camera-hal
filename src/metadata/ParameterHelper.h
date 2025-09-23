@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef PARAMETER_HELPER_H
-#define PARAMETER_HELPER_H
+#pragma once
 
 #include "iutils/RWLock.h"
 #include "CameraMetadata.h"
@@ -142,5 +141,3 @@ private:
 };
 
 } // namespace icamera
-
-#endif // PARAMETER_HELPER_H

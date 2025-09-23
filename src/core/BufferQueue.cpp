@@ -27,7 +27,9 @@ BufferProducer::BufferProducer(int memType) : mMemType(memType) {
     LOG1("@%s BufferProducer %p created mMemType: %d", __func__, this, mMemType);
 }
 
-BufferQueue::BufferQueue() : mBufferProducer(nullptr) {
+BufferQueue::BufferQueue()
+        : mBufferProducer(nullptr),
+          mThreadWaiting(true) {
     LOG1("@%s BufferQueue %p created", __func__, this);
 }
 
@@ -51,7 +53,7 @@ int BufferQueue::queueInputBuffer(uuid port, const std::shared_ptr<CameraBuffer>
     return OK;
 }
 
-int BufferQueue::onFrameAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) {
+int BufferQueue::onBufferAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) {
     AutoMutex l(mBufferQueueLock);
 
     return queueInputBuffer(port, camBuffer);
@@ -142,6 +144,10 @@ void BufferQueue::getFrameInfo(std::map<uuid, stream_t>& inputInfo,
     outputInfo = mOutputFrameInfo;
 }
 
+void BufferQueue::setThreadWaiting(bool waiting) {
+    mThreadWaiting = waiting;
+}
+
 int BufferQueue::waitFreeBuffersInQueue(std::unique_lock<std::mutex>& lock,
                                         std::map<uuid, std::shared_ptr<CameraBuffer> >& buffer,
                                         std::map<uuid, CameraBufQ>& bufferQueue,
@@ -156,6 +162,10 @@ int BufferQueue::waitFreeBuffersInQueue(std::unique_lock<std::mutex>& lock,
             const std::cv_status status = mFrameAvailableSignal.wait_for(
                 lock, std::chrono::nanoseconds(timeout));
 
+            if (!mThreadWaiting) {
+                return -1;  // Already stopped
+            }
+
             if (status == std::cv_status::timeout) {
                 return TIMED_OUT;
             }
@@ -163,6 +173,7 @@ int BufferQueue::waitFreeBuffersInQueue(std::unique_lock<std::mutex>& lock,
         if (cameraBufQ.empty()) {
             return NOT_ENOUGH_DATA;
         }
+
         // Wake up from the buffer available
         buffer[port] = cameraBufQ.front();
     }
@@ -209,8 +220,12 @@ int BufferQueue::getFreeBuffersInQueue(std::map<uuid, std::shared_ptr<CameraBuff
         outBuffers[port] = outputQueue.front();
     }
 
-    for (auto& input : mInputQueue) input.second.pop();
-    for (auto& output : mOutputQueue) output.second.pop();
+    for (auto& input : mInputQueue) {
+        input.second.pop();
+    }
+    for (auto& output : mOutputQueue) {
+        output.second.pop();
+    }
     return OK;
 }
 
@@ -231,7 +246,7 @@ void BufferQueue::returnBuffers(std::map<uuid, std::shared_ptr<CameraBuffer> >& 
             continue;
         }
         for (auto& it : mBufferConsumerList) {
-            it->onFrameAvailable(port, outBuf);
+            it->onBufferAvailable(port, outBuf);
         }
     }
 }

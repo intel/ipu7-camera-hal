@@ -18,7 +18,6 @@
 
 #include "CameraStream.h"
 #include "ISchedulerNode.h"
-#include "CameraBufferPool.h"
 #include "IFaceDetection.h"
 
 #include "iutils/Errors.h"
@@ -40,18 +39,16 @@ class FaceStage : public CameraStream, public ISchedulerNode {
     virtual int stop();
 
     virtual int qbuf(camera_buffer_t* ubuffer, int64_t sequence, bool addExtraBuf = false);
-    virtual int onFrameAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
+    virtual int onBufferAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
 
     virtual bool process(int64_t triggerId);
  private:
-    std::shared_ptr<CameraBuffer> copyToInternalBuffer(
-            const std::shared_ptr<CameraBuffer>& camBuffer);
     bool isFaceEnabled(int64_t sequence);
 
  private:
     stream_t mStreamInfo;  // The stream info for face detection
     // Maintains a internal buffer pool when face running in async and bind on preview stream
-    std::unique_ptr<CameraBufferPool> mInternalBufferPool;
+    CameraBufQ mAvailableBufferQ;
 
     // Store the pending buffers need to process
     // Use the mBufferPoolLock in base class to guard it

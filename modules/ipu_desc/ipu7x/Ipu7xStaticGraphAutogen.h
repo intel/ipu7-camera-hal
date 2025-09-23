@@ -36,6 +36,8 @@
 
 #define SUPPORT_KEY_RESOLUTIONS 1
 
+#define SUPPORT_FRAGMENTS 0
+
 enum InnerNodeOption
 {
     None = 0,
@@ -65,18 +67,18 @@ public:
     /**
      * \brief resourceId - represents the physical ID of the node, e.g. cb_id for CB node.
      */
-    uint8_t resourceId;
+    uint8_t resourceId = 0;
 
     /**
      * \brief contextId - represents the logical Id of the node according to the use-case.
      *                    Same physical nodes in given graph topology will have a different contextId
      */
     uint8_t contextId = 0;
-    NodeTypes type;
+    NodeTypes type = NodeTypes::Cb;
     HwBitmaps bitmaps;
-    StaticGraphNodeKernels nodeKernels;
+    StaticGraphNodeKernels nodeKernels = {};
 
-    uint8_t numberOfFragments;
+    uint8_t numberOfFragments = 0;
     OuterNode() {}
     ~OuterNode();
 
@@ -225,6 +227,16 @@ struct SwGdcOuterNodeConfiguration
     StaticGraphKernelBppConfiguration bppInfos[1];
 };
 
+struct SwScalerOuterNodeConfiguration
+{
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+    StaticGraphKernelRes resolutionInfos[1];
+    StaticGraphKernelRes resolutionHistories[1];
+    StaticGraphKernelBppConfiguration bppInfos[1];
+    uint8_t systemApiConfiguration[5];
+};
+
 struct SwNntmOuterNodeConfiguration
 {
     uint32_t streamId = 0;
@@ -282,6 +294,16 @@ struct BbpsIrNoTnrOuterNodeConfiguration
     StaticGraphKernelRes resolutionHistories[3];
     StaticGraphKernelBppConfiguration bppInfos[7];
     uint8_t systemApiConfiguration[624];
+};
+
+struct LbffIrNo2ANoGmvOuterNodeConfiguration
+{
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+    StaticGraphKernelRes resolutionInfos[8];
+    StaticGraphKernelRes resolutionHistories[10];
+    StaticGraphKernelBppConfiguration bppInfos[26];
+    uint8_t systemApiConfiguration[1176];
 };
 
 struct LbffIrNoGmvOuterNodeConfiguration
@@ -405,6 +427,17 @@ struct SwVaiOuterNodeConfiguration
     StaticGraphKernelRes resolutionInfos[1];
     StaticGraphKernelRes resolutionHistories[1];
     StaticGraphKernelBppConfiguration bppInfos[1];
+    uint8_t systemApiConfiguration[5];
+};
+
+struct SwImvOuterNodeConfiguration
+{
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+    StaticGraphKernelRes resolutionInfos[1];
+    StaticGraphKernelRes resolutionHistories[1];
+    StaticGraphKernelBppConfiguration bppInfos[1];
+    uint8_t systemApiConfiguration[5];
 };
 
 struct GraphConfiguration100000
@@ -423,7 +456,8 @@ struct GraphConfiguration100001
     LbffBayerWithGmvOuterNodeConfiguration lbffBayerWithGmvOuterNodeConfiguration;
     BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[21];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[23];
 };
 
 struct GraphConfiguration100002
@@ -432,7 +466,8 @@ struct GraphConfiguration100002
     IsysOuterNodeConfiguration isysOuterNodeConfiguration;
     LbffBayerOuterNodeConfiguration lbffBayerOuterNodeConfiguration;
     BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[16];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[18];
 };
 
 struct GraphConfiguration100003
@@ -452,7 +487,8 @@ struct GraphConfiguration100004
     LbffBayerOuterNodeConfiguration lbffBayerOuterNodeConfiguration;
     BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[19];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[21];
 };
 
 struct GraphConfiguration100005
@@ -462,7 +498,8 @@ struct GraphConfiguration100005
     LbffBayerOuterNodeConfiguration lbffBayerOuterNodeConfiguration;
     BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[19];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[21];
 };
 
 struct GraphConfiguration100006
@@ -508,6 +545,15 @@ struct GraphConfiguration100016
     VirtualSinkMapping sinkMappingConfiguration;
     BbpsNoTnrOuterNodeConfiguration bbpsNoTnrOuterNodeConfiguration;
     StaticGraphLinkConfiguration linkConfigurations[4];
+};
+
+struct GraphConfiguration100024
+{
+    VirtualSinkMapping sinkMappingConfiguration;
+    IsysOuterNodeConfiguration isysOuterNodeConfiguration;
+    LbffIrNo2ANoGmvOuterNodeConfiguration lbffIrNo2ANoGmvOuterNodeConfiguration;
+    BbpsNoTnrOuterNodeConfiguration bbpsNoTnrOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[9];
 };
 
 struct GraphConfiguration100025
@@ -571,7 +617,8 @@ struct GraphConfiguration100031
     BbpsNoTnrOuterNodeConfiguration bbpsNoTnrOuterNodeConfiguration;
     SwGtmOuterNodeConfiguration swGtmOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[20];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[23];
 };
 
 struct GraphConfiguration100032
@@ -583,7 +630,8 @@ struct GraphConfiguration100032
     BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
     SwGtmOuterNodeConfiguration swGtmOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[25];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[28];
 };
 
 struct GraphConfiguration100035
@@ -639,7 +687,8 @@ struct GraphConfiguration100040
     LbffBayerPdaf3OuterNodeConfiguration lbffBayerPdaf3OuterNodeConfiguration;
     BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[19];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[21];
 };
 
 struct GraphConfiguration100041
@@ -649,7 +698,19 @@ struct GraphConfiguration100041
     SwVaiOuterNodeConfiguration swVaiOuterNodeConfiguration;
     LbffBayerOuterNodeConfiguration lbffBayerOuterNodeConfiguration;
     BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
-    StaticGraphLinkConfiguration linkConfigurations[17];
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[19];
+};
+
+struct GraphConfiguration100042
+{
+    VirtualSinkMapping sinkMappingConfiguration;
+    IsysOuterNodeConfiguration isysOuterNodeConfiguration;
+    LbffBayerOuterNodeConfiguration lbffBayerOuterNodeConfiguration;
+    BbpsWithTnrOuterNodeConfiguration bbpsWithTnrOuterNodeConfiguration;
+    SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
+    SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    StaticGraphLinkConfiguration linkConfigurations[21];
 };
 #pragma pack(pop)
 
@@ -660,6 +721,7 @@ public:
     void Init(IsysOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffBayerOuterNode : public OuterNode
 {
@@ -668,6 +730,7 @@ public:
     void Init(LbffBayerOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class BbpsNoTnrOuterNode : public OuterNode
 {
@@ -676,6 +739,7 @@ public:
     void Init(BbpsNoTnrOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffBayerWithGmvOuterNode : public OuterNode
 {
@@ -684,6 +748,7 @@ public:
     void Init(LbffBayerWithGmvOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class BbpsWithTnrOuterNode : public OuterNode
 {
@@ -692,6 +757,7 @@ public:
     void Init(BbpsWithTnrOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class SwGdcOuterNode : public OuterNode
 {
@@ -700,6 +766,16 @@ public:
     void Init(SwGdcOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
+};
+class SwScalerOuterNode : public OuterNode
+{
+public:
+    SwScalerOuterNode(): OuterNode(){}
+    void Init(SwScalerOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class SwNntmOuterNode : public OuterNode
 {
@@ -708,6 +784,7 @@ public:
     void Init(SwNntmOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffRgbIrOuterNode : public OuterNode
 {
@@ -716,6 +793,7 @@ public:
     void Init(LbffRgbIrOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffIrNoGmvIrStreamOuterNode : public OuterNode
 {
@@ -724,6 +802,7 @@ public:
     void Init(LbffIrNoGmvIrStreamOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class BbpsIrWithTnrOuterNode : public OuterNode
 {
@@ -732,6 +811,7 @@ public:
     void Init(BbpsIrWithTnrOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffBayerBurstOutNo3AOuterNode : public OuterNode
 {
@@ -740,6 +820,7 @@ public:
     void Init(LbffBayerBurstOutNo3AOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class BbpsIrNoTnrOuterNode : public OuterNode
 {
@@ -748,6 +829,16 @@ public:
     void Init(BbpsIrNoTnrOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
+};
+class LbffIrNo2ANoGmvOuterNode : public OuterNode
+{
+public:
+    LbffIrNo2ANoGmvOuterNode(): OuterNode(){}
+    void Init(LbffIrNo2ANoGmvOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffIrNoGmvOuterNode : public OuterNode
 {
@@ -756,6 +847,7 @@ public:
     void Init(LbffIrNoGmvOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class IsysPdaf2OuterNode : public OuterNode
 {
@@ -764,6 +856,7 @@ public:
     void Init(IsysPdaf2OuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffBayerPdaf2OuterNode : public OuterNode
 {
@@ -772,6 +865,7 @@ public:
     void Init(LbffBayerPdaf2OuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffBayerPdaf3OuterNode : public OuterNode
 {
@@ -780,6 +874,7 @@ public:
     void Init(LbffBayerPdaf3OuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class IsysDolOuterNode : public OuterNode
 {
@@ -788,6 +883,7 @@ public:
     void Init(IsysDolOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class SwDolOuterNode : public OuterNode
 {
@@ -796,6 +892,7 @@ public:
     void Init(SwDolOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffDolOuterNode : public OuterNode
 {
@@ -804,6 +901,7 @@ public:
     void Init(LbffDolOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class SwGtmOuterNode : public OuterNode
 {
@@ -812,6 +910,7 @@ public:
     void Init(SwGtmOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffBayerPdaf2WithGmvOuterNode : public OuterNode
 {
@@ -820,6 +919,7 @@ public:
     void Init(LbffBayerPdaf2WithGmvOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffBayerPdaf3WithGmvOuterNode : public OuterNode
 {
@@ -828,6 +928,7 @@ public:
     void Init(LbffBayerPdaf3WithGmvOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffRgbIrWithGmvOuterNode : public OuterNode
 {
@@ -836,6 +937,7 @@ public:
     void Init(LbffRgbIrWithGmvOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class LbffIrWithGmvIrStreamOuterNode : public OuterNode
 {
@@ -844,6 +946,7 @@ public:
     void Init(LbffIrWithGmvIrStreamOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 class SwVaiOuterNode : public OuterNode
 {
@@ -852,6 +955,16 @@ public:
     void Init(SwVaiOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
+};
+class SwImvOuterNode : public OuterNode
+{
+public:
+    SwImvOuterNode(): OuterNode(){}
+    void Init(SwImvOuterNodeConfiguration** selectedGraphConfigurations, uint32_t kernelConfigurationsOptionsCount);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+
 };
 
 class imageSubGraphTopology100000 : public GraphTopology {
@@ -897,14 +1010,15 @@ private:
 class imageSubGraphTopology100001 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100001(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 21, sinkMappingConfiguration) {}
+    imageSubGraphTopology100001(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 23, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysOuterNode* isysOuterNode = nullptr;
     LbffBayerWithGmvOuterNode* lbffBayerWithGmvOuterNode = nullptr;
     BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
     SwGdcOuterNode* swGdcOuterNode = nullptr;
-    GraphLink* subGraphLinks[21];
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
+    GraphLink* subGraphLinks[23];
 
 };
 
@@ -914,7 +1028,7 @@ public:
     StaticGraph100001(GraphConfiguration100001** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100001();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 3890884975;  // autogenerated
+    static const uint32_t hashCode = 4211786267;  // autogenerated
 
 private:
     // Configuration
@@ -925,6 +1039,7 @@ private:
     LbffBayerWithGmvOuterNode _lbffBayerWithGmvOuterNode;
     BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
     SwGdcOuterNode _swGdcOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -933,19 +1048,20 @@ private:
     imageSubGraphTopology100001 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[21];
+    GraphLink _graphLinks[23];
 };
 
 class imageSubGraphTopology100002 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100002(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 16, sinkMappingConfiguration) {}
+    imageSubGraphTopology100002(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 18, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysOuterNode* isysOuterNode = nullptr;
     LbffBayerOuterNode* lbffBayerOuterNode = nullptr;
     BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
-    GraphLink* subGraphLinks[16];
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
+    GraphLink* subGraphLinks[18];
 
 };
 
@@ -955,7 +1071,7 @@ public:
     StaticGraph100002(GraphConfiguration100002** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100002();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 420795545;  // autogenerated
+    static const uint32_t hashCode = 2359075509;  // autogenerated
 
 private:
     // Configuration
@@ -965,6 +1081,7 @@ private:
     IsysOuterNode _isysOuterNode;
     LbffBayerOuterNode _lbffBayerOuterNode;
     BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -973,7 +1090,7 @@ private:
     imageSubGraphTopology100002 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[16];
+    GraphLink _graphLinks[18];
 };
 
 class imageSubGraphTopology100003 : public GraphTopology {
@@ -1021,14 +1138,15 @@ private:
 class imageSubGraphTopology100004 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100004(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 19, sinkMappingConfiguration) {}
+    imageSubGraphTopology100004(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 21, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysOuterNode* isysOuterNode = nullptr;
     LbffBayerOuterNode* lbffBayerOuterNode = nullptr;
     BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
     SwGdcOuterNode* swGdcOuterNode = nullptr;
-    GraphLink* subGraphLinks[19];
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
+    GraphLink* subGraphLinks[21];
 
 };
 
@@ -1038,7 +1156,7 @@ public:
     StaticGraph100004(GraphConfiguration100004** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100004();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 3446052961;  // autogenerated
+    static const uint32_t hashCode = 2537139917;  // autogenerated
 
 private:
     // Configuration
@@ -1049,6 +1167,7 @@ private:
     LbffBayerOuterNode _lbffBayerOuterNode;
     BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
     SwGdcOuterNode _swGdcOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -1057,20 +1176,21 @@ private:
     imageSubGraphTopology100004 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[19];
+    GraphLink _graphLinks[21];
 };
 
 class imageSubGraphTopology100005 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100005(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 19, sinkMappingConfiguration) {}
+    imageSubGraphTopology100005(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 21, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysOuterNode* isysOuterNode = nullptr;
     LbffBayerOuterNode* lbffBayerOuterNode = nullptr;
     BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
-    GraphLink* subGraphLinks[19];
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
+    GraphLink* subGraphLinks[21];
 
 };
 
@@ -1080,7 +1200,7 @@ public:
     StaticGraph100005(GraphConfiguration100005** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100005();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 4056595;  // autogenerated
+    static const uint32_t hashCode = 21815;  // autogenerated
 
 private:
     // Configuration
@@ -1091,6 +1211,7 @@ private:
     LbffBayerOuterNode _lbffBayerOuterNode;
     BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -1099,7 +1220,7 @@ private:
     imageSubGraphTopology100005 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[19];
+    GraphLink _graphLinks[21];
 };
 
 class imageSubGraphTopology100006 : public GraphTopology {
@@ -1360,6 +1481,46 @@ private:
     GraphLink _graphLinks[4];
 };
 
+class imageSubGraphTopology100024 : public GraphTopology {
+
+public:
+    imageSubGraphTopology100024(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 9, sinkMappingConfiguration) {}
+    StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
+
+    IsysOuterNode* isysOuterNode = nullptr;
+    LbffIrNo2ANoGmvOuterNode* lbffIrNo2ANoGmvOuterNode = nullptr;
+    BbpsNoTnrOuterNode* bbpsNoTnrOuterNode = nullptr;
+    GraphLink* subGraphLinks[9];
+
+};
+
+class StaticGraph100024 : public IStaticGraphConfig
+{
+public:
+    StaticGraph100024(GraphConfiguration100024** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
+    ~StaticGraph100024();
+    StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
+    static const uint32_t hashCode = 4016039499;  // autogenerated
+
+private:
+    // Configuration
+    GraphConfiguration100024* _graphConfigurations;
+
+    /* Outer Nodes */
+    IsysOuterNode _isysOuterNode;
+    LbffIrNo2ANoGmvOuterNode _lbffIrNo2ANoGmvOuterNode;
+    BbpsNoTnrOuterNode _bbpsNoTnrOuterNode;
+
+    /*
+        Topology
+    */
+    // Sub Graphs definition
+    imageSubGraphTopology100024 _imageSubGraph;
+
+    // All graph links
+    GraphLink _graphLinks[9];
+};
+
 class imageSubGraphTopology100025 : public GraphTopology {
 
 public:
@@ -1597,7 +1758,7 @@ private:
 class imageSubGraphTopology100031 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100031(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 20, sinkMappingConfiguration) {}
+    imageSubGraphTopology100031(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 23, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysDolOuterNode* isysDolOuterNode = nullptr;
@@ -1605,8 +1766,9 @@ public:
     LbffDolOuterNode* lbffDolOuterNode = nullptr;
     BbpsNoTnrOuterNode* bbpsNoTnrOuterNode = nullptr;
     SwGtmOuterNode* swGtmOuterNode = nullptr;
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
-    GraphLink* subGraphLinks[20];
+    GraphLink* subGraphLinks[23];
 
 };
 
@@ -1616,7 +1778,7 @@ public:
     StaticGraph100031(GraphConfiguration100031** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100031();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 4222804565;  // autogenerated
+    static const uint32_t hashCode = 3106659657;  // autogenerated
 
 private:
     // Configuration
@@ -1629,6 +1791,7 @@ private:
     BbpsNoTnrOuterNode _bbpsNoTnrOuterNode;
     SwGtmOuterNode _swGtmOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -1637,13 +1800,13 @@ private:
     imageSubGraphTopology100031 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[20];
+    GraphLink _graphLinks[23];
 };
 
 class imageSubGraphTopology100032 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100032(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 25, sinkMappingConfiguration) {}
+    imageSubGraphTopology100032(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 28, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysDolOuterNode* isysDolOuterNode = nullptr;
@@ -1651,8 +1814,9 @@ public:
     LbffDolOuterNode* lbffDolOuterNode = nullptr;
     BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
     SwGtmOuterNode* swGtmOuterNode = nullptr;
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
-    GraphLink* subGraphLinks[25];
+    GraphLink* subGraphLinks[28];
 
 };
 
@@ -1662,7 +1826,7 @@ public:
     StaticGraph100032(GraphConfiguration100032** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100032();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 1667794249;  // autogenerated
+    static const uint32_t hashCode = 2018657077;  // autogenerated
 
 private:
     // Configuration
@@ -1675,6 +1839,7 @@ private:
     BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
     SwGtmOuterNode _swGtmOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -1683,7 +1848,7 @@ private:
     imageSubGraphTopology100032 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[25];
+    GraphLink _graphLinks[28];
 };
 
 class rawSubGraphTopology100035 : public GraphTopology {
@@ -1917,14 +2082,15 @@ private:
 class imageSubGraphTopology100040 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100040(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 19, sinkMappingConfiguration) {}
+    imageSubGraphTopology100040(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 21, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysOuterNode* isysOuterNode = nullptr;
     LbffBayerPdaf3OuterNode* lbffBayerPdaf3OuterNode = nullptr;
     BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
-    GraphLink* subGraphLinks[19];
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
+    GraphLink* subGraphLinks[21];
 
 };
 
@@ -1934,7 +2100,7 @@ public:
     StaticGraph100040(GraphConfiguration100040** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100040();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 3111846513;  // autogenerated
+    static const uint32_t hashCode = 3226663293;  // autogenerated
 
 private:
     // Configuration
@@ -1945,6 +2111,7 @@ private:
     LbffBayerPdaf3OuterNode _lbffBayerPdaf3OuterNode;
     BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -1953,20 +2120,21 @@ private:
     imageSubGraphTopology100040 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[19];
+    GraphLink _graphLinks[21];
 };
 
 class imageSubGraphTopology100041 : public GraphTopology {
 
 public:
-    imageSubGraphTopology100041(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 17, sinkMappingConfiguration) {}
+    imageSubGraphTopology100041(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 19, sinkMappingConfiguration) {}
     StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
 
     IsysOuterNode* isysOuterNode = nullptr;
     LbffBayerOuterNode* lbffBayerOuterNode = nullptr;
     SwVaiOuterNode* swVaiOuterNode = nullptr;
     BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
-    GraphLink* subGraphLinks[17];
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
+    GraphLink* subGraphLinks[19];
 
 };
 
@@ -1976,7 +2144,7 @@ public:
     StaticGraph100041(GraphConfiguration100041** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
     ~StaticGraph100041();
     StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
-    static const uint32_t hashCode = 3244574897;  // autogenerated
+    static const uint32_t hashCode = 4127645209;  // autogenerated
 
 private:
     // Configuration
@@ -1987,6 +2155,7 @@ private:
     SwVaiOuterNode _swVaiOuterNode;
     LbffBayerOuterNode _lbffBayerOuterNode;
     BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
 
     /*
         Topology
@@ -1995,7 +2164,51 @@ private:
     imageSubGraphTopology100041 _imageSubGraph;
 
     // All graph links
-    GraphLink _graphLinks[17];
+    GraphLink _graphLinks[19];
+};
+
+class imageSubGraphTopology100042 : public GraphTopology {
+
+public:
+    imageSubGraphTopology100042(VirtualSinkMapping* sinkMappingConfiguration) : GraphTopology(subGraphLinks, 21, sinkMappingConfiguration) {}
+    StaticGraphStatus configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration) override;
+
+    IsysOuterNode* isysOuterNode = nullptr;
+    LbffBayerOuterNode* lbffBayerOuterNode = nullptr;
+    BbpsWithTnrOuterNode* bbpsWithTnrOuterNode = nullptr;
+    SwImvOuterNode* swImvOuterNode = nullptr;
+    SwScalerOuterNode* swScalerOuterNode = nullptr;
+    GraphLink* subGraphLinks[21];
+
+};
+
+class StaticGraph100042 : public IStaticGraphConfig
+{
+public:
+    StaticGraph100042(GraphConfiguration100042** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId);
+    ~StaticGraph100042();
+    StaticGraphStatus updateConfiguration(uint32_t selectedIndex=0);
+    static const uint32_t hashCode = 1820896393;  // autogenerated
+
+private:
+    // Configuration
+    GraphConfiguration100042* _graphConfigurations;
+
+    /* Outer Nodes */
+    IsysOuterNode _isysOuterNode;
+    LbffBayerOuterNode _lbffBayerOuterNode;
+    BbpsWithTnrOuterNode _bbpsWithTnrOuterNode;
+    SwImvOuterNode _swImvOuterNode;
+    SwScalerOuterNode _swScalerOuterNode;
+
+    /*
+        Topology
+    */
+    // Sub Graphs definition
+    imageSubGraphTopology100042 _imageSubGraph;
+
+    // All graph links
+    GraphLink _graphLinks[21];
 };
 
 #endif

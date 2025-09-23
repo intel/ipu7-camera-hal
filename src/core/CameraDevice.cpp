@@ -94,7 +94,9 @@ CameraDevice::~CameraDevice() {
 
     mRequestThread->removeListener(EVENT_PROCESS_REQUEST, this);
 
-    for (int i = 0; i < MAX_STREAM_NUMBER; i++) delete mStreams[i];
+    for (int i = 0; i < MAX_STREAM_NUMBER; i++) {
+        delete mStreams[i];
+    }
 
     if (mGcMgr != nullptr) {
         delete mGcMgr;
@@ -246,7 +248,7 @@ void CameraDevice::bindListeners() {
 }
 
 void CameraDevice::unbindListeners() {
-    if (mProcessingUnit) {
+    if (mProcessingUnit != nullptr) {
         vector<EventListener*> statsListenerList = m3AControl->getStatsEventListener();
         for (auto statsListener : statsListenerList) {
             mProcessingUnit->removeListener(EVENT_PSYS_STATS_BUF_READY, statsListener);
@@ -323,7 +325,7 @@ int CameraDevice::configure(stream_config_t* streamList) {
      * 2. Config the graph
      * 3. Assign port for each stream
      * 4. Create the CameraStream classes
-     * 5. Create the procesor
+     * 5. Create the processor
      * 6. Bind the CameraStream to processor
      */
     int inputRawStreamId = -1, preStreamIdForFace = -1, inputYuvStreamId = -1;
@@ -388,12 +390,12 @@ int CameraDevice::configure(stream_config_t* streamList) {
         const int graphId = gc->getGraphId();
         if (mScheduler != nullptr) {
             ret = mScheduler->configurate(graphId);
-            CheckAndLogError(ret != OK, ret, "@%s Faield to configure H-Scheduler", __func__);
+            CheckAndLogError(ret != OK, ret, "@%s Failed to configure H-Scheduler", __func__);
         }
     }
 
     ret = assignPortForStreams(streamList, inputRawStreamId, inputYuvStreamId, totalStream);
-    CheckAndLogError(ret < 0, ret, "@%s Faield to assign port for streams", __func__);
+    CheckAndLogError(ret < 0, ret, "@%s Failed to assign port for streams", __func__);
 
     ret = createStreams(streamList, totalStream);
     CheckAndLogError(ret < 0, ret, "@%s Failed to create streams", __func__);
@@ -437,7 +439,7 @@ int CameraDevice::configure(stream_config_t* streamList) {
         CheckAndLogError(mProcessingUnit == nullptr, UNKNOWN_ERROR,
                          "@%s Failed to create ProcessingUnit", __func__);
 
-        if (mProcessingUnit) {
+        if (mProcessingUnit != nullptr) {
             std::map<uuid, stream_t> outputConfigs;
             for (const auto& item : mStreamIdToPortMap) {
                 outputConfigs[item.second] = ((item.first > 0) && (item.first == mFdStream.id)) ?
@@ -524,17 +526,6 @@ std::map<uuid, stream_t> CameraDevice::selectProducerConfig(const stream_config_
     }
     PlatformData::selectISysFormat(mCameraId, iSysFmt);
 
-    // Use the ISYS output if it's provided in media config section of config file.
-    stream_t mainConfig = PlatformData::getISysOutputByPort(mCameraId, MAIN_INPUT_PORT_UID);
-    mainConfig.memType = biggestStream.memType;
-    mainConfig.field = biggestStream.field;
-
-    if ((mainConfig.width != 0) && (mainConfig.height != 0)) {
-        producerConfigs[MAIN_INPUT_PORT_UID] = mainConfig;
-        LOG2("%s: mcId %d, select the biggest stream", __func__, mcId);
-        return producerConfigs;
-    }
-
     // Filter the ISYS best resolution with input stream
     const int inputWidth = mInputConfig.width;
     const int inputHeight = mInputConfig.height;
@@ -549,6 +540,9 @@ std::map<uuid, stream_t> CameraDevice::selectProducerConfig(const stream_config_
     }
 
     // Update the height according to the field(interlaced).
+    stream_t mainConfig = {};
+    mainConfig.memType = biggestStream.memType;
+    mainConfig.field = biggestStream.field;
     mainConfig.format = PlatformData::getISysFormat(mCameraId);
     mainConfig.width = producerRes.width;
     mainConfig.height = CameraUtils::getInterlaceHeight(mainConfig.field, producerRes.height);
@@ -596,7 +590,7 @@ bool CameraDevice::isProcessorNeeded(const stream_config_t* streamList,
     return false;
 }
 
-int CameraDevice::createStreams(stream_config_t* streamList, int configuredStreamNum) {
+int CameraDevice::createStreams(const stream_config_t* streamList, int configuredStreamNum) {
     LOG1("<id%d>@%s", mCameraId, __func__);
 
     const int streamCounts = streamList->num_streams;
@@ -624,7 +618,7 @@ int CameraDevice::createStreams(stream_config_t* streamList, int configuredStrea
  * 1. Checking if the streams is supported or not
  * 2. According resolution and format to store the streamId in descending order.
  */
-int CameraDevice::analyzeStream(stream_config_t* streamList, int* inputRawStreamId,
+int CameraDevice::analyzeStream(const stream_config_t* streamList, int* inputRawStreamId,
                                 int* preStreamIdForFace, int* inputYuvStreamId) {
     LOG1("<id%d>@%s", mCameraId, __func__);
 
@@ -634,7 +628,7 @@ int CameraDevice::analyzeStream(stream_config_t* streamList, int* inputRawStream
     for (int i = 0; i < streamList->num_streams; i++) {
         stream_t& stream = streamList->streams[i];
         stream.id = i;
-        stream.max_buffers = PlatformData::getMaxRequestsInHAL(mCameraId);
+        stream.max_buffers = PlatformData::getMaxPipelineDepth(mCameraId);
 
         if (stream.streamType == CAMERA_STREAM_INPUT) {
             CheckAndLogError(*inputRawStreamId >= 0, BAD_VALUE, "Don't support two INPUT streams!");
@@ -804,7 +798,7 @@ int CameraDevice::stop() {
     return OK;
 }
 
-// No Lock for this fuction as it doesn't update any class member
+// No Lock for this function as it doesn't update any class member
 int CameraDevice::allocateMemory(camera_buffer_t* ubuffer) {
     PERF_CAMERA_ATRACE();
     LOG1("<id%d>@%s", mCameraId, __func__);
@@ -828,8 +822,10 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t** ubuffer) {
     PERF_CAMERA_ATRACE();
     LOG2("<id%d>@%s, stream id:%d", mCameraId, __func__, streamId);
 
-    int ret = mRequestThread->waitFrame(streamId, ubuffer);
-    while (ret == TIMED_OUT) ret = mRequestThread->waitFrame(streamId, ubuffer);
+    int ret;
+    do {
+        ret = mRequestThread->waitFrame(streamId, ubuffer);
+    } while (ret == TIMED_OUT);
 
     if (ret == NO_INIT) {
         return ret;

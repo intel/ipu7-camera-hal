@@ -53,9 +53,9 @@ class PipeManager : public IPipeManager {
      */
     virtual void handleEvent(EventData eventData);
     // handle bufferDone
-    int onBufferDone(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
+    virtual int onBufferDone(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
     // metadata handler
-    void onMetadataReady(int64_t sequence);
+    virtual void onMetadataReady(int64_t sequence);
 
  public:
     /**

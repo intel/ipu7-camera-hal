@@ -675,7 +675,7 @@ int V4L2VideoNode::SetupBuffers(size_t num_buffers, bool is_cached, enum v4l2_me
     LOG1("@%s", __func__);
 
     if (num_buffers == 0 || !buffers || !buffers->empty()) {
-        LOGE("%s: Device node %s num_buffers or buffer invaild.", __func__, name_.c_str());
+        LOGE("%s: Device node %s num_buffers or buffer invalid.", __func__, name_.c_str());
         return -EINVAL;
     }
 

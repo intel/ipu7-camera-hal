@@ -39,6 +39,10 @@
 #include "Ipu8StaticGraphAutogen.h"
 #include "Ipu8StaticGraphTypesAutogen.h"
 #include "Ipu8GraphResolutionConfiguratorAutogen.h"
+#elif defined(GRC_IPU9)
+#include "Ipu9StaticGraphAutogen.h"
+#include "Ipu9StaticGraphTypesAutogen.h"
+#include "Ipu9GraphResolutionConfiguratorAutogen.h"
 #else
 #include "StaticGraphAutogen.h"
 #include "StaticGraphTypesAutogen.h"

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef IC2API_FOR_CHROME_H
-#define IC2API_FOR_CHROME_H
-
+#pragma once
 extern "C" {
 
 #define KEYPOINTSCOUNT 40

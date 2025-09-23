@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LENS_MANAGER_H  
-#define LENS_MANAGER_H
+#pragma once
 
 #include <map>
 
@@ -69,7 +68,7 @@ public:
 private:
     DISALLOW_COPY_AND_ASSIGN(LensManager);
 
-    void setFocusPosition(int focusPostion);
+    void setFocusPosition(int focusPosition);
 
 private:
     int mCameraId;
@@ -85,5 +84,3 @@ private:
 };
 
 } /* namespace icamera */
-
-#endif // LENS_MANAGER_H

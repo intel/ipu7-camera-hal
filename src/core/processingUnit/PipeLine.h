@@ -75,6 +75,8 @@ class PipeLine {
     PipeLine(int cameraId, int streamId, std::shared_ptr<GraphConfig> gc,
              std::shared_ptr<CameraScheduler> scheduler);
     virtual ~PipeLine();
+
+    void deinit();
     int configure(TuningMode tuningMode, IpuPacAdaptor* adaptor);
     int start();
     int stop();

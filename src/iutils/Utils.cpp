@@ -40,6 +40,12 @@ using std::string;
 
 #define FPS_FRAME_COUNT 60  // the frame interval to print fps
 
+#define GET_FOURCC_FMT(a, b, c, d) \
+    ((static_cast<uint32_t>(d)) | \
+    ((static_cast<uint32_t>(c) << 8)) | \
+    ((static_cast<uint32_t>(b) << 16)) | \
+    ((static_cast<uint32_t>(a) << 24)))
+
 namespace icamera {
 
 int CameraUtils::getFileContent(const char* filename, char* buffer, int maxSize) {
@@ -56,12 +62,6 @@ int CameraUtils::getFileContent(const char* filename, char* buffer, int maxSize)
     stream.read(buffer, copyLength);
     return copyLength;
 }
-
-#define GET_FOURCC_FMT(a, b, c, d) \
-    ((static_cast<uint32_t>(d)) | \
-    ((static_cast<uint32_t>(c) << 8)) | \
-    ((static_cast<uint32_t>(b) << 16)) | \
-    ((static_cast<uint32_t>(a) << 24)))
 
 enum FormatType {
     FORMAT_RAW,
@@ -539,14 +539,14 @@ int CameraUtils::getCompressedFrameSize(int format, int width, int height) {
  * Calc frame buffer size.
  *
  *  Why alignment is 64?
- *  The IPU DMA unit must transimit at leat 64 bytes one time.
+ *  The IPU DMA unit must transimit at least 64 bytes one time.
  *
  *  Why need extra size? It's due to a hardware issue: the DMA unit is a power of
  *  two, and a line should be transferred as few units as possible.
  *  The result is that up to line length more data than the image size
  *  may be transferred to memory after the image.
  *
- *  Another limition is the GDA(Global Dynamic Allocator) allocation unit size(1024). For low
+ *  Another limitation is the GDA(Global Dynamic Allocator) allocation unit size(1024). For low
  *  resolution it gives a bigger number. Use larger one to avoid
  *  memory corruption.
  *  for example: 320x480 UVVY, which bpl is 640, less than 1024, in this case, driver will
@@ -557,7 +557,7 @@ int CameraUtils::getFrameSize(int format, int width, int height, bool needAligne
     const int alignedBpl = getStride(format, width);
 
     // Get frame size with aligned height taking in count for internal buffers.
-    // To garantee PSYS kernel like GDC always get enough buffer size to process.
+    // To guarantee PSYS kernel like GDC always get enough buffer size to process.
     // This is to satisfy the PSYS kernel, like GDC, input alignment requirement.
     if (needAlignedHeight) {
         height = ALIGN_64(height);
@@ -608,7 +608,12 @@ void CameraUtils::getDeviceName(const char* entityName, string& deviceNodeName, 
     CheckAndLogError((dp == nullptr), VOID_VALUE, "@%s, Fail open : %s", __func__, dirPath);
 
     struct dirent* dirp = nullptr;
-    while ((dirp = readdir(dp)) != nullptr) {
+    while (true) {
+        dirp = readdir(dp);
+        if (dirp == nullptr) {
+            break;
+        }
+
         if ((dirp->d_type == DT_LNK) &&
             (strncmp(dirp->d_name, filePrefix, strlen(filePrefix)) == 0)) {
             string subDeviceName = dirPath;
@@ -621,7 +626,11 @@ void CameraUtils::getDeviceName(const char* entityName, string& deviceNodeName, 
             char buf[128] = {'\0'};
             int len = read(fd, buf, sizeof(buf));
             close(fd);
-            len--;  // remove "\n"
+            if (len > 0) {
+                len--;  // remove "\n"
+            } else {
+                len = 0;
+            }
             if ((len == static_cast<int>(strlen(entityName))) &&
                 (memcmp(buf, entityName, len) == 0)) {
                 deviceNodeName = "/dev/";
@@ -692,8 +701,8 @@ void CameraUtils::getConfigModeFromString(string str, std::vector<ConfigMode>& c
     string resultStr, modeStr = str;
 
     while (split) {
-        size_t pos = 0U;
-        if ((pos = modeStr.find(",")) == string::npos) {
+        const auto pos = modeStr.find(",");
+        if (pos == string::npos) {
             mode = getConfigModeByName(modeStr.c_str());
             split = false;
         } else {
@@ -807,7 +816,8 @@ std::vector<string> CameraUtils::splitString(const char* srcStr, char delim) {
 
 nsecs_t CameraUtils::systemTime() {
     struct timespec t;
-    t.tv_sec = t.tv_nsec = 0;
+    t.tv_sec = 0;
+    t.tv_nsec = 0;
     clock_gettime(CLOCK_MONOTONIC, &t);
     return nsecs_t(t.tv_sec) * 1000000000LL + t.tv_nsec;
 }

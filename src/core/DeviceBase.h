@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef DEVICE_BASE_H
-#define DEVICE_BASE_H
-
+#pragma once
 #include <atomic>
 #include <list>
 #include <set>
@@ -124,7 +122,7 @@ class DeviceBase : public EventSource {
     VideoNodeDirection mNodeDirection;
     const char* mName;
     V4L2VideoNode* mDevice;  // The device used to queue/dequeue buffers.
-    int64_t mLatestSequence;    // Track the latest bufffer sequence from driver.
+    int64_t mLatestSequence;    // Track the latest buffer sequence from driver.
     bool mNeedSkipFrame;     // True if the frame/buffer needs to be skipped.
     int mFrameSkipNum;       // How many frames need to be skipped after stream on.
     DeviceCallback* mDeviceCB;
@@ -169,10 +167,9 @@ class MainDevice : public DeviceBase {
     ~MainDevice();
 
  private:
-    int createBufferPool(const stream_t& config);
-    int onDequeueBuffer(std::shared_ptr<CameraBuffer> buffer);
-    bool needQueueBack(std::shared_ptr<CameraBuffer> buffer);
+    virtual int createBufferPool(const stream_t& config);
+    virtual int onDequeueBuffer(std::shared_ptr<CameraBuffer> buffer);
+    virtual bool needQueueBack(std::shared_ptr<CameraBuffer> buffer);
 };
 }  // namespace icamera
 
-#endif // DEVICE_BASE_H

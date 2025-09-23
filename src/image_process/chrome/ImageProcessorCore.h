@@ -17,8 +17,6 @@
 
 #include <libyuv.h>
 
-#include <unordered_map>
-
 #include "IImageProcessor.h"
 
 namespace icamera {
@@ -40,8 +38,6 @@ public:
 
 private:
     DISALLOW_COPY_AND_ASSIGN(ImageProcessorCore);
-
-    std::unordered_map<int, libyuv::RotationMode> mRotationMode;
 };
 
 } /* namespace icamera */

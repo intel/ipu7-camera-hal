@@ -1509,7 +1509,7 @@ class Parameters {
      *
      * \return 0 if successfully, otherwise non-0 value is returned.
      */
-    int setFaceIds(int* faceIds, int faceNum);
+    int setFaceIds(const int* faceIds, int faceNum);
 
     /**
      * Get sensor active array size

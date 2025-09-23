@@ -27,7 +27,7 @@ endif()
 
 set(JPEG_SRCS
     ${JPEG_SRCS}
-    ${JPEG_DIR}/ExifCreater.cpp
+    ${JPEG_DIR}/ExifCreator.cpp
     ${JPEG_DIR}/EXIFMetaData.cpp
     ${JPEG_DIR}/EXIFMaker.cpp
     ${JPEG_DIR}/JpegMaker.cpp

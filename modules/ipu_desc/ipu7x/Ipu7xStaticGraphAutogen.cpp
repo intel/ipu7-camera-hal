@@ -441,6 +441,27 @@ void SwGdcOuterNode::Init(SwGdcOuterNodeConfiguration** selectedGraphConfigurati
     setInnerNode(None);
 }
 
+void SwScalerOuterNode::Init(SwScalerOuterNodeConfiguration** selectedGraphConfiguration, uint32_t nodeKernelConfigurationsOptionsCount)
+{
+    OuterNode::Init(7, NodeTypes::Sw, 1, nodeKernelConfigurationsOptionsCount, selectedGraphConfiguration[0]->tuningMode, selectedGraphConfiguration[0]->streamId, 0);
+
+    uint16_t kernelsUuids[1] = {19706 /*sw_scaler*/};
+    uint64_t kernelsRcbBitmap = 0x1; // { sw_scaler[0] }
+    uint64_t kernelsResolutionHistoryGroupBitmap = 0x0; // {{sw_scaler}[0] }
+
+    uint8_t systemApisSizes[1] = {5 /*sw_scaler*/};
+
+    for (uint32_t i = 0; i < kernelConfigurationsOptionsCount; ++i)
+    {
+        nodeKernels.kernelList = kernelListOptions[i];
+
+        InitRunKernels(kernelsUuids, kernelsRcbBitmap, selectedGraphConfiguration[i]->resolutionInfos, kernelsResolutionHistoryGroupBitmap,  selectedGraphConfiguration[i]->resolutionHistories, selectedGraphConfiguration[i]->bppInfos, systemApisSizes, selectedGraphConfiguration[i]->systemApiConfiguration);
+    }
+
+    // set default inner Node
+    setInnerNode(None);
+}
+
 void SwNntmOuterNode::Init(SwNntmOuterNodeConfiguration** selectedGraphConfiguration, uint32_t nodeKernelConfigurationsOptionsCount)
 {
     OuterNode::Init(6, NodeTypes::Sw, 1, nodeKernelConfigurationsOptionsCount, selectedGraphConfiguration[0]->tuningMode, selectedGraphConfiguration[0]->streamId, 0);
@@ -573,6 +594,27 @@ void BbpsIrNoTnrOuterNode::Init(BbpsIrNoTnrOuterNodeConfiguration** selectedGrap
     uint64_t kernelsResolutionHistoryGroupBitmap = 0x60; // {{slim_tnr_spatial_bifd_yuvn_regs_1_1, cas_1_0, ofs_mp_bodr_regs_1_1, outputscaler_2_0_a, outputscaler_2_0_b}[0], {ofs_dp_bodr_regs_1_1}[1], {ofs_pp_bodr_regs_1_1}[2] }
 
     uint8_t systemApisSizes[7] = {156 /*slim_tnr_spatial_bifd_yuvn_regs_1_1*/, 0 /*cas_1_0*/, 156 /*ofs_mp_bodr_regs_1_1*/, 0 /*outputscaler_2_0_a*/, 0 /*outputscaler_2_0_b*/, 156 /*ofs_dp_bodr_regs_1_1*/, 156 /*ofs_pp_bodr_regs_1_1*/};
+
+    for (uint32_t i = 0; i < kernelConfigurationsOptionsCount; ++i)
+    {
+        nodeKernels.kernelList = kernelListOptions[i];
+
+        InitRunKernels(kernelsUuids, kernelsRcbBitmap, selectedGraphConfiguration[i]->resolutionInfos, kernelsResolutionHistoryGroupBitmap,  selectedGraphConfiguration[i]->resolutionHistories, selectedGraphConfiguration[i]->bppInfos, systemApisSizes, selectedGraphConfiguration[i]->systemApiConfiguration);
+    }
+
+    // set default inner Node
+    setInnerNode(None);
+}
+
+void LbffIrNo2ANoGmvOuterNode::Init(LbffIrNo2ANoGmvOuterNodeConfiguration** selectedGraphConfiguration, uint32_t nodeKernelConfigurationsOptionsCount)
+{
+    OuterNode::Init(0, NodeTypes::Cb, 26, nodeKernelConfigurationsOptionsCount, selectedGraphConfiguration[0]->tuningMode, selectedGraphConfiguration[0]->streamId, 0);
+
+    uint16_t kernelsUuids[26] = {52164 /*ifd_pipe_1_1*/, 11700 /*bxt_blc*/, 10326 /*linearization2_0*/, 6070 /*ifd_lsc_1_1*/, 2144 /*lsc_1_2*/, 33714 /*gd_dpc_2_2*/, 5144 /*wb_1_1*/, 21777 /*bnlm_3_3*/, 48695 /*bxt_demosaic*/, 13708 /*vcsc_2_0_b*/, 54721 /*gltm_2_0*/, 58858 /*xnr_5_2*/, 36035 /*vcr_3_1*/, 36029 /*glim_2_0*/, 13026 /*acm_1_1*/, 57496 /*gammatm_v3*/, 31704 /*bxt_csc*/, 15021 /*rgbs_grid_1_1*/, 20739 /*b2i_ds_1_0_1*/, 25569 /*upscaler_1_0*/, 36213 /*lbff_crop_espa_1_1*/, 33723 /*tnr_scale_lb*/, 40915 /*odr_output_ps_1_1*/, 55391 /*odr_output_me_1_1*/, 20731 /*odr_awb_std_1_1*/, 54176 /*odr_awb_sat_1_1*/};
+    uint64_t kernelsRcbBitmap = 0xFE0001; // { ifd_pipe_1_1[0], rgbs_grid_1_1[17], b2i_ds_1_0_1[18], upscaler_1_0[19], lbff_crop_espa_1_1[20], tnr_scale_lb[21], odr_output_ps_1_1[22], odr_output_me_1_1[23] }
+    uint64_t kernelsResolutionHistoryGroupBitmap = 0x3B8001A; // {{ifd_pipe_1_1}[0], {bxt_blc, linearization2_0}[1], {ifd_lsc_1_1}[2], {lsc_1_2, gd_dpc_2_2, wb_1_1, bnlm_3_3, bxt_demosaic, vcsc_2_0_b, gltm_2_0, xnr_5_2, vcr_3_1, glim_2_0, acm_1_1, gammatm_v3, bxt_csc, rgbs_grid_1_1, b2i_ds_1_0_1}[3], {upscaler_1_0}[4], {lbff_crop_espa_1_1}[5], {tnr_scale_lb, odr_output_ps_1_1}[6], {odr_output_me_1_1}[7], {odr_awb_std_1_1}[8], {odr_awb_sat_1_1}[9] }
+
+    uint8_t systemApisSizes[26] = {156 /*ifd_pipe_1_1*/, 5 /*bxt_blc*/, 5 /*linearization2_0*/, 156 /*ifd_lsc_1_1*/, 40 /*lsc_1_2*/, 0 /*gd_dpc_2_2*/, 0 /*wb_1_1*/, 5 /*bnlm_3_3*/, 0 /*bxt_demosaic*/, 0 /*vcsc_2_0_b*/, 0 /*gltm_2_0*/, 0 /*xnr_5_2*/, 0 /*vcr_3_1*/, 0 /*glim_2_0*/, 0 /*acm_1_1*/, 5 /*gammatm_v3*/, 0 /*bxt_csc*/, 24 /*rgbs_grid_1_1*/, 0 /*b2i_ds_1_0_1*/, 0 /*upscaler_1_0*/, 156 /*lbff_crop_espa_1_1*/, 0 /*tnr_scale_lb*/, 156 /*odr_output_ps_1_1*/, 156 /*odr_output_me_1_1*/, 156 /*odr_awb_std_1_1*/, 156 /*odr_awb_sat_1_1*/};
 
     for (uint32_t i = 0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -754,7 +796,7 @@ void SwGtmOuterNode::Init(SwGtmOuterNodeConfiguration** selectedGraphConfigurati
 {
     OuterNode::Init(5, NodeTypes::Sw, 1, nodeKernelConfigurationsOptionsCount, selectedGraphConfiguration[0]->tuningMode, selectedGraphConfiguration[0]->streamId, 0);
 
-    uint16_t kernelsUuids[1] = {40423 /*tm_app*/};
+    uint16_t kernelsUuids[1] = {37003 /*tm_app*/};
     uint64_t kernelsRcbBitmap = 0x0; // {  }
     uint64_t kernelsResolutionHistoryGroupBitmap = 0x0; // {{tm_app}[0] }
 
@@ -887,13 +929,34 @@ void SwVaiOuterNode::Init(SwVaiOuterNodeConfiguration** selectedGraphConfigurati
     uint64_t kernelsRcbBitmap = 0x1; // { sw_scaler[0] }
     uint64_t kernelsResolutionHistoryGroupBitmap = 0x0; // {{sw_scaler}[0] }
 
-    uint8_t systemApisSizes[1] = {0 /*sw_scaler*/};
+    uint8_t systemApisSizes[1] = {5 /*sw_scaler*/};
 
     for (uint32_t i = 0; i < kernelConfigurationsOptionsCount; ++i)
     {
         nodeKernels.kernelList = kernelListOptions[i];
 
-        InitRunKernels(kernelsUuids, kernelsRcbBitmap, selectedGraphConfiguration[i]->resolutionInfos, kernelsResolutionHistoryGroupBitmap,  selectedGraphConfiguration[i]->resolutionHistories, selectedGraphConfiguration[i]->bppInfos, systemApisSizes, nullptr);
+        InitRunKernels(kernelsUuids, kernelsRcbBitmap, selectedGraphConfiguration[i]->resolutionInfos, kernelsResolutionHistoryGroupBitmap,  selectedGraphConfiguration[i]->resolutionHistories, selectedGraphConfiguration[i]->bppInfos, systemApisSizes, selectedGraphConfiguration[i]->systemApiConfiguration);
+    }
+
+    // set default inner Node
+    setInnerNode(None);
+}
+
+void SwImvOuterNode::Init(SwImvOuterNodeConfiguration** selectedGraphConfiguration, uint32_t nodeKernelConfigurationsOptionsCount)
+{
+    OuterNode::Init(9, NodeTypes::Sw, 1, nodeKernelConfigurationsOptionsCount, selectedGraphConfiguration[0]->tuningMode, selectedGraphConfiguration[0]->streamId, 0);
+
+    uint16_t kernelsUuids[1] = {19706 /*sw_scaler*/};
+    uint64_t kernelsRcbBitmap = 0x1; // { sw_scaler[0] }
+    uint64_t kernelsResolutionHistoryGroupBitmap = 0x0; // {{sw_scaler}[0] }
+
+    uint8_t systemApisSizes[1] = {5 /*sw_scaler*/};
+
+    for (uint32_t i = 0; i < kernelConfigurationsOptionsCount; ++i)
+    {
+        nodeKernels.kernelList = kernelListOptions[i];
+
+        InitRunKernels(kernelsUuids, kernelsRcbBitmap, selectedGraphConfiguration[i]->resolutionInfos, kernelsResolutionHistoryGroupBitmap,  selectedGraphConfiguration[i]->resolutionHistories, selectedGraphConfiguration[i]->bppInfos, systemApisSizes, selectedGraphConfiguration[i]->systemApiConfiguration);
     }
 
     // set default inner Node
@@ -1128,6 +1191,7 @@ void LbffBayerOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void BbpsNoTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -1280,6 +1344,7 @@ void BbpsNoTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffBayerWithGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -1712,6 +1777,7 @@ void LbffBayerWithGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOpti
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void BbpsWithTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -1877,9 +1943,17 @@ void BbpsWithTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void SwGdcOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
+{
+
+    // No inner nodes
+    (void)nodeInnerOptions;
+}
+
+void SwScalerOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
 {
 
     // No inner nodes
@@ -2336,6 +2410,7 @@ void LbffRgbIrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffIrNoGmvIrStreamOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -2564,6 +2639,7 @@ void LbffIrNoGmvIrStreamOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerO
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void BbpsIrWithTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -2729,6 +2805,7 @@ void BbpsIrWithTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffBayerBurstOutNo3AOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -3533,6 +3610,7 @@ void LbffBayerBurstOutNo3AOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInne
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void BbpsIrNoTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -3685,6 +3763,213 @@ void BbpsIrNoTnrOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
+}
+
+void LbffIrNo2ANoGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
+{
+    // Kernel default enablement
+    for (uint32_t j = 0; j < kernelConfigurationsOptionsCount; ++j)
+    {
+        for (uint8_t i = 0; i < 26; ++i)
+        {
+            kernelListOptions[j][i].run_kernel.enable = 1;
+        }
+
+        // Pass-through kernels
+        kernelListOptions[j][6].run_kernel.enable = 0; // wb_1_1
+        kernelListOptions[j][8].run_kernel.enable = 0; // bxt_demosaic
+        kernelListOptions[j][14].run_kernel.enable = 0; // acm_1_1
+    }
+
+    const InnerNodeOptionsFlags nodeRelevantInnerOptions = nodeInnerOptions & (no3A | noLbOutputPs | noLbOutputMe);
+    bitmaps = HwBitmaps(); // reset HW bitmaps
+    uint64_t disabledRunKernelsBitmap = 0x0;
+    if (nodeRelevantInnerOptions == (no3A))
+    {
+        // HW bitmaps
+        // RBM - 0x0000000000000000000001EA01404403
+        bitmaps.rbm[0] = 0x1404403;
+        bitmaps.rbm[1] = 0x1EA;
+        // DEB - 0x0000000000000000000001FFFE80003F
+        bitmaps.deb[0] = 0xFE80003F;
+        bitmaps.deb[1] = 0x1FF;
+        // TEB - 0x000000000000601F
+        bitmaps.teb[0] = 0x601F;
+        // REB - 0x00000000000000000000000001D830FB
+        bitmaps.reb[0] = 0x1D830FB;
+
+        // Kernels disablement
+        // 17 rgbs_grid_1_1- inner node disablement
+        // 24 odr_awb_std_1_1- inner node disablement
+        // 25 odr_awb_sat_1_1- inner node disablement
+        disabledRunKernelsBitmap = 0x3020000;
+    }
+    else if (nodeRelevantInnerOptions == (noLbOutputPs))
+    {
+        // HW bitmaps
+        // RBM - 0x00000000000000000000016A07404403
+        bitmaps.rbm[0] = 0x7404403;
+        bitmaps.rbm[1] = 0x16A;
+        // DEB - 0x00000000000000000000017FFE80623F
+        bitmaps.deb[0] = 0xFE80623F;
+        bitmaps.deb[1] = 0x17F;
+        // TEB - 0x000000000000231F
+        bitmaps.teb[0] = 0x231F;
+        // REB - 0x00000000000000000000000001D8F0FB
+        bitmaps.reb[0] = 0x1D8F0FB;
+
+        // Kernels disablement
+        // 22 odr_output_ps_1_1- inner node disablement
+        disabledRunKernelsBitmap = 0x400000;
+    }
+    else if (nodeRelevantInnerOptions == (no3A | noLbOutputPs))
+    {
+        // HW bitmaps
+        // RBM - 0x00000000000000000000016A01404403
+        bitmaps.rbm[0] = 0x1404403;
+        bitmaps.rbm[1] = 0x16A;
+        // DEB - 0x00000000000000000000017FFE80003F
+        bitmaps.deb[0] = 0xFE80003F;
+        bitmaps.deb[1] = 0x17F;
+        // TEB - 0x000000000000201F
+        bitmaps.teb[0] = 0x201F;
+        // REB - 0x00000000000000000000000001D830FB
+        bitmaps.reb[0] = 0x1D830FB;
+
+        // Kernels disablement
+        // 17 rgbs_grid_1_1- inner node disablement
+        // 22 odr_output_ps_1_1- inner node disablement
+        // 24 odr_awb_std_1_1- inner node disablement
+        // 25 odr_awb_sat_1_1- inner node disablement
+        disabledRunKernelsBitmap = 0x3420000;
+    }
+    else if (nodeRelevantInnerOptions == (noLbOutputMe))
+    {
+        // HW bitmaps
+        // RBM - 0x0000000000000000000000EA07404403
+        bitmaps.rbm[0] = 0x7404403;
+        bitmaps.rbm[1] = 0xEA;
+        // DEB - 0x0000000000000000000000BFFE80623F
+        bitmaps.deb[0] = 0xFE80623F;
+        bitmaps.deb[1] = 0xBF;
+        // TEB - 0x000000000000431F
+        bitmaps.teb[0] = 0x431F;
+        // REB - 0x00000000000000000000000001D8F0FB
+        bitmaps.reb[0] = 0x1D8F0FB;
+
+        // Kernels disablement
+        // 21 tnr_scale_lb- inner node disablement
+        // 23 odr_output_me_1_1- inner node disablement
+        disabledRunKernelsBitmap = 0xA00000;
+    }
+    else if (nodeRelevantInnerOptions == (no3A | noLbOutputMe))
+    {
+        // HW bitmaps
+        // RBM - 0x0000000000000000000000EA01404403
+        bitmaps.rbm[0] = 0x1404403;
+        bitmaps.rbm[1] = 0xEA;
+        // DEB - 0x0000000000000000000000BFFE80003F
+        bitmaps.deb[0] = 0xFE80003F;
+        bitmaps.deb[1] = 0xBF;
+        // TEB - 0x000000000000401F
+        bitmaps.teb[0] = 0x401F;
+        // REB - 0x00000000000000000000000001D830FB
+        bitmaps.reb[0] = 0x1D830FB;
+
+        // Kernels disablement
+        // 17 rgbs_grid_1_1- inner node disablement
+        // 21 tnr_scale_lb- inner node disablement
+        // 23 odr_output_me_1_1- inner node disablement
+        // 24 odr_awb_std_1_1- inner node disablement
+        // 25 odr_awb_sat_1_1- inner node disablement
+        disabledRunKernelsBitmap = 0x3A20000;
+    }
+    else if (nodeRelevantInnerOptions == (noLbOutputPs | noLbOutputMe))
+    {
+        // HW bitmaps
+        // RBM - 0x00000000000000000000000006404403
+        bitmaps.rbm[0] = 0x6404403;
+        // DEB - 0x0000000000000000000000000000623F
+        bitmaps.deb[0] = 0x623F;
+        // TEB - 0x000000000000031F
+        bitmaps.teb[0] = 0x31F;
+        // REB - 0x0000000000000000000000000000F0FB
+        bitmaps.reb[0] = 0xF0FB;
+
+        // Kernels disablement
+        // 6 wb_1_1- inner node disablement
+        // 7 bnlm_3_3- inner node disablement
+        // 8 bxt_demosaic- inner node disablement
+        // 9 vcsc_2_0_b- inner node disablement
+        // 10 gltm_2_0- inner node disablement
+        // 11 xnr_5_2- inner node disablement
+        // 12 vcr_3_1- inner node disablement
+        // 13 glim_2_0- inner node disablement
+        // 14 acm_1_1- inner node disablement
+        // 15 gammatm_v3- inner node disablement
+        // 16 bxt_csc- inner node disablement
+        // 18 b2i_ds_1_0_1- inner node disablement
+        // 19 upscaler_1_0- inner node disablement
+        // 20 lbff_crop_espa_1_1- inner node disablement
+        // 21 tnr_scale_lb- inner node disablement
+        // 22 odr_output_ps_1_1- inner node disablement
+        // 23 odr_output_me_1_1- inner node disablement
+        disabledRunKernelsBitmap = 0xFDFFC0;
+    }
+    else if (nodeRelevantInnerOptions == (no3A | noLbOutputPs | noLbOutputMe))
+    {
+        // HW bitmaps
+        // RBM - 0x00000000000000000000000000000000
+        // DEB - 0x00000000000000000000000000000000
+        // TEB - 0x0000000000000000
+        // REB - 0x00000000000000000000000000000000
+
+        // Kernels disablement
+        // 0 ifd_pipe_1_1- inner node disablement
+        // 1 bxt_blc- inner node disablement
+        // 2 linearization2_0- inner node disablement
+        // 3 ifd_lsc_1_1- inner node disablement
+        // 4 lsc_1_2- inner node disablement
+        // 5 gd_dpc_2_2- inner node disablement
+        // 6 wb_1_1- inner node disablement
+        // 7 bnlm_3_3- inner node disablement
+        // 8 bxt_demosaic- inner node disablement
+        // 9 vcsc_2_0_b- inner node disablement
+        // 10 gltm_2_0- inner node disablement
+        // 11 xnr_5_2- inner node disablement
+        // 12 vcr_3_1- inner node disablement
+        // 13 glim_2_0- inner node disablement
+        // 14 acm_1_1- inner node disablement
+        // 15 gammatm_v3- inner node disablement
+        // 16 bxt_csc- inner node disablement
+        // 17 rgbs_grid_1_1- inner node disablement
+        // 18 b2i_ds_1_0_1- inner node disablement
+        // 19 upscaler_1_0- inner node disablement
+        // 20 lbff_crop_espa_1_1- inner node disablement
+        // 21 tnr_scale_lb- inner node disablement
+        // 22 odr_output_ps_1_1- inner node disablement
+        // 23 odr_output_me_1_1- inner node disablement
+        // 24 odr_awb_std_1_1- inner node disablement
+        // 25 odr_awb_sat_1_1- inner node disablement
+        disabledRunKernelsBitmap = 0x3FFFFFF;
+    }
+    else // default inner node
+    {
+        // RBM - 0x0000000000000000000001EA07404403
+        bitmaps.rbm[0] = 0x7404403;
+        bitmaps.rbm[1] = 0x1EA;
+        // DEB - 0x0000000000000000000001FFFE80623F
+        bitmaps.deb[0] = 0xFE80623F;
+        bitmaps.deb[1] = 0x1FF;
+        // TEB - 0x000000000000631F
+        bitmaps.teb[0] = 0x631F;
+        // REB - 0x00000000000000000000000001D8F0FB
+        bitmaps.reb[0] = 0x1D8F0FB;
+    }
+
+    SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffIrNoGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -3910,6 +4195,7 @@ void LbffIrNoGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void IsysPdaf2OuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -4380,6 +4666,7 @@ void LbffBayerPdaf2OuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOption
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffBayerPdaf3OuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -4831,6 +5118,7 @@ void LbffBayerPdaf3OuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOption
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void IsysDolOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -5068,6 +5356,7 @@ void LbffDolOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void SwGtmOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -5994,6 +6283,7 @@ void LbffBayerPdaf2WithGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInne
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffBayerPdaf3WithGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -6893,6 +7183,7 @@ void LbffBayerPdaf3WithGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInne
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffRgbIrWithGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -7778,6 +8069,7 @@ void LbffRgbIrWithGmvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOpti
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void LbffIrWithGmvIrStreamOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
@@ -8215,9 +8507,17 @@ void LbffIrWithGmvIrStreamOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInne
     }
 
     SetDisabledKernels(disabledRunKernelsBitmap);
+
 }
 
 void SwVaiOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
+{
+
+    // No inner nodes
+    (void)nodeInnerOptions;
+}
+
+void SwImvOuterNode::setInnerNode(InnerNodeOptionsFlags nodeInnerOptions)
 {
 
     // No inner nodes
@@ -8504,6 +8804,7 @@ StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphCon
     LbffBayerWithGmvOuterNodeConfiguration** lbffBayerWithGmvOuterNodeConfigurationOptions = new LbffBayerWithGmvOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwGdcOuterNodeConfiguration** swGdcOuterNodeConfigurationOptions = new SwGdcOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -8512,17 +8813,20 @@ StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphCon
         lbffBayerWithGmvOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffBayerWithGmvOuterNodeConfiguration;
         bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
         swGdcOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swGdcOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _lbffBayerWithGmvOuterNode.Init(lbffBayerWithGmvOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swGdcOuterNode.Init(swGdcOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysOuterNodeConfigurationOptions;
     delete[] lbffBayerWithGmvOuterNodeConfigurationOptions;
     delete[] bbpsWithTnrOuterNodeConfigurationOptions;
     delete[] swGdcOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -8700,7 +9004,23 @@ StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphCon
     link->dest = GraphElementType::ProcessedMain;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 21; ++i)
+    link = &_graphLinks[21];
+    link->src = GraphElementType::SwGdc;
+    link->srcNode = &_swGdcOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[22];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedSecondary;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 23; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -8724,6 +9044,7 @@ StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphCon
     _imageSubGraph.lbffBayerWithGmvOuterNode = &_lbffBayerWithGmvOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
 
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
@@ -8733,6 +9054,7 @@ StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphCon
     _imageSubGraph.lbffBayerWithGmvOuterNode->contextId = 1;
     _imageSubGraph.bbpsWithTnrOuterNode->contextId = 2;
     _imageSubGraph.swGdcOuterNode->contextId = 3;
+    _imageSubGraph.swScalerOuterNode->contextId = 4;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -8760,6 +9082,11 @@ StaticGraphStatus StaticGraph100001::updateConfiguration(uint32_t selectedIndex)
         return res;
     }
     res = _swGdcOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
     if (res != StaticGraphStatus::SG_OK)
     {
         return res;
@@ -8852,7 +9179,7 @@ StaticGraphStatus imageSubGraphTopology100001::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 21; i++)
+     for (uint32_t i = 0; i < 23; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -8885,6 +9212,7 @@ StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphCon
     IsysOuterNodeConfiguration** isysOuterNodeConfigurationOptions = new IsysOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     LbffBayerOuterNodeConfiguration** lbffBayerOuterNodeConfigurationOptions = new LbffBayerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -8892,15 +9220,18 @@ StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphCon
         isysOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].isysOuterNodeConfiguration;
         lbffBayerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffBayerOuterNodeConfiguration;
         bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _lbffBayerOuterNode.Init(lbffBayerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysOuterNodeConfigurationOptions;
     delete[] lbffBayerOuterNodeConfigurationOptions;
     delete[] bbpsWithTnrOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -9036,7 +9367,23 @@ StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphCon
     link->dest = GraphElementType::ImagePpp;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 16; ++i)
+    link = &_graphLinks[16];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 14;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[17];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedMain;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 18; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -9059,6 +9406,7 @@ StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphCon
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
 
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
@@ -9067,6 +9415,7 @@ StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphCon
     _imageSubGraph.isysOuterNode->contextId = 0;
     _imageSubGraph.lbffBayerOuterNode->contextId = 1;
     _imageSubGraph.bbpsWithTnrOuterNode->contextId = 2;
+    _imageSubGraph.swScalerOuterNode->contextId = 3;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -9089,6 +9438,11 @@ StaticGraphStatus StaticGraph100002::updateConfiguration(uint32_t selectedIndex)
         return res;
     }
     res = _bbpsWithTnrOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
     if (res != StaticGraphStatus::SG_OK)
     {
         return res;
@@ -9125,6 +9479,7 @@ StaticGraphStatus imageSubGraphTopology100002::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         subGraphLinks[13]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0 &&
         true)
     {
         bbpsWithTnrInnerOptions |= noMp;
@@ -9162,6 +9517,7 @@ StaticGraphStatus imageSubGraphTopology100002::configInnerNodes(SubGraphInnerNod
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
     subGraphLinks[13]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
+    subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_scaler:terminal_connect_input
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noPpp); // bbps_WithTnr:bbps_ofs_pp_yuvn_odr -> image_ppp
 
@@ -9175,7 +9531,7 @@ StaticGraphStatus imageSubGraphTopology100002::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 16; i++)
+     for (uint32_t i = 0; i < 18; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -9601,6 +9957,7 @@ StaticGraph100004::StaticGraph100004(GraphConfiguration100004** selectedGraphCon
     LbffBayerOuterNodeConfiguration** lbffBayerOuterNodeConfigurationOptions = new LbffBayerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwGdcOuterNodeConfiguration** swGdcOuterNodeConfigurationOptions = new SwGdcOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -9609,17 +9966,20 @@ StaticGraph100004::StaticGraph100004(GraphConfiguration100004** selectedGraphCon
         lbffBayerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffBayerOuterNodeConfiguration;
         bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
         swGdcOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swGdcOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _lbffBayerOuterNode.Init(lbffBayerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swGdcOuterNode.Init(swGdcOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysOuterNodeConfigurationOptions;
     delete[] lbffBayerOuterNodeConfigurationOptions;
     delete[] bbpsWithTnrOuterNodeConfigurationOptions;
     delete[] swGdcOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -9780,7 +10140,23 @@ StaticGraph100004::StaticGraph100004(GraphConfiguration100004** selectedGraphCon
     link->dest = GraphElementType::ProcessedMain;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 19; ++i)
+    link = &_graphLinks[19];
+    link->src = GraphElementType::SwGdc;
+    link->srcNode = &_swGdcOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[20];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedSecondary;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 21; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -9804,6 +10180,7 @@ StaticGraph100004::StaticGraph100004(GraphConfiguration100004** selectedGraphCon
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
 
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
@@ -9813,6 +10190,7 @@ StaticGraph100004::StaticGraph100004(GraphConfiguration100004** selectedGraphCon
     _imageSubGraph.lbffBayerOuterNode->contextId = 1;
     _imageSubGraph.bbpsWithTnrOuterNode->contextId = 2;
     _imageSubGraph.swGdcOuterNode->contextId = 3;
+    _imageSubGraph.swScalerOuterNode->contextId = 4;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -9840,6 +10218,11 @@ StaticGraphStatus StaticGraph100004::updateConfiguration(uint32_t selectedIndex)
         return res;
     }
     res = _swGdcOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
     if (res != StaticGraphStatus::SG_OK)
     {
         return res;
@@ -9930,7 +10313,7 @@ StaticGraphStatus imageSubGraphTopology100004::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 19; i++)
+     for (uint32_t i = 0; i < 21; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -9963,6 +10346,7 @@ StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphCon
     LbffBayerOuterNodeConfiguration** lbffBayerOuterNodeConfigurationOptions = new LbffBayerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwNntmOuterNodeConfiguration** swNntmOuterNodeConfigurationOptions = new SwNntmOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -9971,17 +10355,20 @@ StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphCon
         lbffBayerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffBayerOuterNodeConfiguration;
         bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
         swNntmOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swNntmOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _lbffBayerOuterNode.Init(lbffBayerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swNntmOuterNode.Init(swNntmOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysOuterNodeConfigurationOptions;
     delete[] lbffBayerOuterNodeConfigurationOptions;
     delete[] bbpsWithTnrOuterNodeConfigurationOptions;
     delete[] swNntmOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -10142,7 +10529,23 @@ StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphCon
     link->dest = GraphElementType::ProcessedMain;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 19; ++i)
+    link = &_graphLinks[19];
+    link->src = GraphElementType::SwNntm;
+    link->srcNode = &_swNntmOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[20];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedSecondary;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 21; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -10166,6 +10569,7 @@ StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphCon
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
 
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
@@ -10175,6 +10579,7 @@ StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphCon
     _imageSubGraph.lbffBayerOuterNode->contextId = 1;
     _imageSubGraph.bbpsWithTnrOuterNode->contextId = 2;
     _imageSubGraph.swNntmOuterNode->contextId = 3;
+    _imageSubGraph.swScalerOuterNode->contextId = 4;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -10202,6 +10607,11 @@ StaticGraphStatus StaticGraph100005::updateConfiguration(uint32_t selectedIndex)
         return res;
     }
     res = _swNntmOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
     if (res != StaticGraphStatus::SG_OK)
     {
         return res;
@@ -10292,7 +10702,7 @@ StaticGraphStatus imageSubGraphTopology100005::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 19; i++)
+     for (uint32_t i = 0; i < 21; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -12385,6 +12795,256 @@ StaticGraphStatus imageSubGraphTopology100016::configInnerNodes(SubGraphInnerNod
 }
 
 /*
+ * Graph 100024
+ */
+StaticGraph100024::StaticGraph100024(GraphConfiguration100024** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100024, selectedSettingsId, zoomKeyResolutions),
+
+    _imageSubGraph(_sinkMappingConfiguration)
+{
+    // Construct outer nodes
+    _graphConfigurations = new GraphConfiguration100024[kernelConfigurationsOptionsCount];
+    IsysOuterNodeConfiguration** isysOuterNodeConfigurationOptions = new IsysOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    LbffIrNo2ANoGmvOuterNodeConfiguration** lbffIrNo2ANoGmvOuterNodeConfigurationOptions = new LbffIrNo2ANoGmvOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    BbpsNoTnrOuterNodeConfiguration** bbpsNoTnrOuterNodeConfigurationOptions = new BbpsNoTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+
+    for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
+    {
+        _graphConfigurations[i] = *selectedGraphConfiguration[i];
+        isysOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].isysOuterNodeConfiguration;
+        lbffIrNo2ANoGmvOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffIrNo2ANoGmvOuterNodeConfiguration;
+        bbpsNoTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsNoTnrOuterNodeConfiguration;
+    }
+
+    _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _lbffIrNo2ANoGmvOuterNode.Init(lbffIrNo2ANoGmvOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _bbpsNoTnrOuterNode.Init(bbpsNoTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+
+    delete[] isysOuterNodeConfigurationOptions;
+    delete[] lbffIrNo2ANoGmvOuterNodeConfigurationOptions;
+    delete[] bbpsNoTnrOuterNodeConfigurationOptions;
+
+    // Use default configuration
+    updateConfiguration(0);
+
+    // Declare all the links in the graph
+    GraphLink* link = nullptr;
+    link = &_graphLinks[0];
+    link->src = GraphElementType::Sensor;
+    link->dest = GraphElementType::Isys;
+    link->destNode = &_isysOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Source2Node;
+
+    link = &_graphLinks[1];
+    link->src = GraphElementType::LscBuffer;
+    link->dest = GraphElementType::LbffIrNo2ANoGmv;
+    link->destNode = &_lbffIrNo2ANoGmvOuterNode;
+    link->destTerminalId = 4;
+    link->type = LinkType::Source2Node;
+
+    link = &_graphLinks[2];
+    link->src = GraphElementType::Isys;
+    link->srcNode = &_isysOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::LbffIrNo2ANoGmv;
+    link->destNode = &_lbffIrNo2ANoGmvOuterNode;
+    link->destTerminalId = 3;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[3];
+    link->src = GraphElementType::LbffIrNo2ANoGmv;
+    link->srcNode = &_lbffIrNo2ANoGmvOuterNode;
+    link->srcTerminalId = 8;
+    link->dest = GraphElementType::AwbStdOut;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[4];
+    link->src = GraphElementType::LbffIrNo2ANoGmv;
+    link->srcNode = &_lbffIrNo2ANoGmvOuterNode;
+    link->srcTerminalId = 9;
+    link->dest = GraphElementType::AwbSatOut;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[5];
+    link->src = GraphElementType::LbffIrNo2ANoGmv;
+    link->srcNode = &_lbffIrNo2ANoGmvOuterNode;
+    link->srcTerminalId = 14;
+    link->dest = GraphElementType::BbpsNoTnr;
+    link->destNode = &_bbpsNoTnrOuterNode;
+    link->destTerminalId = 9;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[6];
+    link->src = GraphElementType::BbpsNoTnr;
+    link->srcNode = &_bbpsNoTnrOuterNode;
+    link->srcTerminalId = 14;
+    link->dest = GraphElementType::ImageMp;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[7];
+    link->src = GraphElementType::BbpsNoTnr;
+    link->srcNode = &_bbpsNoTnrOuterNode;
+    link->srcTerminalId = 15;
+    link->dest = GraphElementType::ImageDp;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[8];
+    link->src = GraphElementType::BbpsNoTnr;
+    link->srcNode = &_bbpsNoTnrOuterNode;
+    link->srcTerminalId = 16;
+    link->dest = GraphElementType::ImagePpp;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 9; ++i)
+    {
+        // apply link configuration. select configuration with maximal size
+        uint32_t selectedLinkConfig = 0;
+        uint32_t maxSize = _graphConfigurations[0].linkConfigurations[i].bufferSize;
+        for (uint32_t j = 1; j < kernelConfigurationsOptionsCount; j++)
+        {
+            if (_graphConfigurations[j].linkConfigurations[i].bufferSize > maxSize)
+            {
+                maxSize = _graphConfigurations[j].linkConfigurations[i].bufferSize;
+                selectedLinkConfig = j;
+            }
+        }
+        _graphLinks[i].linkConfiguration = &_graphConfigurations[selectedLinkConfig].linkConfigurations[i];
+
+        // Assign link to sub-graph
+        _imageSubGraph.links[i] = &_graphLinks[i];
+    }
+
+    // add nodes for sub graph
+    _imageSubGraph.isysOuterNode = &_isysOuterNode;
+    _imageSubGraph.lbffIrNo2ANoGmvOuterNode = &_lbffIrNo2ANoGmvOuterNode;
+    _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
+
+    // choose the selected sub graph
+    _selectedGraphTopology = &_imageSubGraph;
+
+    // logical node IDs
+    _imageSubGraph.isysOuterNode->contextId = 0;
+    _imageSubGraph.lbffIrNo2ANoGmvOuterNode->contextId = 1;
+    _imageSubGraph.bbpsNoTnrOuterNode->contextId = 2;
+    // Apply a default inner nodes configuration for the selected sub graph
+    SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
+    if(_selectedGraphTopology != nullptr)
+    {
+        _selectedGraphTopology->configInnerNodes(defaultInnerNodeConfiguration);
+    }
+}
+
+StaticGraphStatus StaticGraph100024::updateConfiguration(uint32_t selectedIndex)
+{
+    StaticGraphStatus  res = StaticGraphStatus::SG_OK;
+    res = _isysOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _lbffIrNo2ANoGmvOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _bbpsNoTnrOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    return StaticGraphStatus::SG_OK;
+}
+
+StaticGraph100024::~StaticGraph100024()
+{
+    delete[] _graphConfigurations;
+    delete _zoomKeyResolutions.zoomKeyResolutionOptions;
+}
+
+StaticGraphStatus imageSubGraphTopology100024::configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration)
+{
+
+    /*
+     * Init sub graphs inner nodes configuration base on user request
+     */
+    InnerNodeOptionsFlags imagePublicInnerNodeConfiguration = GetInnerOptions(subGraphInnerNodeConfiguration.imageInnerOptions);
+
+    /*
+     * Setting Node lbffIrNo2ANoGmv initial inner node configuration
+     */
+    InnerNodeOptionsFlags lbffIrNo2ANoGmvInnerOptions = imagePublicInnerNodeConfiguration;
+    // always active public inner options
+    lbffIrNo2ANoGmvInnerOptions |= (noGmv | noBurstCapture | noIr | noLbOutputMe | noPdaf);
+    // active public options according to sink mapping
+    // always active private inner options
+    lbffIrNo2ANoGmvInnerOptions |= (noLbOutputMe);
+
+    /*
+     * Setting Node bbpsNoTnr initial inner node configuration
+     */
+    InnerNodeOptionsFlags bbpsNoTnrInnerOptions = imagePublicInnerNodeConfiguration;
+    // active public options according to sink mapping
+    if (
+        subGraphLinks[6]->linkConfiguration->bufferSize == 0 &&
+        true)
+    {
+        bbpsNoTnrInnerOptions |= noMp;
+    }
+    if (
+        subGraphLinks[7]->linkConfiguration->bufferSize == 0 &&
+        true)
+    {
+        bbpsNoTnrInnerOptions |= noDp;
+    }
+    if (
+        subGraphLinks[8]->linkConfiguration->bufferSize == 0 &&
+        true)
+    {
+        bbpsNoTnrInnerOptions |= noPpp;
+    }
+
+    /*
+     * Configuring inner nodes according to the selected inner options
+     */
+    lbffIrNo2ANoGmvInnerOptions |= noLbOutputPs & (-((imagePublicInnerNodeConfiguration & (noMp | noDp | noPpp)) == (noMp | noDp | noPpp)));
+
+    /*
+     * Set the selected inner nodes to the outer nodes
+     */
+    lbffIrNo2ANoGmvOuterNode->setInnerNode(lbffIrNo2ANoGmvInnerOptions);
+    bbpsNoTnrOuterNode->setInnerNode(bbpsNoTnrInnerOptions);
+
+    /*
+     * Link enablement by public inner options
+     */
+    subGraphLinks[3]->isActive = !(lbffIrNo2ANoGmvInnerOptions & no3A); // lbff_Ir_No2A_NoGmv:terminal_connect_awb_std_output -> awb_std_out
+    subGraphLinks[4]->isActive = !(lbffIrNo2ANoGmvInnerOptions & no3A); // lbff_Ir_No2A_NoGmv:terminal_connect_awb_sat_output -> awb_sat_out
+    subGraphLinks[6]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
+    subGraphLinks[7]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
+    subGraphLinks[8]->isActive = !(bbpsNoTnrInnerOptions & noPpp); // bbps_NoTnr:bbps_ofs_pp_yuvn_odr -> image_ppp
+
+    /*
+     * Link enablement by private inner options
+     */
+    subGraphLinks[5]->isActive = !(lbffIrNo2ANoGmvInnerOptions & noLbOutputPs); // lbff_Ir_No2A_NoGmv:terminal_connect_ps_output -> bbps_NoTnr:bbps_slim_spatial_yuvn_ifd
+
+    /*
+     * Disable links with zero buffer size
+     * (used for post processing when not all links are being used)
+     */
+     for (uint32_t i = 0; i < 9; i++)
+     {
+        if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
+        {
+            subGraphLinks[i]->isActive = false;
+        }
+     }
+
+    return StaticGraphStatus::SG_OK;
+}
+
+/*
  * Graph 100025
  */
 StaticGraph100025::StaticGraph100025(GraphConfiguration100025** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId) :
@@ -13992,6 +14652,7 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     BbpsNoTnrOuterNodeConfiguration** bbpsNoTnrOuterNodeConfigurationOptions = new BbpsNoTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwGtmOuterNodeConfiguration** swGtmOuterNodeConfigurationOptions = new SwGtmOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwNntmOuterNodeConfiguration** swNntmOuterNodeConfigurationOptions = new SwNntmOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -14002,6 +14663,7 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
         bbpsNoTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsNoTnrOuterNodeConfiguration;
         swGtmOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swGtmOuterNodeConfiguration;
         swNntmOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swNntmOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysDolOuterNode.Init(isysDolOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
@@ -14010,6 +14672,7 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     _bbpsNoTnrOuterNode.Init(bbpsNoTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swGtmOuterNode.Init(swGtmOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swNntmOuterNode.Init(swNntmOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysDolOuterNodeConfigurationOptions;
     delete[] swDolOuterNodeConfigurationOptions;
@@ -14017,6 +14680,7 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     delete[] bbpsNoTnrOuterNodeConfigurationOptions;
     delete[] swGtmOuterNodeConfigurationOptions;
     delete[] swNntmOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -14155,6 +14819,15 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     link->type = LinkType::Node2Sink;
 
     link = &_graphLinks[17];
+    link->src = GraphElementType::SwGtm;
+    link->srcNode = &_swGtmOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[18];
     link->src = GraphElementType::BbpsNoTnr;
     link->srcNode = &_bbpsNoTnrOuterNode;
     link->srcTerminalId = 14;
@@ -14163,7 +14836,7 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     link->destTerminalId = 0;
     link->type = LinkType::Node2Node;
 
-    link = &_graphLinks[18];
+    link = &_graphLinks[19];
     link->src = GraphElementType::BbpsNoTnr;
     link->srcNode = &_bbpsNoTnrOuterNode;
     link->srcTerminalId = 15;
@@ -14172,14 +14845,30 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     link->destTerminalId = 0;
     link->type = LinkType::Node2Node;
 
-    link = &_graphLinks[19];
+    link = &_graphLinks[20];
     link->src = GraphElementType::SwNntm;
     link->srcNode = &_swNntmOuterNode;
     link->srcTerminalId = 1;
     link->dest = GraphElementType::ProcessedMain;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 20; ++i)
+    link = &_graphLinks[21];
+    link->src = GraphElementType::SwNntm;
+    link->srcNode = &_swNntmOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[22];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedSecondary;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 23; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -14204,6 +14893,7 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     _imageSubGraph.lbffDolOuterNode = &_lbffDolOuterNode;
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
     _imageSubGraph.swGtmOuterNode = &_swGtmOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
 
     // choose the selected sub graph
@@ -14215,7 +14905,8 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     _imageSubGraph.lbffDolOuterNode->contextId = 2;
     _imageSubGraph.bbpsNoTnrOuterNode->contextId = 3;
     _imageSubGraph.swGtmOuterNode->contextId = 4;
-    _imageSubGraph.swNntmOuterNode->contextId = 5;
+    _imageSubGraph.swScalerOuterNode->contextId = 5;
+    _imageSubGraph.swNntmOuterNode->contextId = 6;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -14257,6 +14948,11 @@ StaticGraphStatus StaticGraph100031::updateConfiguration(uint32_t selectedIndex)
     {
         return res;
     }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
     return StaticGraphStatus::SG_OK;
 }
 
@@ -14292,7 +14988,7 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
     if (
         subGraphLinks[11]->linkConfiguration->bufferSize == 0 &&
         subGraphLinks[14]->linkConfiguration->bufferSize == 0 &&
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0 &&
         true)
     {
         bbpsNoTnrInnerOptions |= noMp;
@@ -14300,7 +14996,7 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
     if (
         subGraphLinks[12]->linkConfiguration->bufferSize == 0 &&
         subGraphLinks[15]->linkConfiguration->bufferSize == 0 &&
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[19]->linkConfiguration->bufferSize == 0 &&
         true)
     {
         bbpsNoTnrInnerOptions |= noDp;
@@ -14332,10 +15028,10 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
     subGraphLinks[9]->isActive = !(lbffDolInnerOptions & no3A); // lbff_Dol:terminal_connect_awb_sat_output -> awb_sat_out
     subGraphLinks[11]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
     subGraphLinks[14]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> sw_gtm:terminal_connect_input
-    subGraphLinks[17]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
+    subGraphLinks[18]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
     subGraphLinks[12]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
     subGraphLinks[15]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> sw_gtm:terminal_connect_input
-    subGraphLinks[18]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
+    subGraphLinks[19]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
     subGraphLinks[13]->isActive = !(bbpsNoTnrInnerOptions & noPpp); // bbps_NoTnr:bbps_ofs_pp_yuvn_odr -> image_ppp
 
     /*
@@ -14347,7 +15043,7 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 20; i++)
+     for (uint32_t i = 0; i < 23; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -14374,6 +15070,7 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwGtmOuterNodeConfiguration** swGtmOuterNodeConfigurationOptions = new SwGtmOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwNntmOuterNodeConfiguration** swNntmOuterNodeConfigurationOptions = new SwNntmOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -14384,6 +15081,7 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
         bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
         swGtmOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swGtmOuterNodeConfiguration;
         swNntmOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swNntmOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysDolOuterNode.Init(isysDolOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
@@ -14392,6 +15090,7 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swGtmOuterNode.Init(swGtmOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swNntmOuterNode.Init(swNntmOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysDolOuterNodeConfigurationOptions;
     delete[] swDolOuterNodeConfigurationOptions;
@@ -14399,6 +15098,7 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     delete[] bbpsWithTnrOuterNodeConfigurationOptions;
     delete[] swGtmOuterNodeConfigurationOptions;
     delete[] swNntmOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -14585,6 +15285,15 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     link->type = LinkType::Node2Sink;
 
     link = &_graphLinks[22];
+    link->src = GraphElementType::SwGtm;
+    link->srcNode = &_swGtmOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[23];
     link->src = GraphElementType::BbpsWithTnr;
     link->srcNode = &_bbpsWithTnrOuterNode;
     link->srcTerminalId = 14;
@@ -14593,7 +15302,7 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     link->destTerminalId = 0;
     link->type = LinkType::Node2Node;
 
-    link = &_graphLinks[23];
+    link = &_graphLinks[24];
     link->src = GraphElementType::BbpsWithTnr;
     link->srcNode = &_bbpsWithTnrOuterNode;
     link->srcTerminalId = 15;
@@ -14602,14 +15311,30 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     link->destTerminalId = 0;
     link->type = LinkType::Node2Node;
 
-    link = &_graphLinks[24];
+    link = &_graphLinks[25];
     link->src = GraphElementType::SwNntm;
     link->srcNode = &_swNntmOuterNode;
     link->srcTerminalId = 1;
     link->dest = GraphElementType::ProcessedMain;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 25; ++i)
+    link = &_graphLinks[26];
+    link->src = GraphElementType::SwNntm;
+    link->srcNode = &_swNntmOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[27];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedSecondary;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 28; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -14634,6 +15359,7 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     _imageSubGraph.lbffDolOuterNode = &_lbffDolOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGtmOuterNode = &_swGtmOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
 
     // choose the selected sub graph
@@ -14645,7 +15371,8 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     _imageSubGraph.lbffDolOuterNode->contextId = 2;
     _imageSubGraph.bbpsWithTnrOuterNode->contextId = 3;
     _imageSubGraph.swGtmOuterNode->contextId = 4;
-    _imageSubGraph.swNntmOuterNode->contextId = 5;
+    _imageSubGraph.swScalerOuterNode->contextId = 5;
+    _imageSubGraph.swNntmOuterNode->contextId = 6;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -14687,6 +15414,11 @@ StaticGraphStatus StaticGraph100032::updateConfiguration(uint32_t selectedIndex)
     {
         return res;
     }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
     return StaticGraphStatus::SG_OK;
 }
 
@@ -14720,7 +15452,7 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
     if (
         subGraphLinks[16]->linkConfiguration->bufferSize == 0 &&
         subGraphLinks[19]->linkConfiguration->bufferSize == 0 &&
-        subGraphLinks[22]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[23]->linkConfiguration->bufferSize == 0 &&
         true)
     {
         bbpsWithTnrInnerOptions |= noMp;
@@ -14728,7 +15460,7 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
     if (
         subGraphLinks[17]->linkConfiguration->bufferSize == 0 &&
         subGraphLinks[20]->linkConfiguration->bufferSize == 0 &&
-        subGraphLinks[23]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[24]->linkConfiguration->bufferSize == 0 &&
         true)
     {
         bbpsWithTnrInnerOptions |= noDp;
@@ -14761,10 +15493,10 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
     subGraphLinks[9]->isActive = !(lbffDolInnerOptions & no3A); // lbff_Dol:terminal_connect_awb_sat_output -> awb_sat_out
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gtm:terminal_connect_input
-    subGraphLinks[22]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
+    subGraphLinks[23]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gtm:terminal_connect_input
-    subGraphLinks[23]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
+    subGraphLinks[24]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noPpp); // bbps_WithTnr:bbps_ofs_pp_yuvn_odr -> image_ppp
 
     /*
@@ -14777,7 +15509,7 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 25; i++)
+     for (uint32_t i = 0; i < 28; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -16763,6 +17495,7 @@ StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphCon
     LbffBayerPdaf3OuterNodeConfiguration** lbffBayerPdaf3OuterNodeConfigurationOptions = new LbffBayerPdaf3OuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     SwNntmOuterNodeConfiguration** swNntmOuterNodeConfigurationOptions = new SwNntmOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -16771,17 +17504,20 @@ StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphCon
         lbffBayerPdaf3OuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffBayerPdaf3OuterNodeConfiguration;
         bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
         swNntmOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swNntmOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _lbffBayerPdaf3OuterNode.Init(lbffBayerPdaf3OuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swNntmOuterNode.Init(swNntmOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysOuterNodeConfigurationOptions;
     delete[] lbffBayerPdaf3OuterNodeConfigurationOptions;
     delete[] bbpsWithTnrOuterNodeConfigurationOptions;
     delete[] swNntmOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -16942,7 +17678,23 @@ StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphCon
     link->dest = GraphElementType::ProcessedMain;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 19; ++i)
+    link = &_graphLinks[19];
+    link->src = GraphElementType::SwNntm;
+    link->srcNode = &_swNntmOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[20];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedSecondary;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 21; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -16966,6 +17718,7 @@ StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphCon
     _imageSubGraph.lbffBayerPdaf3OuterNode = &_lbffBayerPdaf3OuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
 
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
@@ -16975,6 +17728,7 @@ StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphCon
     _imageSubGraph.lbffBayerPdaf3OuterNode->contextId = 1;
     _imageSubGraph.bbpsWithTnrOuterNode->contextId = 2;
     _imageSubGraph.swNntmOuterNode->contextId = 3;
+    _imageSubGraph.swScalerOuterNode->contextId = 4;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -17002,6 +17756,11 @@ StaticGraphStatus StaticGraph100040::updateConfiguration(uint32_t selectedIndex)
         return res;
     }
     res = _swNntmOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
     if (res != StaticGraphStatus::SG_OK)
     {
         return res;
@@ -17088,7 +17847,7 @@ StaticGraphStatus imageSubGraphTopology100040::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 19; i++)
+     for (uint32_t i = 0; i < 21; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -17121,6 +17880,7 @@ StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphCon
     SwVaiOuterNodeConfiguration** swVaiOuterNodeConfigurationOptions = new SwVaiOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     LbffBayerOuterNodeConfiguration** lbffBayerOuterNodeConfigurationOptions = new LbffBayerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
     BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
 
     for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
     {
@@ -17129,17 +17889,20 @@ StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphCon
         swVaiOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swVaiOuterNodeConfiguration;
         lbffBayerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffBayerOuterNodeConfiguration;
         bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
     }
 
     _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _swVaiOuterNode.Init(swVaiOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _lbffBayerOuterNode.Init(lbffBayerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
     _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
 
     delete[] isysOuterNodeConfigurationOptions;
     delete[] swVaiOuterNodeConfigurationOptions;
     delete[] lbffBayerOuterNodeConfigurationOptions;
     delete[] bbpsWithTnrOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
 
     // Use default configuration
     updateConfiguration(0);
@@ -17284,7 +18047,23 @@ StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphCon
     link->dest = GraphElementType::ImagePpp;
     link->type = LinkType::Node2Sink;
 
-    for (uint8_t i = 0; i < 17; ++i)
+    link = &_graphLinks[17];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 14;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[18];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedMain;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 19; ++i)
     {
         // apply link configuration. select configuration with maximal size
         uint32_t selectedLinkConfig = 0;
@@ -17308,6 +18087,7 @@ StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphCon
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.swVaiOuterNode = &_swVaiOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
 
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
@@ -17317,6 +18097,7 @@ StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphCon
     _imageSubGraph.lbffBayerOuterNode->contextId = 1;
     _imageSubGraph.swVaiOuterNode->contextId = 2;
     _imageSubGraph.bbpsWithTnrOuterNode->contextId = 3;
+    _imageSubGraph.swScalerOuterNode->contextId = 4;
     // Apply a default inner nodes configuration for the selected sub graph
     SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
     if(_selectedGraphTopology != nullptr)
@@ -17344,6 +18125,11 @@ StaticGraphStatus StaticGraph100041::updateConfiguration(uint32_t selectedIndex)
         return res;
     }
     res = _bbpsWithTnrOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
     if (res != StaticGraphStatus::SG_OK)
     {
         return res;
@@ -17380,6 +18166,7 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         subGraphLinks[14]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0 &&
         true)
     {
         bbpsWithTnrInnerOptions |= noMp;
@@ -17417,6 +18204,7 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
+    subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_scaler:terminal_connect_input
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noPpp); // bbps_WithTnr:bbps_ofs_pp_yuvn_odr -> image_ppp
 
@@ -17430,7 +18218,7 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
      * Disable links with zero buffer size
      * (used for post processing when not all links are being used)
      */
-     for (uint32_t i = 0; i < 17; i++)
+     for (uint32_t i = 0; i < 19; i++)
      {
         if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
         {
@@ -17445,6 +18233,395 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
     subGraphLinks[11]->isActive = (bbpsWithTnrInnerOptions & (noMp|noDp|noPpp)) != (noMp|noDp|noPpp); // bbps_WithTnr:bbps_tnr_scale_yuv4n_odr -> bbps_WithTnr:bbps_slim_tnr_bc_yuv4nm1_ifd
     subGraphLinks[12]->isActive = (bbpsWithTnrInnerOptions & (noMp|noDp|noPpp)) != (noMp|noDp|noPpp); // bbps_WithTnr:bbps_tnr_bc_rs4n_odr -> bbps_WithTnr:bbps_tnr_blend_rs4n_ifd
     subGraphLinks[13]->isActive = (bbpsWithTnrInnerOptions & (noMp|noDp|noPpp)) != (noMp|noDp|noPpp); // bbps_WithTnr:bbps_tnr_bc_rs4n_odr -> bbps_WithTnr:bbps_slim_tnr_bc_rs4nm1_ifd
+
+    return StaticGraphStatus::SG_OK;
+}
+
+/*
+ * Graph 100042
+ */
+StaticGraph100042::StaticGraph100042(GraphConfiguration100042** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100042, selectedSettingsId, zoomKeyResolutions),
+
+    _imageSubGraph(_sinkMappingConfiguration)
+{
+    // Construct outer nodes
+    _graphConfigurations = new GraphConfiguration100042[kernelConfigurationsOptionsCount];
+    IsysOuterNodeConfiguration** isysOuterNodeConfigurationOptions = new IsysOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    LbffBayerOuterNodeConfiguration** lbffBayerOuterNodeConfigurationOptions = new LbffBayerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    BbpsWithTnrOuterNodeConfiguration** bbpsWithTnrOuterNodeConfigurationOptions = new BbpsWithTnrOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwImvOuterNodeConfiguration** swImvOuterNodeConfigurationOptions = new SwImvOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+    SwScalerOuterNodeConfiguration** swScalerOuterNodeConfigurationOptions = new SwScalerOuterNodeConfiguration*[kernelConfigurationsOptionsCount];
+
+    for (uint32_t i=0; i < kernelConfigurationsOptionsCount; ++i)
+    {
+        _graphConfigurations[i] = *selectedGraphConfiguration[i];
+        isysOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].isysOuterNodeConfiguration;
+        lbffBayerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].lbffBayerOuterNodeConfiguration;
+        bbpsWithTnrOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].bbpsWithTnrOuterNodeConfiguration;
+        swImvOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swImvOuterNodeConfiguration;
+        swScalerOuterNodeConfigurationOptions[i] = &_graphConfigurations[i].swScalerOuterNodeConfiguration;
+    }
+
+    _isysOuterNode.Init(isysOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _lbffBayerOuterNode.Init(lbffBayerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _bbpsWithTnrOuterNode.Init(bbpsWithTnrOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swImvOuterNode.Init(swImvOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+    _swScalerOuterNode.Init(swScalerOuterNodeConfigurationOptions, kernelConfigurationsOptionsCount);
+
+    delete[] isysOuterNodeConfigurationOptions;
+    delete[] lbffBayerOuterNodeConfigurationOptions;
+    delete[] bbpsWithTnrOuterNodeConfigurationOptions;
+    delete[] swImvOuterNodeConfigurationOptions;
+    delete[] swScalerOuterNodeConfigurationOptions;
+
+    // Use default configuration
+    updateConfiguration(0);
+
+    // Declare all the links in the graph
+    GraphLink* link = nullptr;
+    link = &_graphLinks[0];
+    link->src = GraphElementType::Sensor;
+    link->dest = GraphElementType::Isys;
+    link->destNode = &_isysOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Source2Node;
+
+    link = &_graphLinks[1];
+    link->src = GraphElementType::LscBuffer;
+    link->dest = GraphElementType::LbffBayer;
+    link->destNode = &_lbffBayerOuterNode;
+    link->destTerminalId = 4;
+    link->type = LinkType::Source2Node;
+
+    link = &_graphLinks[2];
+    link->src = GraphElementType::Isys;
+    link->srcNode = &_isysOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::LbffBayer;
+    link->destNode = &_lbffBayerOuterNode;
+    link->destTerminalId = 3;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[3];
+    link->src = GraphElementType::LbffBayer;
+    link->srcNode = &_lbffBayerOuterNode;
+    link->srcTerminalId = 6;
+    link->dest = GraphElementType::AeOut;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[4];
+    link->src = GraphElementType::LbffBayer;
+    link->srcNode = &_lbffBayerOuterNode;
+    link->srcTerminalId = 7;
+    link->dest = GraphElementType::AfStdOut;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[5];
+    link->src = GraphElementType::LbffBayer;
+    link->srcNode = &_lbffBayerOuterNode;
+    link->srcTerminalId = 8;
+    link->dest = GraphElementType::AwbStdOut;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[6];
+    link->src = GraphElementType::LbffBayer;
+    link->srcNode = &_lbffBayerOuterNode;
+    link->srcTerminalId = 9;
+    link->dest = GraphElementType::AwbSatOut;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[7];
+    link->src = GraphElementType::LbffBayer;
+    link->srcNode = &_lbffBayerOuterNode;
+    link->srcTerminalId = 14;
+    link->dest = GraphElementType::BbpsWithTnr;
+    link->destNode = &_bbpsWithTnrOuterNode;
+    link->destTerminalId = 9;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[8];
+    link->src = GraphElementType::LbffBayer;
+    link->srcNode = &_lbffBayerOuterNode;
+    link->srcTerminalId = 13;
+    link->dest = GraphElementType::BbpsWithTnr;
+    link->destNode = &_bbpsWithTnrOuterNode;
+    link->destTerminalId = 7;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[9];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 12;
+    link->dest = GraphElementType::BbpsWithTnr;
+    link->destNode = &_bbpsWithTnrOuterNode;
+    link->destTerminalId = 10;
+    link->type = LinkType::Node2Self;
+    link->frameDelay = 1U;
+
+    link = &_graphLinks[10];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 13;
+    link->dest = GraphElementType::BbpsWithTnr;
+    link->destNode = &_bbpsWithTnrOuterNode;
+    link->destTerminalId = 5;
+    link->type = LinkType::Node2Self;
+    link->frameDelay = 1U;
+
+    link = &_graphLinks[11];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 8;
+    link->dest = GraphElementType::BbpsWithTnr;
+    link->destNode = &_bbpsWithTnrOuterNode;
+    link->destTerminalId = 11;
+    link->type = LinkType::Node2Self;
+
+    link = &_graphLinks[12];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 8;
+    link->dest = GraphElementType::BbpsWithTnr;
+    link->destNode = &_bbpsWithTnrOuterNode;
+    link->destTerminalId = 6;
+    link->type = LinkType::Node2Self;
+    link->frameDelay = 1U;
+
+    link = &_graphLinks[13];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 14;
+    link->dest = GraphElementType::ImageMp;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[14];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 15;
+    link->dest = GraphElementType::ImageDp;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[15];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 16;
+    link->dest = GraphElementType::ImagePpp;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[16];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 14;
+    link->dest = GraphElementType::SwImv;
+    link->destNode = &_swImvOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[17];
+    link->src = GraphElementType::BbpsWithTnr;
+    link->srcNode = &_bbpsWithTnrOuterNode;
+    link->srcTerminalId = 15;
+    link->dest = GraphElementType::SwImv;
+    link->destNode = &_swImvOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[18];
+    link->src = GraphElementType::SwImv;
+    link->srcNode = &_swImvOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedMain;
+    link->type = LinkType::Node2Sink;
+
+    link = &_graphLinks[19];
+    link->src = GraphElementType::SwImv;
+    link->srcNode = &_swImvOuterNode;
+    link->srcTerminalId = 2;
+    link->dest = GraphElementType::SwScaler;
+    link->destNode = &_swScalerOuterNode;
+    link->destTerminalId = 0;
+    link->type = LinkType::Node2Node;
+
+    link = &_graphLinks[20];
+    link->src = GraphElementType::SwScaler;
+    link->srcNode = &_swScalerOuterNode;
+    link->srcTerminalId = 1;
+    link->dest = GraphElementType::ProcessedSecondary;
+    link->type = LinkType::Node2Sink;
+
+    for (uint8_t i = 0; i < 21; ++i)
+    {
+        // apply link configuration. select configuration with maximal size
+        uint32_t selectedLinkConfig = 0;
+        uint32_t maxSize = _graphConfigurations[0].linkConfigurations[i].bufferSize;
+        for (uint32_t j = 1; j < kernelConfigurationsOptionsCount; j++)
+        {
+            if (_graphConfigurations[j].linkConfigurations[i].bufferSize > maxSize)
+            {
+                maxSize = _graphConfigurations[j].linkConfigurations[i].bufferSize;
+                selectedLinkConfig = j;
+            }
+        }
+        _graphLinks[i].linkConfiguration = &_graphConfigurations[selectedLinkConfig].linkConfigurations[i];
+
+        // Assign link to sub-graph
+        _imageSubGraph.links[i] = &_graphLinks[i];
+    }
+
+    // add nodes for sub graph
+    _imageSubGraph.isysOuterNode = &_isysOuterNode;
+    _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
+    _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
+    _imageSubGraph.swImvOuterNode = &_swImvOuterNode;
+    _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
+
+    // choose the selected sub graph
+    _selectedGraphTopology = &_imageSubGraph;
+
+    // logical node IDs
+    _imageSubGraph.isysOuterNode->contextId = 0;
+    _imageSubGraph.lbffBayerOuterNode->contextId = 1;
+    _imageSubGraph.bbpsWithTnrOuterNode->contextId = 2;
+    _imageSubGraph.swImvOuterNode->contextId = 3;
+    _imageSubGraph.swScalerOuterNode->contextId = 4;
+    // Apply a default inner nodes configuration for the selected sub graph
+    SubGraphInnerNodeConfiguration defaultInnerNodeConfiguration;
+    if(_selectedGraphTopology != nullptr)
+    {
+        _selectedGraphTopology->configInnerNodes(defaultInnerNodeConfiguration);
+    }
+}
+
+StaticGraphStatus StaticGraph100042::updateConfiguration(uint32_t selectedIndex)
+{
+    StaticGraphStatus  res = StaticGraphStatus::SG_OK;
+    res = _isysOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _lbffBayerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _bbpsWithTnrOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swImvOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    res = _swScalerOuterNode.UpdateKernelsSelectedConfiguration(selectedIndex);
+    if (res != StaticGraphStatus::SG_OK)
+    {
+        return res;
+    }
+    return StaticGraphStatus::SG_OK;
+}
+
+StaticGraph100042::~StaticGraph100042()
+{
+    delete[] _graphConfigurations;
+    delete _zoomKeyResolutions.zoomKeyResolutionOptions;
+}
+
+StaticGraphStatus imageSubGraphTopology100042::configInnerNodes(SubGraphInnerNodeConfiguration& subGraphInnerNodeConfiguration)
+{
+
+    /*
+     * Init sub graphs inner nodes configuration base on user request
+     */
+    InnerNodeOptionsFlags imagePublicInnerNodeConfiguration = GetInnerOptions(subGraphInnerNodeConfiguration.imageInnerOptions);
+
+    /*
+     * Setting Node lbffBayer initial inner node configuration
+     */
+    InnerNodeOptionsFlags lbffBayerInnerOptions = imagePublicInnerNodeConfiguration;
+    // always active public inner options
+    lbffBayerInnerOptions |= (noGmv | noBurstCapture | noIr | noPdaf);
+    // active public options according to sink mapping
+
+    /*
+     * Setting Node bbpsWithTnr initial inner node configuration
+     */
+    InnerNodeOptionsFlags bbpsWithTnrInnerOptions = imagePublicInnerNodeConfiguration;
+    // active public options according to sink mapping
+    if (
+        subGraphLinks[13]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0 &&
+        true)
+    {
+        bbpsWithTnrInnerOptions |= noMp;
+    }
+    if (
+        subGraphLinks[14]->linkConfiguration->bufferSize == 0 &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0 &&
+        true)
+    {
+        bbpsWithTnrInnerOptions |= noDp;
+    }
+    if (
+        subGraphLinks[15]->linkConfiguration->bufferSize == 0 &&
+        true)
+    {
+        bbpsWithTnrInnerOptions |= noPpp;
+    }
+
+    /*
+     * Configuring inner nodes according to the selected inner options
+     */
+    lbffBayerInnerOptions |= noLbOutputPs & (-((imagePublicInnerNodeConfiguration & (noMp | noDp | noPpp)) == (noMp | noDp | noPpp)));
+    lbffBayerInnerOptions |= noLbOutputMe & (-((imagePublicInnerNodeConfiguration & (noMp | noDp | noPpp)) == (noMp | noDp | noPpp)));
+
+    /*
+     * Set the selected inner nodes to the outer nodes
+     */
+    lbffBayerOuterNode->setInnerNode(lbffBayerInnerOptions);
+    bbpsWithTnrOuterNode->setInnerNode(bbpsWithTnrInnerOptions);
+
+    /*
+     * Link enablement by public inner options
+     */
+    subGraphLinks[3]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
+    subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
+    subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
+    subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
+    subGraphLinks[13]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
+    subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_imv:terminal_connect_input
+    subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
+    subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_imv:terminal_connect_input
+    subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noPpp); // bbps_WithTnr:bbps_ofs_pp_yuvn_odr -> image_ppp
+
+    /*
+     * Link enablement by private inner options
+     */
+    subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & noLbOutputPs); // lbff_Bayer:terminal_connect_ps_output -> bbps_WithTnr:bbps_slim_spatial_yuvn_ifd
+    subGraphLinks[8]->isActive = !(lbffBayerInnerOptions & noLbOutputMe); // lbff_Bayer:terminal_connect_me_output -> bbps_WithTnr:bbps_tnr_bc_yuv4n_ifd
+
+    /*
+     * Disable links with zero buffer size
+     * (used for post processing when not all links are being used)
+     */
+     for (uint32_t i = 0; i < 21; i++)
+     {
+        if (subGraphLinks[i]->linkConfiguration->bufferSize == 0)
+        {
+            subGraphLinks[i]->isActive = false;
+        }
+     }
+
+    /*
+     * Link enablement by inner options combinations
+     */
+    subGraphLinks[9]->isActive = (bbpsWithTnrInnerOptions & (noMp|noDp|noPpp)) != (noMp|noDp|noPpp); // bbps_WithTnr:bbps_tnr_blend_yuvn_odr -> bbps_WithTnr:bbps_slim_tnr_blend_yuvnm1_ifd
+    subGraphLinks[10]->isActive = (bbpsWithTnrInnerOptions & (noMp|noDp|noPpp)) != (noMp|noDp|noPpp); // bbps_WithTnr:bbps_tnr_scale_yuv4n_odr -> bbps_WithTnr:bbps_slim_tnr_bc_yuv4nm1_ifd
+    subGraphLinks[11]->isActive = (bbpsWithTnrInnerOptions & (noMp|noDp|noPpp)) != (noMp|noDp|noPpp); // bbps_WithTnr:bbps_tnr_bc_rs4n_odr -> bbps_WithTnr:bbps_tnr_blend_rs4n_ifd
+    subGraphLinks[12]->isActive = (bbpsWithTnrInnerOptions & (noMp|noDp|noPpp)) != (noMp|noDp|noPpp); // bbps_WithTnr:bbps_tnr_bc_rs4n_odr -> bbps_WithTnr:bbps_slim_tnr_bc_rs4nm1_ifd
 
     return StaticGraphStatus::SG_OK;
 }

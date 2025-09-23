@@ -546,9 +546,87 @@ TerminalDescriptor SW_NNTMTerminalDesc[] =
     },
 };
 
+TerminalDescriptor SW_IMVTerminalDesc[] =
+{
+    {
+        SW_IMV_TERMINAL_CONNECT_INPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_INPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_IN,
+        33331, // imv
+    },
+    {
+        SW_IMV_TERMINAL_CONNECT_OUTPUT_1,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_1",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+    {
+        SW_IMV_TERMINAL_CONNECT_OUTPUT_2,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_2",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        19706, // sw_scaler
+    },
+};
+
+TerminalDescriptor SW_B2BTerminalDesc[] =
+{
+    {
+        SW_B2B_TERMINAL_CONNECT_INPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_INPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_IN,
+        45372, // b2b
+    },
+    {
+        SW_B2B_TERMINAL_CONNECT_OUTPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        45372, // b2b
+    },
+};
+
+TerminalDescriptor SW_REMOSAICTerminalDesc[] =
+{
+    {
+        SW_REMOSAIC_TERMINAL_CONNECT_INPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_INPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_IN,
+        19706, // sw_scaler
+    },
+    {
+        SW_REMOSAIC_TERMINAL_CONNECT_OUTPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        19706, // sw_scaler
+    },
+};
+
 int CountOfSW_ISYSTerminalDesc = sizeof(SW_ISYSTerminalDesc) / sizeof(SW_ISYSTerminalDesc[0]);
 int CountOfLBFFTerminalDesc = sizeof(LBFFTerminalDesc) / sizeof(LBFFTerminalDesc[0]);
 int CountOfBBPSTerminalDesc = sizeof(BBPSTerminalDesc) / sizeof(BBPSTerminalDesc[0]);
 int CountOfSW_GDCTerminalDesc = sizeof(SW_GDCTerminalDesc) / sizeof(SW_GDCTerminalDesc[0]);
 int CountOfSW_SCALERTerminalDesc = sizeof(SW_SCALERTerminalDesc) / sizeof(SW_SCALERTerminalDesc[0]);
 int CountOfSW_NNTMTerminalDesc = sizeof(SW_NNTMTerminalDesc) / sizeof(SW_NNTMTerminalDesc[0]);
+int CountOfSW_IMVTerminalDesc = sizeof(SW_IMVTerminalDesc) / sizeof(SW_IMVTerminalDesc[0]);
+int CountOfSW_B2BTerminalDesc = sizeof(SW_B2BTerminalDesc) / sizeof(SW_B2BTerminalDesc[0]);
+int CountOfSW_REMOSAICTerminalDesc = sizeof(SW_REMOSAICTerminalDesc) / sizeof(SW_REMOSAICTerminalDesc[0]);

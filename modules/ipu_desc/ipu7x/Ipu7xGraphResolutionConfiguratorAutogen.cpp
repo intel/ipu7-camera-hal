@@ -59,19 +59,24 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 100038:    // Bayer_WithPdaf3_WithDvs_WithTnr
                 case 100039:    // RgbIr_NoPdaf_WithDvs_WithTnr
                     return 5637; // gdc7_1
+                case 100002:    // Bayer_NoPdaf_NoDvs_WithTnr
+                case 100041:    // Bayer_NoPdaf_NoDvs_WithTnr_WithVai
+                case 100042:    // Bayer_NoPdaf_NoDvs_WithTnr_WithImv
+                    return 19706; // sw_scaler
                 case 100005:    // Bayer_NoPdaf_WithNntm_WithTnr
                 case 100040:    // Bayer_WithPdaf3_WithNntm_WithTnr
                     return 46539; // nntm_1_0
                 case 100031:    // Dol2Inputs_NoGmv_NoTnr
-                    if (links[16]->isActive) return 40423; // tm_app
-                    if (links[19]->isActive) return 46539; // nntm_1_0
+                    if (links[16]->isActive) return 37003; // tm_app
+                    if (links[20]->isActive) return 46539; // nntm_1_0
                     break;
                 case 100032:    // Dol2Inputs_NoDvs_WithTnr
-                    if (links[21]->isActive) return 40423; // tm_app
-                    if (links[24]->isActive) return 46539; // nntm_1_0
+                    if (links[21]->isActive) return 37003; // tm_app
+                    if (links[25]->isActive) return 46539; // nntm_1_0
                     break;
             }
             break;
+        case HwSink::ProcessedSecondarySink:    return 19706; // sw_scaler
         case HwSink::AeOutSink:    return 55073; // aestatistics_2_1
     }
 
@@ -84,6 +89,7 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
 
     // Must take only one from each resolution history index, since in static graph they all share the same
     // resolution history instance
+
     kernelUuids.push_back(40915);  // odr_output_ps_1_1
     kernelUuids.push_back(55391);  // odr_output_me_1_1
     kernelUuids.push_back(44984);  // slim_tnr_spatial_bifd_yuvn_regs_1_1
@@ -101,8 +107,9 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
     kernelUuids.push_back(6326);  // tnr_sp_bc_bifd_yuv4n_regs_1_1
     kernelUuids.push_back(27830);  // slim_tnr_fp_blend_bifd_yuvnm1_regs_1_1
     kernelUuids.push_back(5637);  // gdc7_1
+    kernelUuids.push_back(19706);  // sw_scaler
     kernelUuids.push_back(46539);  // nntm_1_0
-    kernelUuids.push_back(40423);  // tm_app
+    kernelUuids.push_back(37003);  // tm_app
     return StaticGraphStatus::SG_OK;
 }
 
@@ -110,3 +117,4 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelIoBufferSystemApiUuid()
 {
     return 50058;
 }
+

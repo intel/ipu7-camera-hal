@@ -220,9 +220,9 @@ uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, int
     }
 
     if (effectSeq > 0) {
-        int sensorSeq = mLastSofSequence + mExposureDataMap.size() + 1;
+        int sensorSeq = mLastSofSequence + static_cast<int32_t>(mExposureDataMap.size()) + 1;
         if ((applyingSeq > 0) && (applyingSeq == mLastSofSequence)) {
-            sensorSeq = applyingSeq;
+            sensorSeq = static_cast<int32_t>(applyingSeq);
             mSensorHwCtrl->setFrameDuration(exposureData.lineLengthPixels,
                                             exposureData.frameLengthLines);
             mSensorHwCtrl->setExposure(exposureData.coarseExposures, exposureData.fineExposures);
@@ -326,18 +326,24 @@ int SensorManager::getSensorModeData(ia_aiq_exposure_sensor_descriptor& sensorDa
     status = mSensorHwCtrl->getActivePixelArraySize(width, height, pixelCode);
     CheckAndLogError(status != OK, status, "Failed to get active pixel array size ret:%d", status);
 
-    int pixel_periods_per_line, line_periods_per_field;
+    int pixel_periods_per_line;
+    int line_periods_per_field;
     status = mSensorHwCtrl->getFrameDuration(pixel_periods_per_line, line_periods_per_field);
     CheckAndLogError(status != OK, status, "Failed to get frame Durations ret:%d", status);
 
-    sensorData.pixel_periods_per_line = CLIP(pixel_periods_per_line, USHRT_MAX, 0);
-    sensorData.line_periods_per_field = CLIP(line_periods_per_field, USHRT_MAX, 0);
+    sensorData.pixel_periods_per_line = CLIP(pixel_periods_per_line, USHRT_MAX,
+                                             static_cast<short>(0));
+    sensorData.line_periods_per_field = CLIP(line_periods_per_field, USHRT_MAX,
+                                             static_cast<short>(0));
 
-    int coarse_int_time_min, integration_step = 0, integration_max = 0;
+    int coarse_int_time_min;
+    int integration_step = 0;
+    int integration_max = 0;
     status = mSensorHwCtrl->getExposureRange(coarse_int_time_min, integration_max, integration_step);
     CheckAndLogError(status != OK, status, "Failed to get Exposure Range ret:%d", status);
 
-    sensorData.coarse_integration_time_min = CLIP(coarse_int_time_min, USHRT_MAX, 0);
+    sensorData.coarse_integration_time_min = CLIP(coarse_int_time_min, USHRT_MAX,
+                                                  static_cast<short>(0));
     sensorData.coarse_integration_time_max_margin = PlatformData::getCITMaxMargin(mCameraId);
 
     // fine integration is not supported by v4l2

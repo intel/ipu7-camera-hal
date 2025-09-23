@@ -23,6 +23,7 @@
 
 #ifdef LIBCAMERA_BUILD
 #include <libcamera/base/log.h>
+#else
 #endif
 
 #include <sys/time.h>
@@ -31,10 +32,19 @@
 #include "iutils/LogSink.h"
 #include "iutils/Utils.h"
 
+#define TIME_BUF_SIZE 128
+#define DEFAULT_FILELOG_PATH "/run/camera/hal_logs.txt"
+
 namespace icamera {
 extern const char* cameraDebugLogToString(uint32_t level);
-#define CAMERA_DEBUG_LOG_ERR (1 << 5)
-#define CAMERA_DEBUG_LOG_WARNING (1 << 3)
+
+static const uint32_t CAMERA_DEBUG_LOG_LEVEL1 = 1U;
+static const uint32_t CAMERA_DEBUG_LOG_LEVEL2 = 2U;   // 1 << 1
+static const uint32_t CAMERA_DEBUG_LOG_LEVEL3 = 4U;   // 1 << 2
+
+static const uint32_t CAMERA_DEBUG_LOG_INFO = 16U;    // 1 << 4
+static const uint32_t CAMERA_DEBUG_LOG_WARNING = 32U; // 1 << 5;
+static const uint32_t CAMERA_DEBUG_LOG_ERR = 64U;     // 1 << 6;
 
 #ifdef LIBCAMERA_BUILD
 void LibcameraLogSink::sendOffLog(LogItem logItem) {
@@ -44,21 +54,25 @@ void LibcameraLogSink::sendOffLog(LogItem logItem) {
     libcamera::LogCategory* cat = libcamera::LogCategory::create(logItem.logTags);
     libcamera::LogSeverity sev = (logItem.level == CAMERA_DEBUG_LOG_ERR)     ? libcamera::LogError
                                : (logItem.level == CAMERA_DEBUG_LOG_WARNING) ? libcamera::LogWarning
+                               : (logItem.level == CAMERA_DEBUG_LOG_INFO)    ? libcamera::LogInfo
                                                                              : libcamera::LogDebug;
+    uint32_t levels = CAMERA_DEBUG_LOG_LEVEL1 | CAMERA_DEBUG_LOG_LEVEL2 | CAMERA_DEBUG_LOG_LEVEL3;
+    if (logItem.level & levels) {
+        cat->setSeverity(libcamera::LogDebug);
+    }
     libcamera::_log(cat, sev).stream() << prefix << logItem.logEntry;
 }
 #else
-#endif
 
+#endif
 void StdconLogSink::sendOffLog(LogItem logItem) {
-#define TIME_BUF_SIZE 128
     char timeInfo[TIME_BUF_SIZE];
     LogOutputSink::setLogTime(timeInfo);
     fprintf(stdout, "[%s] CamHAL[%s] %s: %s\n", timeInfo,
             icamera::cameraDebugLogToString(logItem.level), logItem.logTags, logItem.logEntry);
 }
 
-void LogOutputSink::setLogTime(char* buf) {
+void LogOutputSink::setLogTime(char* timeBuf) {
     struct timeval tv;
     gettimeofday(&tv, nullptr);
     const time_t nowtime = tv.tv_sec;
@@ -68,7 +82,7 @@ void LogOutputSink::setLogTime(char* buf) {
     if (nowtm != nullptr) {
         char tmbuf[TIME_BUF_SIZE];
         (void)strftime(tmbuf, TIME_BUF_SIZE, "%m-%d %H:%M:%S", nowtm);
-        snprintf(buf, TIME_BUF_SIZE, "%.96s.%d", tmbuf,
+        snprintf(timeBuf, TIME_BUF_SIZE, "%.96s.%d", tmbuf,
                  static_cast<int>((tv.tv_usec / 1000U) % 1000U));
     }
 }
@@ -83,7 +97,6 @@ FtraceLogSink::FtraceLogSink() {
 }
 
 void FtraceLogSink::sendOffLog(LogItem logItem) {
-#define TIME_BUF_SIZE 128
     char timeInfo[TIME_BUF_SIZE];
     setLogTime(timeInfo);
     dprintf(mFtraceFD, "%s CamHAL[%s] %s\n", timeInfo, cameraDebugLogToString(logItem.level),
@@ -91,12 +104,11 @@ void FtraceLogSink::sendOffLog(LogItem logItem) {
 }
 #endif
 
-#define DEFALUT_PATH "/run/camera/hal_logs.txt"
 FileLogSink::FileLogSink() {
     static const char* filePath = ::getenv("FILE_LOG_PATH");
 
     if (filePath == nullptr) {
-        filePath = DEFALUT_PATH;
+        filePath = DEFAULT_FILELOG_PATH;
     }
 
     mFp = fopen(filePath, "w");

@@ -131,7 +131,8 @@ void AiqCore::init() {
 
     mIntel3AParameter->init();
 
-    CLEAR(mLastAeResult), mAeRunTime = 0U;
+    CLEAR(mLastAeResult);
+    mAeRunTime = 0U;
     mAwbRunTime = 0U;
     mAiqRunTime = 0U;
 }
@@ -225,7 +226,7 @@ int AiqCore::updateParameter(const aiq_parameter_t& param) {
 
     // In still frame use force update by setting convergence time to 0.
     // in other cases use tunings.
-    mSaParams.manual_convergence_time = (param.frameUsage == FRAME_USAGE_STILL) ? 0.0 : -1.0;
+    mSaParams.manual_convergence_time = (param.frameUsage == FRAME_USAGE_STILL) ? 0.0F : -1.0F;
 
     mIntel3AParameter->updateParameter(param);
     mAeForceLock = param.aeForceLock;
@@ -421,7 +422,7 @@ int AiqCore::runAEC(int64_t ccaId, cca::cca_ae_results* aeResults) {
 
     if (mAeForceLock && (mIntel3AParameter->mAeMode != AE_MODE_MANUAL) && (mAeRunTime != 0U) &&
         (!mIntel3AParameter->mAeParams.is_bypass)) {
-        // Use manual setttings if AE had been locked
+        // Use manual settings if AE had been locked
         mIntel3AParameter->mAeParams.manual_exposure_time_us[0] = mLockedExposureTimeUs;
         mIntel3AParameter->mAeParams.manual_iso[0] = mLockedIso;
     }
@@ -472,7 +473,7 @@ void AiqCore::focusDistanceResult(const cca::cca_af_results* afResults, float* a
         // This allows the diopters to have 2 decimal values
         *afDistanceDiopters = 100.0 * 1000.0 *
             (1.0 / static_cast<float>(afResults->next_focus_distance));
-        *afDistanceDiopters = ceil(*afDistanceDiopters);
+        *afDistanceDiopters = static_cast<float>(ceil(*afDistanceDiopters));
         // Divide by 100 for final result.
         *afDistanceDiopters = *afDistanceDiopters / 100;
     }
@@ -548,10 +549,14 @@ int AiqCore::reFormatLensShadingMap(const LSCGrid& inputLscGrid, float* dstLscGr
     // for ia_aiq_bayer_order_grbg, the four block is G, R, B, G
     const size_t size = inputLscGrid.height * inputLscGrid.width;
     for (size_t i = 0U; i < size; i++) {
-        *dstLscGridRGGB++ = inputLscGrid.gridR[i];
-        *dstLscGridRGGB++ = inputLscGrid.gridGr[i];
-        *dstLscGridRGGB++ = inputLscGrid.gridGb[i];
-        *dstLscGridRGGB++ = inputLscGrid.gridB[i];
+        *dstLscGridRGGB = inputLscGrid.gridR[i];
+        dstLscGridRGGB++;
+        *dstLscGridRGGB = inputLscGrid.gridGr[i];
+        dstLscGridRGGB++;
+        *dstLscGridRGGB = inputLscGrid.gridGb[i];
+        dstLscGridRGGB++;
+        *dstLscGridRGGB = inputLscGrid.gridB[i];
+        dstLscGridRGGB++;
     }
 
     return OK;
@@ -584,7 +589,7 @@ int AiqCore::storeLensShadingMap(const LSCGrid& inputLscGrid, const LSCGrid& res
         AiqUtils::resize2dArray(inputLscGrid.gridB, width, height, resizeLscGrid.gridB, destWidth,
                                 destHeight);
         LOG2("resize the 2D array cost %dus",
-             static_cast<unsigned>(((CameraUtils::systemTime() - startTime) / 1000)));
+             static_cast<unsigned>(((CameraUtils::systemTime() - startTime) / 1000U)));
 
         LOG2("%s:resize lens shading map from [%d,%d] to [%d,%d]", __func__, width, height,
              destWidth, destHeight);

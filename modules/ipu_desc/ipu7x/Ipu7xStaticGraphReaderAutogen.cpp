@@ -305,6 +305,17 @@ StaticGraphStatus StaticGraphReader::GetStaticGraphConfig(GraphConfigurationKey&
             *graph = new StaticGraph100016(
                 reinterpret_cast<GraphConfiguration100016**>(selectedConfigurationData), selectedConfigurationsCount, &_zoomKeyResolutions, &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId);
             break;
+        case 100024:
+            if (StaticGraph100024::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                delete[] selectedConfigurationData;
+                delete[] selectedGraphConfigurationHeaders;
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph100024(
+                reinterpret_cast<GraphConfiguration100024**>(selectedConfigurationData), selectedConfigurationsCount, &_zoomKeyResolutions, &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId);
+            break;
         case 100025:
             if (StaticGraph100025::hashCode != selectedGraphConfigurationHeader->graphHashCode)
             {
@@ -469,6 +480,17 @@ StaticGraphStatus StaticGraphReader::GetStaticGraphConfig(GraphConfigurationKey&
             }
             *graph = new StaticGraph100041(
                 reinterpret_cast<GraphConfiguration100041**>(selectedConfigurationData), selectedConfigurationsCount, &_zoomKeyResolutions, &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId);
+            break;
+        case 100042:
+            if (StaticGraph100042::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                delete[] selectedConfigurationData;
+                delete[] selectedGraphConfigurationHeaders;
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph100042(
+                reinterpret_cast<GraphConfiguration100042**>(selectedConfigurationData), selectedConfigurationsCount, &_zoomKeyResolutions, &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId);
             break;
         default:
             delete[] selectedConfigurationData;

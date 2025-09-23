@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_BUFFER_H
-#define CAMERA_BUFFER_H
+#pragma once
 
 #include <memory>
 #include <queue>
@@ -46,11 +45,9 @@ class CameraBuffer {
     static std::shared_ptr<CameraBuffer> create(int srcWidth, int srcHeight, int size, int srcFmt,
                                                 int index, void* buffer);
 
- public:
     CameraBuffer(int memory, uint32_t size, int index);
     virtual ~CameraBuffer();
 
- public:
     // user buffer information
     int getWidth() const { return mU->s.width; }
     int getHeight() const { return mU->s.height; }
@@ -133,7 +130,6 @@ class CameraBuffer {
     // Buffers are allocated the buffers by Camera
     int allocateMemory(V4L2VideoNode* vDevice = nullptr);
 
- public:
     static void* mapDmaBufferAddr(int fd, unsigned int bufferSize);
     static void unmapDmaBufferAddr(void* addr, unsigned int bufferSize);
 
@@ -199,5 +195,3 @@ class CameraBufferMapper {
 };
 
 }  // namespace icamera
-
-#endif // CAMERA_BUFFER_H

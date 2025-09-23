@@ -130,7 +130,7 @@ status_t JpegMaker::processJpegSettings(const AiqResult* aiqResult, const DataCo
     LOG2("@%s:", __func__);
     status_t status = OK;
 
-    CheckAndLogError(!metaData, UNKNOWN_ERROR, "MetaData struct not intialized");
+    CheckAndLogError(!metaData, UNKNOWN_ERROR, "MetaData struct not initialized");
 
     metaData->mJpegSetting.jpegQuality = dataContext->mJpegParams.jpegQuality;
 
@@ -162,7 +162,7 @@ status_t JpegMaker::processJpegSettings(const AiqResult* aiqResult, const DataCo
 /**
  * This function will get GPS metadata from request setting
  *
- * \param[in] settings The Anroid metadata to process GPS settings from
+ * \param[in] settings The Android metadata to process GPS settings from
  * \param[out] metadata The EXIF data where the GPS setting are written to
  */
 status_t JpegMaker::processGpsSettings(const DataContext* dataContext, ExifMetaData* metadata) {

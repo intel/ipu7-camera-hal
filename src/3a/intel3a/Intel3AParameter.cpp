@@ -35,10 +35,10 @@
 #include "modules/algowrapper/IntelCca.h"
 #endif
 
-namespace icamera {
-
 #define VALID_COLOR_GAINS(colorGains) \
     ((colorGains[0] > 0) && (colorGains[1] > 0) && (colorGains[2] > 0) && (colorGains[3] > 0))
+
+namespace icamera {
 
 Intel3AParameter::Intel3AParameter(int cameraId)
         : mCameraId(cameraId),
@@ -186,7 +186,7 @@ void Intel3AParameter::updateAeResult(cca::cca_ae_results* aeResult) const {
 
 float Intel3AParameter::convertdBGainToISO(float sensitivityGain, int baseIso) const {
     // Convert db Gain to ISO
-    float manualGain = pow(10, (sensitivityGain / 20));
+    float manualGain = static_cast<float>(pow(10, (sensitivityGain / 20)));
     manualGain *= static_cast<float>(baseIso);
     return manualGain;
 }
@@ -258,7 +258,8 @@ void Intel3AParameter::setManualExposure(const aiq_parameter_t& param) {
 
     camera_range_t range = {};
     if (PlatformData::getSupportAeExposureTimeRange(mCameraId, param.sceneMode, range) == OK) {
-        manualExpTimeUs = CLIP(manualExpTimeUs, range.max, range.min);
+        manualExpTimeUs = CLIP(manualExpTimeUs, static_cast<long>(range.max),
+                               static_cast<long>(range.min));
     }
 
     for (unsigned int i = 0U; i < mAeParams.num_exposures - 1; i++) {
@@ -280,7 +281,7 @@ void Intel3AParameter::setManualGain(const aiq_parameter_t& param) {
 
     // Convert db to sensor analog gain.
     for (unsigned int i = 0U; i < mAeParams.num_exposures; i++) {
-        mAeParams.manual_analog_gain[i] = pow(10, (manualGain / 20));
+        mAeParams.manual_analog_gain[i] = static_cast<float>(pow(10, (manualGain / 20)));
     }
 }
 
@@ -469,7 +470,7 @@ void Intel3AParameter::updateAwbResult(cca::cca_awb_results* awbResult) {
         const float MAX_PER_G =
                     static_cast<float>(AWB_GAIN_NORMALIZED_START) /
                     static_cast<float>(AWB_GAIN_NORMALIZED_END);
-        const float MIN_PER_G = 1.0 / MAX_PER_G;
+        const float MIN_PER_G = static_cast<float>(1.0 / MAX_PER_G);
 
         if (mUseManualAwbGain) {
             awbResult->accurate_b_per_g = CLIP((normalizedB / normalizedG), MAX_PER_G, MIN_PER_G);
@@ -602,7 +603,8 @@ void Intel3AParameter::updateAfParameter(const aiq_parameter_t& param) {
     }
 
     mAfParams.lens_position = param.lensPosition;
-    mAfParams.lens_movement_start_timestamp = param.lensMovementStartTimestamp;
+    mAfParams.lens_movement_start_timestamp =
+        static_cast<uint32_t>(param.lensMovementStartTimestamp);
     mAfParams.frame_use = AiqUtils::convertFrameUsageToIaFrameUsage(param.frameUsage);
 
     // Trigger
@@ -681,6 +683,7 @@ void Intel3AParameter::updateAfParameterForAfTriggerStart() {
             // Continue the current scan and check the af result later
             break;
         default:
+            // No such AF mode and do nothing
             break;
     }
 }
@@ -696,11 +699,12 @@ void Intel3AParameter::updateAfParameterForAfTriggerCancel() {
             mAfParams.focus_mode = ia_aiq_af_operation_mode_infinity;
             break;
         default:
+            // Do not need to update focus mode
             break;
     }
 }
 
-void Intel3AParameter::fillAfTriggerResult(cca::cca_af_results* afResults) {
+void Intel3AParameter::fillAfTriggerResult(const cca::cca_af_results* afResults) {
     if ((afResults == nullptr) || (!mAfForceLock)) {
         return;
     }
@@ -715,6 +719,7 @@ void Intel3AParameter::fillAfTriggerResult(cca::cca_af_results* afResults) {
                             (afResults->status != ia_aiq_af_status_extended_search);
             break;
         default:
+            // No need to update lock
             break;
     }
 }

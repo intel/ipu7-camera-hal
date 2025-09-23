@@ -128,7 +128,7 @@ void trimConvertNV12ToRGB565(int width, int height, int srcStride, void *src, vo
     }
 }
 
-// covert YV12 (Y plane, V plane, U plane) to NV21 (Y plane, interlaced VU bytes)
+// convert YV12 (Y plane, V plane, U plane) to NV21 (Y plane, interlaced VU bytes)
 void convertYV12ToNV21(int width, int height, int srcStride, int dstStride, void *src, void *dst)
 {
     const int cStride = srcStride>>1;
@@ -206,7 +206,7 @@ void copyYV12ToYV12(int width, int height, int srcStride, int dstStride, void *s
     }
 }
 
-// covert NV12 (Y plane, interlaced UV bytes) to
+// convert NV12 (Y plane, interlaced UV bytes) to
 // NV21 (Y plane, interlaced VU bytes) and trim stride width to real width
 void trimConvertNV12ToNV21(int width, int height, int srcStride, void *src, void *dst)
 {
@@ -401,7 +401,7 @@ void align16ConvertNV12ToYV12(int width, int height, int srcStride, void *src, v
     }
 }
 
-// P411's Y, U, V are seperated. But the YUY2's Y, U and V are interleaved.
+// P411's Y, U, V are separated. But the YUY2's Y, U and V are interleaved.
 void YUY2ToP411(int width, int height, int stride, void *src, void *dst)
 {
     int ySize = width * height;
@@ -474,7 +474,7 @@ void NV12ToP411Separate(int width, int height, int stride,
     }
 }
 
-// P411's Y, U, V are seperated. But the NV12's U and V are interleaved.
+// P411's Y, U, V are separated. But the NV12's U and V are interleaved.
 void NV12ToP411(int width, int height, int stride, void *src, void *dst)
 {
     NV12ToP411Separate(width, height, stride,
@@ -516,7 +516,7 @@ void NV21ToP411Separate(int width, int height, int stride,
     }
 }
 
-// P411's Y, U, V are seperated. But the NV21's U and V are interleaved.
+// P411's Y, U, V are separated. But the NV21's U and V are interleaved.
 void NV21ToP411(int width, int height, int stride, void *src, void *dst)
 {
     NV21ToP411Separate(width, height, stride,
@@ -641,7 +641,7 @@ void repadYUV420(int width, int height, int srcStride, int dstStride, void *src,
     }
 }
 
-// covert YUYV(YUY2, YUV422 format) to YV12 (Y plane, V plane, U plane)
+// convert YUYV(YUY2, YUV422 format) to YV12 (Y plane, V plane, U plane)
 void convertYUYVToYV12(int width, int height, int srcStride, int dstStride, void *src, void *dst)
 {
     int ySize = width * height;
@@ -679,7 +679,7 @@ void convertYUYVToYV12(int width, int height, int srcStride, int dstStride, void
     }
 }
 
-// covert YUYV(YUY2, YUV422 format) to NV21 (Y plane, interlaced VU bytes)
+// convert YUYV(YUY2, YUV422 format) to NV21 (Y plane, interlaced VU bytes)
 void convertYUYVToNV21(int width, int height, int srcStride, void *src, void *dst)
 {
     int ySize = width * height;

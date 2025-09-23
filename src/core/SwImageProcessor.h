@@ -14,15 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef SW_IMAGE_PROCESSOR_H
-#define SW_IMAGE_PROCESSOR_H
-
+#pragma once
 #include "IProcessingUnit.h"
 
 namespace icamera {
 
 /**
-  * SwImageProcessor runs the Image Process Alogirhtm in the CPU.
+  * SwImageProcessor runs the Image Process Algorithm in the CPU.
   * It implements the BufferConsumer and BufferProducer Interface
   * This class is for debug purpose when the PsysProcess is not ready.
   */
@@ -38,7 +36,7 @@ public:
     virtual void    stop();
 
 private:
-    int processNewFrame();
+    virtual int processNewFrame();
 
 private:
     int mCameraId;
@@ -46,4 +44,3 @@ private:
 
 } //namespace icamera
 
-#endif // SW_IMAGE_PROCESSOR_H

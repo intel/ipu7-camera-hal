@@ -430,7 +430,7 @@ static string formatBinFileName(int cameraId, const char* prefix, BinParam_t* bi
                                        binParam->bParam.height);
 
         default:
-            LOGW("Unknow binary type:%d", binParam->bType);
+            LOGW("Unknown binary type:%d", binParam->bType);
             break;
     }
 

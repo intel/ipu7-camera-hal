@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2021-2025 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 #define LOG_TAG IFaceDetection
 #include "src/fd/IFaceDetection.h"
 
-#include "FaceDetectionPVL.h"
 #include "FaceSSD.h"
 #include "PlatformData.h"
 #include "iutils/CameraLog.h"
@@ -27,9 +26,7 @@ namespace icamera {
 FaceDetection* IFaceDetection::createFaceDetection(int cameraId, int width, int height) {
     FaceDetection* fd = nullptr;
     int fdVendor = PlatformData::faceEngineVendor(cameraId);
-    if (fdVendor == FACE_ENGINE_INTEL_PVL) {
-        fd = new FaceDetectionPVL(cameraId, width, height);
-    } else if (fdVendor == FACE_ENGINE_GOOGLE_FACESSD) {
+    if (fdVendor == FACE_ENGINE_GOOGLE_FACESSD) {
         fd = new FaceSSD(cameraId, width, height);
     }
 

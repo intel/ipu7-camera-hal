@@ -72,10 +72,10 @@ const unsigned SIZEOF_APP2_OVERHEAD =
 const bool ENABLE_APP2_MARKER = true;
 typedef enum { EXIF_FAIL = -1, EXIF_SUCCESS = 0 } exif_status;
 
-class ExifCreater {
+class ExifCreator {
  public:
-    ExifCreater();
-    virtual ~ExifCreater();
+    ExifCreator();
+    virtual ~ExifCreator();
 
     exif_status setThumbData(const void* thumbBuf, unsigned int thumbSize);
 

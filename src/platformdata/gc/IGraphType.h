@@ -41,13 +41,20 @@ namespace icamera {
 #ifdef TNR7_CM
 // Stream id associated with video stream.
 static const int32_t VIDEO_STREAM_ID = 60006;
+#elif defined(DOL_FEATURE)
+static const int32_t VIDEO_STREAM_ID = 60014;
 #else
 static const int32_t VIDEO_STREAM_ID = 60001;
 #endif
 // Stream id associated with still capture with gpu tnr.
 static const int32_t STILL_TNR_STREAM_ID = 60009;
+
+#ifdef DOL_FEATURE
+static const int32_t STILL_STREAM_ID = 60015;
+#else
 // Stream id associated with still capture.
 static const int32_t STILL_STREAM_ID = 60000;
+#endif
 
 #define MAX_RBM_STR_SIZE    128
 

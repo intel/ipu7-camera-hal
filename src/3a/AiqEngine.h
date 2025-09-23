@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef AIQ_ENGINE_H
-#define AIQ_ENGINE_H
-
+#pragma once
 #include "AiqCore.h"
 #include "AiqResult.h"
 #include "AiqResultStorage.h"
@@ -76,19 +74,19 @@ class AiqEngine : public EventListener {
     /**
      * \brief handle event
      */
-    void handleEvent(EventData eventData);
+    virtual void handleEvent(EventData eventData);
 
     int prepareStatsParams(const aiq_parameter_t& aiqParams,
-                           cca::cca_stats_params* statsParams, AiqStatistics* aiqStatistics,
+                           cca::cca_stats_params* statsParams, const AiqStatistics* aiqStatistics,
                            AiqResult* aiqResult);
 
     // Handle AIQ results except Exposure results which are handled in setSensorExposure
     void setAiqResult(const aiq_parameter_t& aiqParams, AiqResult* aiqResult, bool skip);
     void setSensorExposure(AiqResult* aiqResult, int64_t applyingSeq = -1);
 
-    int getSkippingNum(AiqResult* aiqResult);
+    int getSkippingNum(const AiqResult* aiqResult);
 
-    bool needRun3A(AiqStatistics* aiqStatistics, int64_t ccaId);
+    bool needRun3A(const AiqStatistics* aiqStatistics, int64_t ccaId);
 
     enum AiqState {
         AIQ_STATE_IDLE = 0,
@@ -132,7 +130,7 @@ class AiqEngine : public EventListener {
     struct AiqRunningHistory {
         AiqResult* aiqResult;
         int64_t ccaId;
-        int64_t statsSequnce;
+        int64_t statsSequence;
     };
     AiqRunningHistory mAiqRunningHistory;
 
@@ -142,4 +140,3 @@ class AiqEngine : public EventListener {
 
 } /* namespace icamera */
 
-#endif // AIQ_ENGINE_H

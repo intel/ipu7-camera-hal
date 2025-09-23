@@ -36,7 +36,7 @@ int ICBMThread::setup(ICBMInitInfo* initParams) {
 }
 
 void ICBMThread::shutdown(const ICBMReqInfo& request) {
-    LOG1("%s, Shuting down...", __func__);
+    LOG1("%s, Shutting down...", __func__);
     mIntelICBM->shutdown(request);
 }
 

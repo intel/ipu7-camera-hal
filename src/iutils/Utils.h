@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 #include <string.h>
 #include <string>
@@ -127,7 +126,7 @@ typedef int64_t nsecs_t;
  *  long long signed value (equivalent to int64_t)
  */
 #define TIMEVAL2USECS(x) (static_cast<uint64_t>( \
-                            ((x).tv_sec * 1000000000LL + (x).tv_usec * 1000LL) / 1000LL))
+                            ((x).tv_sec * 1000000000ULL + (x).tv_usec * 1000ULL) / 1000ULL))
 
 // macro for float comparaion with 0
 #define EPSILON 0.00001
@@ -275,11 +274,9 @@ std::vector<std::string> splitString(const char* srcStr, char delim);
 
 nsecs_t systemTime();
 
-void checkFps(unsigned int frameNumber, timeval *requestTime);
+void checkFps(unsigned int frameNumber, timeval *startPoint);
 
 frame_usage_mode_t getFrameUsage(const stream_config_t *streamList);
 }  // namespace CameraUtils
 
 }  // namespace icamera
-
-#endif // UTILS_H

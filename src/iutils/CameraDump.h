@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_DUMP_H
-#define CAMERA_DUMP_H
-
+#pragma once
 #include <linux/v4l2-subdev.h>
 #include <string.h>
 
@@ -123,7 +121,7 @@ typedef struct {
 } BinParam_t;
 
 /**
- * Dump files with formated file name, put under getDumpPath()
+ * Dump files with formatted file name, put under getDumpPath()
  * Supported dump type:
  *   Image(RAW/YUV/RGB)
  *   PAL bin
@@ -157,4 +155,3 @@ void dumpBinary(int cameraId, const void* data, int size, BinParam_t* binParam);
 
 }  // namespace icamera
 
-#endif // CAMERA_DUMP_H

@@ -23,6 +23,7 @@
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/eventfd.h>
 
 #include "CameraLog.h"
 #include "Errors.h"
@@ -30,14 +31,15 @@
 
 namespace icamera {
 
-const char* DRIVER_NAME = "/dev/ipu7-psys0";
+static const char* DRIVER_NAME = "/dev/ipu7-psys0";
 
 PSysDevice::PSysDevice(int cameraId)
         : mPollThread(nullptr),
           mExitPending(false),
           mCameraId(cameraId),
           mFd(-1),
-          mGraphId(INVALID_GRAPH_ID) {
+          mGraphId(INVALID_GRAPH_ID),
+          mEventFd(-1) {
     LOG1("<%id> Construct PSysDevice", mCameraId);
 
     CLEAR(mFrameId);
@@ -48,6 +50,8 @@ PSysDevice::PSysDevice(int cameraId)
     }
 
     mPollThread = new PollThread<PSysDevice>(this);
+
+    mEventFd = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
 }
 
 PSysDevice::~PSysDevice() {
@@ -66,8 +70,6 @@ PSysDevice::~PSysDevice() {
         }
     }
 
-    mPollThread->exit();
-    mExitPending = true;
     mPollThread->wait();
 
     delete mPollThread;
@@ -75,6 +77,24 @@ PSysDevice::~PSysDevice() {
     delete[] mGraphNode;
     for (uint8_t i = 0U; i < MAX_GRAPH_NODES; i++) {
         delete[] mTaskBuffers[i];
+    }
+
+    if (mEventFd >= 0) {
+        close(mEventFd);
+    }
+}
+
+void PSysDevice::deinit() {
+    mPollThread->exit();
+    mExitPending = true;
+
+    // Wake up poll thread
+    if (mEventFd >= 0) {
+        const uint64_t value = 1U;
+        const ssize_t ret = write(mEventFd, &value, sizeof(value));
+        if (ret < 0) {
+            LOGW("Failed to interrupt event %s", strerror(errno));
+        }
     }
 }
 
@@ -103,7 +123,6 @@ int PSysDevice::addGraph(const PSysGraph& graph) {
 
         drvNode.node_ctx_id = static_cast<uint8_t>(node.nodeCtxId);
         drvNode.node_rsrc_id = static_cast<uint8_t>(node.nodeRsrcId);
-
         MEMCPY_S(&drvNode.profiles[0].teb, sizeof(drvNode.profiles[0].teb), &node.bitmaps.teb,
                  sizeof(node.bitmaps.teb));
         MEMCPY_S(&drvNode.profiles[0].deb, sizeof(drvNode.profiles[0].deb), &node.bitmaps.deb,
@@ -160,7 +179,7 @@ int PSysDevice::closeGraph() {
         CheckAndLogError(ret != 0, INVALID_OPERATION, "Failed to close graph %s", strerror(errno));
         mGraphId = INVALID_GRAPH_ID;
     }
-
+    CLEAR(mFrameId);
     return OK;
 }
 
@@ -216,20 +235,20 @@ int PSysDevice::wait(ipu_psys_event& event) {
 
 void PSysDevice::updatePsysBufMap(TerminalBuffer* buf) {
     std::lock_guard<std::mutex> l(mDataLock);
-    if (buf->flags & IPU_BUFFER_FLAG_USERPTR) {
+    if ((buf->flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
         mPtrToTermBufMap[buf->userPtr] = *buf;
-    } else if (buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) {
+    } else if ((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) != 0U) {
         mFdToTermBufMap[static_cast<int>(buf->handle)] = *buf;
     }
 }
 
-void PSysDevice::erasePsysBufMap(TerminalBuffer* buf) {
+void PSysDevice::erasePsysBufMap(const TerminalBuffer* buf) {
     std::lock_guard<std::mutex> l(mDataLock);
-    if (buf->flags & IPU_BUFFER_FLAG_USERPTR) {
+    if ((buf->flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
         if (mPtrToTermBufMap.find(buf->userPtr) != mPtrToTermBufMap.end()) {
             mPtrToTermBufMap.erase(buf->userPtr);
         }
-    } else if (buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) {
+    } else if ((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) != 0U) {
         if (mFdToTermBufMap.find(static_cast<int>(buf->handle)) != mFdToTermBufMap.end()) {
             mFdToTermBufMap.erase(static_cast<int>(buf->handle));
         }
@@ -238,12 +257,12 @@ void PSysDevice::erasePsysBufMap(TerminalBuffer* buf) {
 
 bool PSysDevice::getPsysBufMap(TerminalBuffer* buf) {
     std::lock_guard<std::mutex> l(mDataLock);
-    if (buf->flags & IPU_BUFFER_FLAG_USERPTR) {
+    if ((buf->flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
         if (mPtrToTermBufMap.find(buf->userPtr) != mPtrToTermBufMap.end()) {
             buf->psysBuf = mPtrToTermBufMap[buf->userPtr].psysBuf;
             return true;
         }
-    } else if (buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) {
+    } else if ((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) != 0U) {
         if (mFdToTermBufMap.find(static_cast<int>(buf->handle)) != mFdToTermBufMap.end()) {
             buf->psysBuf = mFdToTermBufMap[static_cast<int>(buf->handle)].psysBuf;
             return true;
@@ -255,7 +274,7 @@ bool PSysDevice::getPsysBufMap(TerminalBuffer* buf) {
 
 int PSysDevice::registerBuffer(TerminalBuffer* buf) {
     CheckAndLogError(mFd < 0, INVALID_OPERATION, "psys device wasn't opened");
-    CheckAndLogError(!buf, INVALID_OPERATION, "buf is nullptr");
+    CheckAndLogError(buf == nullptr, INVALID_OPERATION, "buf is nullptr");
 
     // If already registered, just return
     if (getPsysBufMap(buf)) {
@@ -264,26 +283,26 @@ int PSysDevice::registerBuffer(TerminalBuffer* buf) {
 
     int ret = OK;
     buf->psysBuf.len = buf->size;
-    if (buf->flags & IPU_BUFFER_FLAG_USERPTR) {
+    if ((buf->flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
         buf->psysBuf.base.userptr = buf->userPtr;
         buf->psysBuf.flags |= IPU_BUFFER_FLAG_USERPTR;
 
         ret = ioctl(mFd, static_cast<int>(IPU_IOC_GETBUF), &buf->psysBuf);
         CheckAndLogError(ret != 0, INVALID_OPERATION, "Failed to get buffer %s", strerror(errno));
 
-        if (!(buf->psysBuf.flags & IPU_BUFFER_FLAG_DMA_HANDLE)) {
+        if ((buf->psysBuf.flags & IPU_BUFFER_FLAG_DMA_HANDLE) == 0U) {
             LOGW("IOC_GETBUF succeed but did not return dma handle");
             return INVALID_OPERATION;
-        } else if (buf->psysBuf.flags & IPU_BUFFER_FLAG_USERPTR) {
+        } else if ((buf->psysBuf.flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
             LOGW("IOC_GETBUF succeed but did not consume the userptr flag");
             return INVALID_OPERATION;
         }
-    } else if (buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) {
+    } else if ((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) != 0U) {
         buf->psysBuf.base.fd = static_cast<int>(buf->handle);
         buf->psysBuf.flags |= IPU_BUFFER_FLAG_DMA_HANDLE;
     }
 
-    if (buf->flags & IPU_BUFFER_FLAG_NO_FLUSH) {
+    if ((buf->flags & IPU_BUFFER_FLAG_NO_FLUSH) != 0U) {
         buf->psysBuf.flags |= IPU_BUFFER_FLAG_NO_FLUSH;
     }
 
@@ -303,17 +322,17 @@ int PSysDevice::registerBuffer(TerminalBuffer* buf) {
     return OK;
 }
 
-void PSysDevice::unregisterBuffer(TerminalBuffer* buf) {
+void PSysDevice::unregisterBuffer(const TerminalBuffer* buf) {
     if (mFd < 0) {
         LOGE("psys device wasn't opened");
         return;
     }
-    if (!buf) {
+    if (buf == nullptr) {
         LOGE("buf is nullptr");
         return;
     }
 
-    if ((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) && (!buf->isExtDmaBuf)) {
+    if (((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) != 0U) && (!buf->isExtDmaBuf)) {
         LOGW("cannot unmap buffer fd %d", buf->psysBuf.base.fd);
         return;
     }
@@ -324,7 +343,7 @@ void PSysDevice::unregisterBuffer(TerminalBuffer* buf) {
         LOGW("Failed to unmap buffer %s", strerror(errno));
     }
 
-    if (buf->flags & IPU_BUFFER_FLAG_USERPTR) {
+    if ((buf->flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
         ret = close(buf->psysBuf.base.fd);
         if (ret < 0) {
             LOGE("Failed to close fd %d, error %s", buf->psysBuf.base.fd, strerror(errno));
@@ -341,9 +360,16 @@ void PSysDevice::registerPSysDeviceCallback(uint8_t contextId, IPSysDeviceCallba
 
 int PSysDevice::poll(short events, int timeout)
 {
-    struct pollfd fds = { mFd, events, 0 };
+    std::vector<struct pollfd> pollfds;
+    pollfds.reserve(1 + ((mEventFd >= 0) ? 1 : 0));
 
-    return ::poll(&fds, 1, timeout);
+    pollfds.push_back({ mFd, events, 0 });
+
+    if (mEventFd >= 0) {
+        pollfds.push_back({ mEventFd, POLLIN, 0 });
+    }
+
+    return ::poll(pollfds.data(), pollfds.size(), timeout);
 }
 
 void PSysDevice::handleEvent(const ipu_psys_event& event) {
@@ -375,7 +401,12 @@ void PSysDevice::handleEvent(const ipu_psys_event& event) {
 }
 
 int PSysDevice::poll() {
-    int ret = poll(POLLIN | POLLHUP | POLLERR, kEventTimeout * SLOWLY_MULTIPLIER);
+    if (mExitPending) {
+        return NO_INIT;
+    }
+
+    int ret = poll(static_cast<int16_t>(POLLIN | POLLHUP | POLLERR),
+                    kEventTimeout * SLOWLY_MULTIPLIER);
 
     if (mExitPending) {
         return NO_INIT;

@@ -64,7 +64,7 @@ int CBStage::init() {
     CheckAndLogError(ret != OK, ret, "Failed to get payload descriptor");
 
     ret = CBLayoutUtils::getCbTerminalDescriptors(mResourceId, sTerminalDesc, mTerminalDescCount);
-    CheckAndLogError(ret != OK, ret, "Failded to get terminal descriptor");
+    CheckAndLogError(ret != OK, ret, "Failed to get terminal descriptor");
 
     // Use share memory buffers for sandboxing
     const size_t size =

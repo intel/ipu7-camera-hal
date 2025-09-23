@@ -67,7 +67,7 @@ typedef enum
 
 typedef struct {
 
-    uint32_t isSapEnable;
+    uint32_t sapAttributes;
     uint32_t binaryCommonHashCode;
     uint32_t numberOfResolutions;
     uint32_t numberOfSensorModes;
@@ -96,38 +96,47 @@ typedef struct DataRange
 
 }DataRange;
 
-static int distinctGraphsCount = 28;
+static int distinctGraphsCount = 37;
 
 static GraphHashCode hashCodeLookup[] = {
-       {0, 0x159079D0},
-       {100000, 0xF2A7DC7},
-       {100001, 0x70FC6FD5},
-       {100002, 0xC75B8A33},
-       {100003, 0x70FC6FD5},
-       {100005, 0x4F7194F1},
-       {100006, 0x37CCA603},
-       {100007, 0x10619C2D},
-       {100008, 0xB9D6F4D3},
-       {100015, 0x51B0DD09},
+       {0, 0x327EB4A8},
+       {100000, 0x829C70F3},
+       {100001, 0x36553465},
+       {100002, 0x868896D7},
+       {100003, 0x31CC0369},
+       {100005, 0x8E655D9},
+       {100006, 0x88DC62BB},
+       {100007, 0x76733AA9},
+       {100008, 0xF29CE7EB},
+       {100015, 0xC5F60B3D},
        {100016, 0xD089033F},
-       {100025, 0xF2A7DC7},
+       {100025, 0x829C70F3},
        {100026, 0xF9C17401},
-       {100027, 0x37B53BB},
-       {100028, 0x292ECEFD},
-       {100029, 0x408F572F},
-       {100030, 0x2FD0B081},
-       {100031, 0xF6FB646D},
-       {100032, 0xB3676611},
-       {100033, 0x133043B3},
-       {100034, 0x468867F7},
+       {100027, 0xAAADB977},
+       {100028, 0x11B543D1},
+       {100029, 0x749E1683},
+       {100030, 0x91310CBD},
+       {100031, 0x6435159F},
+       {100032, 0x246C440B},
+       {100033, 0x675F6431},
+       {100034, 0x76EBC27D},
        {100035, 0x5B0632C3},
        {100036, 0x5B0632C3},
-       {100037, 0x9E74FC99},
-       {100038, 0x54056597},
-       {100039, 0xB88808E3},
-       {100040, 0xAF0D2357},
-       {100041, 0x42F99A89},
-       {100042, 0xCD48138B}
+       {100037, 0x90AC44AD},
+       {100038, 0x47CC7DF3},
+       {100039, 0xC992E8EB},
+       {100040, 0x113143AB},
+       {100041, 0xF421B02D},
+       {100042, 0x8397E143},
+       {100044, 0xA6CC44DD},
+       {100050, 0xCD2E90AD},
+       {100051, 0x8AADA153},
+       {100052, 0x6435159F},
+       {100053, 0x246C440B},
+       {100054, 0x675F6431},
+       {100055, 0x76EBC27D},
+       {100056, 0x113143AB},
+       {100057, 0xF421B02D}
  };
 
 static FrameFormatDesc formatsDB[] = {
@@ -310,7 +319,23 @@ static FrameFormatDesc formatsDB[] = {
       {"IGIG_GRGB_IGIG_GBGRP", "IGP0", 0x30504749, 8},
       {"IGIG_GRGB_IGIG_GBGRP", "IGP1", 0x31504749, 10},
       {"IGIG_GRGB_IGIG_GBGRP", "IGP2", 0x32504749, 12},
-      {"IGIG_GRGB_IGIG_GBGRP", "IGP3", 0x33504749, 16}
+      {"IGIG_GRGB_IGIG_GBGRP", "IGP3", 0x33504749, 16},
+      {"RGGBPD", "RG0B", 0x42304752, 8},
+      {"RGGBPD", "RG1B", 0x42314752, 10},
+      {"RGGBPD", "RG2B", 0x42324752, 12},
+      {"RGGBPD", "RG3B", 0x42334752, 16},
+      {"BGGRPD", "BG0B", 0x42304742, 8},
+      {"BGGRPD", "BG1B", 0x42314742, 10},
+      {"BGGRPD", "BG2B", 0x42324742, 12},
+      {"BGGRPD", "BG3B", 0x42334742, 16},
+      {"GBRGPD", "GB0B", 0x42304247, 8},
+      {"GBRGPD", "GB1B", 0x42314247, 10},
+      {"GBRGPD", "GB2B", 0x42324247, 12},
+      {"GBRGPD", "GB3B", 0x42334247, 16},
+      {"GRBGPD", "GR0B", 0x42305247, 8},
+      {"GRBGPD", "GR1B", 0x42315247, 10},
+      {"GRBGPD", "GR2B", 0x42325247, 12},
+      {"GRBGPD", "GR3B", 0x42335247, 16}
 };
 
 #endif/*DATA_RANGE_H_*/

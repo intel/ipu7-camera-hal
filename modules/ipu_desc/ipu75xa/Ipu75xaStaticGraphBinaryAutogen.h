@@ -65,6 +65,10 @@ enum class GraphConfigurationKeyAttributes : uint32_t
     DvsActive = 0x00000020,
     PipelineLowLight = 0x00000040,
     PipelineNormalLight = 0x00000080,
+    NFov = 0x00000100,
+    WFov = 0x00000200,
+    DocScan = 0x00000400,
+    StillsModeCpHdr = 0x00000800,
 };
 
 struct GraphConfigurationKey {
@@ -89,7 +93,7 @@ struct GraphConfigurationHeader {
 };
 
 struct BinaryHeader {
-    uint32_t isSapEnable = 0;
+    uint32_t sapAttributes = 0;
     uint32_t binaryCommonHashCode = 0;
     uint32_t numberOfResolutions = 0;
     uint32_t numberOfSensorModes = 0;

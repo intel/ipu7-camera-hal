@@ -27,7 +27,6 @@ set(CORE_SRCS
 # IPU7_SOURCE_FILE_S
 set(CORE_SRCS
     ${CORE_SRCS}
-    ${CORE_DIR}/CameraBufferPool.cpp
     ${CORE_DIR}/CameraDevice.cpp
     ${CORE_DIR}/CameraContext.cpp
     ${CORE_DIR}/CameraStream.cpp
@@ -40,14 +39,6 @@ set(CORE_SRCS
     CACHE INTERNAL "core sources"
     )
 # IPU7_SOURCE_FILE_E
-
-# FRAME_SYNC_S
-    set(CORE_SRCS
-        ${CORE_SRCS}
-        ${CORE_DIR}/SyncManager.cpp
-        CACHE INTERNAL "core sources"
-        )
-# FRAME_SYNC_E
 
 # CSI_META_S
     set(CORE_SRCS

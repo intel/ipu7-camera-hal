@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef I3A_CONTROL_FACTORY_H  
-#define I3A_CONTROL_FACTORY_H
+#pragma once
 
 #include "AiqUnit.h"
 #include "SensorHwCtrl.h"
@@ -43,5 +42,3 @@ public:
 };
 
 } /* namespace icamera */
-
-#endif // I3A_CONTROL_FACTORY_H

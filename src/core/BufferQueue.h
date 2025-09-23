@@ -14,55 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef BUFFER_QUEUE_H
-#define BUFFER_QUEUE_H
+#pragma once
 
 #include <map>
 #include <vector>
 #include <condition_variable>
 
+#include "BufferInterface.h"
 #include "CameraBuffer.h"
 #include "CameraEvent.h"
 #include "iutils/Errors.h"
 #include "iutils/Thread.h"
 #include "StageDescriptor.h"
 
-/**
- * These are the abstract Classes for buffer communication between different class of HAL
- */
 namespace icamera {
-
-class BufferProducer;
-
-/**
- * BufferConsumer listens on the onFrameAvailable event from the producer by
- * calling setBufferProducer
- */
-class BufferConsumer {
- public:
-    virtual ~BufferConsumer() {}
-    virtual int onFrameAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) = 0;
-    virtual void setBufferProducer(BufferProducer* producer) = 0;
-};
-
-/**
- * BufferProcuder get the buffers from consumer by "qbuf".
- * Notfiy the consumer by calling the onFramAvaible interface of consumer.
- * The consumer must be registered by "addFrameAvailableListener" before getting
- * any buffer done notification.
- */
-class BufferProducer : public EventSource {
- public:
-    explicit BufferProducer(int memType = V4L2_MEMORY_USERPTR);
-    virtual int qbuf(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) = 0;
-    virtual int allocateMemory(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) = 0;
-    virtual void addFrameAvailableListener(BufferConsumer* listener) = 0;
-    virtual void removeFrameAvailableListener(BufferConsumer* listener) = 0;
-    int getMemoryType(void) const { return mMemType; }
-
- private:
-    int mMemType;
-};
 
 class BufferQueue : public BufferConsumer, public BufferProducer, public EventListener {
  public:
@@ -74,7 +39,7 @@ class BufferQueue : public BufferConsumer, public BufferProducer, public EventLi
      *
      * Push the CameraBuffer to InputQueue and send a signal if needed
      */
-    virtual int onFrameAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
+    virtual int onBufferAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
 
     /**
      * \brief Register the BufferProducer
@@ -161,7 +126,11 @@ class BufferQueue : public BufferConsumer, public BufferProducer, public EventLi
      */
     int allocProducerBuffers(int camId, int bufNum);
 
- protected:
+   /**
+   * \brief set thread waiting
+   */
+    void setThreadWaiting(bool waiting);
+
     BufferProducer* mBufferProducer;
     std::vector<BufferConsumer*> mBufferConsumerList;
 
@@ -178,10 +147,10 @@ class BufferQueue : public BufferConsumer, public BufferProducer, public EventLi
     Mutex mBufferQueueLock;
     std::condition_variable mFrameAvailableSignal;
 
+    bool mThreadWaiting; // true if the thread is running, false if stopped
+
  private:
     int queueInputBuffer(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
 };
 
 }  // namespace icamera
-
-#endif // BUFFER_QUEUE_H

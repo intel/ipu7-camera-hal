@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef PSYS_DEVICE_H
-#define PSYS_DEVICE_H
-
+#pragma once
 #include <map>
 #include <list>
 #include <mutex>
@@ -97,6 +95,7 @@ class PSysDevice {
     virtual ~PSysDevice();
 
     virtual int init();
+    virtual void deinit();
     virtual void registerPSysDeviceCallback(uint8_t contextId, IPSysDeviceCallback* callback);
 
     virtual int addGraph(const PSysGraph& graph);
@@ -104,7 +103,7 @@ class PSysDevice {
     virtual int addTask(const PSysTask& task);
 
     virtual int registerBuffer(TerminalBuffer* buf);
-    virtual void unregisterBuffer(TerminalBuffer* buf);
+    virtual void unregisterBuffer(const TerminalBuffer* buf);
 
     virtual int poll();
 
@@ -113,7 +112,7 @@ class PSysDevice {
     int poll(short events, int timeout);
     void handleEvent(const ipu_psys_event& event);
     void updatePsysBufMap(TerminalBuffer* buf);
-    void erasePsysBufMap(TerminalBuffer* buf);
+    void erasePsysBufMap(const TerminalBuffer* buf);
     bool getPsysBufMap(TerminalBuffer* buf);
 
  private:
@@ -131,6 +130,8 @@ class PSysDevice {
     int32_t mFd;
     int mGraphId;
 
+    int32_t mEventFd;
+
     uint8_t mFrameId[MAX_NODE_NUM];
     std::mutex mDataLock;
     int64_t mFrameIdToSeqMap[MAX_NODE_NUM][MAX_TASK_NUM];
@@ -144,4 +145,3 @@ class PSysDevice {
 
 } /* namespace icamera */
 
-#endif // PSYS_DEVICE_H

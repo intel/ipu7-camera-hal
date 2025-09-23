@@ -497,19 +497,19 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedFeatures(const Json
 
     for (Json::Value::ArrayIndex i = 0; i < node.size(); ++i) {
         camera_features feature = INVALID_FEATURE;
-        auto featrueStr = node[i].asString();
+        const auto featureStr = node[i].asString();
 
-        if (featrueStr == "MANUAL_EXPOSURE")
+        if (featureStr == "MANUAL_EXPOSURE")
             feature = MANUAL_EXPOSURE;
-        else if (featrueStr == "MANUAL_WHITE_BALANCE")
+        else if (featureStr == "MANUAL_WHITE_BALANCE")
             feature = MANUAL_WHITE_BALANCE;
-        else if (featrueStr == "IMAGE_ENHANCEMENT")
+        else if (featureStr == "IMAGE_ENHANCEMENT")
             feature = IMAGE_ENHANCEMENT;
-        else if (featrueStr == "NOISE_REDUCTION")
+        else if (featureStr == "NOISE_REDUCTION")
             feature = NOISE_REDUCTION;
-        else if (featrueStr == "SCENE_MODE")
+        else if (featureStr == "SCENE_MODE")
             feature = SCENE_MODE;
-        else if (featrueStr == "PER_FRAME_CONTROL")
+        else if (featureStr == "PER_FRAME_CONTROL")
             feature = PER_FRAME_CONTROL;
 
         if (feature != INVALID_FEATURE) {
@@ -734,7 +734,7 @@ std::string CameraSensorsParser::resolveI2CBusString(const std::string& name) {
     pos = res.find("$CAP_N");
     if (pos != std::string::npos) {
         res.replace(pos, sizeof("$CAP_N"),
-                    std::to_string(std::stoi(mCsiPort) * NR_OF_CSI2_SRC_PADS));
+                    std::to_string(std::atoi(mCsiPort.c_str()) * NR_OF_CSI2_SRC_PADS));
     }
 
     return res;
@@ -848,6 +848,9 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
     if (node.isMember("faceEngineVendor")) {
         mCurCam->mFaceEngineVendor = node["faceEngineVendor"].asInt();
     }
+    if (node.isMember("runFaceWithSyncMode")) {
+        mCurCam->mRunFaceWithSyncMode = node["runFaceWithSyncMode"].asBool();
+    }
     if (node.isMember("psysBundleWithAic")) {
         mCurCam->mPsysBundleWithAic = node["psysBundleWithAic"].asBool();
     }
@@ -880,6 +883,9 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
     }
     if (node.isMember("removeCacheFlushOutputBuffer")) {
         mCurCam->mRemoveCacheFlushOutputBuffer = node["removeCacheFlushOutputBuffer"].asBool();
+    }
+    if (node.isMember("sensorExposureNum")) {
+        mCurCam->mSensorExposureNum = node["sensorExposureNum"].asInt();
     }
 
     if (node.isMember("MediaCtlConfig")) {
@@ -1004,10 +1010,14 @@ void CameraSensorsParser::updateNVMDir() {
                 }
                 fseek(fp, 0, SEEK_SET);
                 std::unique_ptr<char[]> ptr(new char[size + 1]);
-                ptr[size] = 0;
                 size_t readSize = fread(ptr.get(), sizeof(char), size, fp);
                 fclose(fp);
 
+                if (readSize < size) {
+                    ptr[readSize] = '\0';
+                } else {
+                    ptr[size] = '\0';
+                }
                 if (readSize > 0) {
                     for (auto& nvm : mNVMDeviceInfo) {
                         if (strstr(ptr.get(), nvm.nodeName.c_str()) != nullptr) {

@@ -37,14 +37,14 @@ namespace icamera {
  */
 class RWLock {
 public:
-                RWLock() {}
-                ~RWLock();
+    RWLock() {}
+    ~RWLock();
 
-    status_t    readLock();
-    status_t    tryReadLock();
-    status_t    writeLock();
-    status_t    tryWriteLock();
-    void        unlock();
+    status_t readLock();
+    status_t tryReadLock();
+    status_t writeLock();
+    status_t tryWriteLock();
+    void unlock();
 
     class AutoRLock {
     public:
@@ -64,10 +64,10 @@ public:
 
 private:
     // A RWLock cannot be copied
-                RWLock(const RWLock&);
-   RWLock&      operator = (const RWLock&);
+    RWLock(const RWLock&);
+    RWLock& operator = (const RWLock&);
 
-   pthread_rwlock_t mRWLock = PTHREAD_RWLOCK_INITIALIZER;
+    pthread_rwlock_t mRWLock = PTHREAD_RWLOCK_INITIALIZER;
 };
 
 inline RWLock::~RWLock() {

@@ -233,6 +233,7 @@ void CameraBuffer::freeMemory() {
         default:
             LOGE("Free camera buffer failed, due to memory %d type is not implemented yet.",
                  mV.Memory());
+            break;
     }
 }
 
@@ -339,7 +340,7 @@ void CameraBuffer::updateUserBuffer(void) {
     mU->s.field = getField();
 
     // Use valid setting sequence to align shutter/parameter with buffer
-    mU->sequence = (mSettingSequence < 0) ? getSequence() : mSettingSequence;
+    mU->sequence = (mSettingSequence < 0) ? getSequence() : static_cast<uint32_t>(mSettingSequence);
 }
 
 void CameraBuffer::updateFlags(void) {
@@ -351,8 +352,8 @@ void CameraBuffer::updateFlags(void) {
     if (((mU->flags & BUFFER_FLAG_SW_READ) != 0U) || ((mU->flags & BUFFER_FLAG_SW_WRITE) != 0U)) {
         set = false;
     }
-
-    mV.SetFlags(set ? (mV.Flags() | flag) : (mV.Flags() & (~flag)));
+    const auto f = static_cast<uint32_t>(mV.Flags());
+    mV.SetFlags(set ? (f | flag) : (f & (~flag)));
 }
 
 bool CameraBuffer::isFlagsSet(uint32_t flag) const {
@@ -360,29 +361,37 @@ bool CameraBuffer::isFlagsSet(uint32_t flag) const {
 }
 
 int CameraBuffer::getFd() {
+    int ret = -1;
     switch (mV.Memory()) {
         case V4L2_MEMORY_USERPTR:
-            return mV.Fd(0);
+            ret = mV.Fd(0);
+            break;
         case V4L2_MEMORY_DMABUF:
         case V4L2_MEMORY_MMAP:
-            return mU->dmafd;
+            ret = mU->dmafd;
+            break;
         default:
             LOGE("iomode %d is not supported yet.", mV.Memory());
-            return -1;
+            break;
     }
+    return ret;
 }
 
 void* CameraBuffer::getBufferAddr() {
+    void* ret = nullptr;
     switch (mV.Memory()) {
         case V4L2_MEMORY_USERPTR:
-            return reinterpret_cast<void*>(mV.Userptr(0));
+            ret =  reinterpret_cast<void*>(mV.Userptr(0));
+            break;
         case V4L2_MEMORY_DMABUF:
         case V4L2_MEMORY_MMAP:
-            return mU->addr;
+            ret =  mU->addr;
+            break;
         default:
             LOGE("%s: Not supported memory type %u", __func__, mV.Memory());
-            return nullptr;
+            break;
     }
+    return ret;
 }
 
 CameraBufferMapper::CameraBufferMapper(std::shared_ptr<CameraBuffer> buffer)

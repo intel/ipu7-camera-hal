@@ -15,8 +15,7 @@
  * limitations under the License.
  */
 
-#ifndef ERRORS_H
-#define ERRORS_H
+#pragma once
 
 #include <sys/types.h>
 #include <errno.h>
@@ -65,5 +64,3 @@ enum {
 };
 
 } // namespace icamera
-
-#endif // ERRORS_H

@@ -887,7 +887,8 @@ void dump_indented_icamera_metadata(const icamera_metadata_t *metadata,
     camera_metadata_buffer_entry_t *entry = get_entries(metadata);
     for (i = 0U; i < metadata->entry_count; i++, entry++) {
 
-        const char *tag_name, *tag_section;
+        const char *tag_name;
+        const char *tag_section;
         tag_section = get_icamera_metadata_section_name(entry->tag);
         if (tag_section == NULL) {
             tag_section = "unknownSection";
@@ -961,7 +962,8 @@ static void print_data(int32_t fd, const uint8_t *data_ptr, uint32_t tag,
     }
 
     int index = 0;
-    int j, k;
+    int j;
+    int k;
     for (j = 0; j < lines; j++) {
         dprintf(fd, "%*s[", indentation + 4, "");
         for (k = 0;

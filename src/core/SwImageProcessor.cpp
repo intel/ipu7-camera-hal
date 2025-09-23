@@ -131,7 +131,7 @@ int SwImageProcessor::processNewFrame() {
             static_cast<unsigned char*>(cInBuffer->getBufferAddr()), cInBuffer->getBufferSize(),
             cInBuffer->getFormat(), static_cast<unsigned char*>(cOutBuffer->getBufferAddr()),
             cOutBuffer->getBufferSize(), cOutBuffer->getFormat());
-        CheckAndLogError((ret < 0), ret, "format convertion failed with %d", ret);
+        CheckAndLogError((ret < 0), ret, "format conversion failed with %d", ret);
 
         if (CameraDump::isDumpTypeEnable(DUMP_SW_IMG_PROC_OUTPUT)) {
             CameraDump::dumpImage(mCameraId, cOutBuffer, M_SWIPOP);
@@ -142,7 +142,7 @@ int SwImageProcessor::processNewFrame() {
 
         // Notify listener: No lock here: mBufferConsumerList will not updated in this state
         for (auto& it : BufferQueue::mBufferConsumerList) {
-            it->onFrameAvailable(port, cOutBuffer);
+            it->onBufferAvailable(port, cOutBuffer);
         }
     }
 

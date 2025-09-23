@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef INTEL_3A_PARAMETER_H
-#define INTEL_3A_PARAMETER_H
+#pragma once
 
 #include "AiqSetting.h"
 #include "AiqUtils.h"
@@ -40,7 +39,7 @@ class Intel3AParameter {
     void updateAwbResult(cca::cca_awb_results* awbResult);
     void updatePaResult(cca::cca_pa_params* paResult);
 
-    void fillAfTriggerResult(cca::cca_af_results* afResults);
+    void fillAfTriggerResult(const cca::cca_af_results* afResults);
 
  private:
     void initAeParameter();
@@ -98,5 +97,3 @@ class Intel3AParameter {
 };
 
 } /* namespace icamera */
-
-#endif // INTEL_3A_PARAMETER_H

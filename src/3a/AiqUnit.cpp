@@ -33,7 +33,8 @@ AiqUnit::AiqUnit(int cameraId, SensorHwCtrl *sensorHw, LensHw *lensHw) :
     mCameraId(cameraId),
     mAiqUnitState(AIQ_UNIT_NOT_INIT),
     mOperationMode(CAMERA_STREAM_CONFIGURATION_MODE_NORMAL),
-    mCcaInitialized(false) {
+    mCcaInitialized(false),
+    mActiveStreamCount(0U) {
     mAiqEngine = new AiqEngine(cameraId, sensorHw, lensHw);
 }
 
@@ -75,19 +76,31 @@ int AiqUnit::configure(const stream_config_t *streamList) {
     AutoMutex l(mAiqUnitLock);
     LOG1("<id%d>@%s", mCameraId, __func__);
 
-    if ((mAiqUnitState == AIQ_UNIT_CONFIGURED) && (mOperationMode == streamList->operation_mode)) {
-        LOG2("%s: already configured in the same mode: %d", __func__, mOperationMode);
-        return OK;
-    }
-
-    if ((mAiqUnitState != AIQ_UNIT_INIT) && (mAiqUnitState != AIQ_UNIT_STOP)) {
-        LOGW("%s: configure in wrong state: %d", __func__, mAiqUnitState);
-        return BAD_VALUE;
-    }
-
     std::vector<ConfigMode> configModes;
     PlatformData::getConfigModesByOperationMode(mCameraId, streamList->operation_mode,
                                                 configModes);
+
+    if ((mAiqUnitState == AIQ_UNIT_CONFIGURED) && (mOperationMode == streamList->operation_mode)) {
+        std::vector<int32_t> streamIds;
+        if (configModes.empty() == false) {
+            std::shared_ptr<GraphConfig> graphConfig =
+                CameraContext::getInstance(mCameraId)->getGraphConfig(configModes[0]);
+            if (graphConfig != nullptr) {
+                graphConfig->graphGetStreamIds(streamIds, false);
+            }
+        }
+
+        if (streamIds.size() == mActiveStreamCount) {
+            LOG2("%s: already configured in the same mode: %d", __func__, mOperationMode);
+            return OK;
+        }
+    } else if ((mAiqUnitState != AIQ_UNIT_INIT) && (mAiqUnitState != AIQ_UNIT_STOP)) {
+        LOGW("%s: configure in wrong state: %d", __func__, mAiqUnitState);
+        return BAD_VALUE;
+    } else {
+        LOG2("%s: configure CCA handle", __func__);
+    }
+
     const int ret = initIntelCcaHandle(configModes);
     CheckAndLogError(ret < 0, BAD_VALUE, "@%s failed to create intel cca handle", __func__);
 
@@ -97,12 +110,11 @@ int AiqUnit::configure(const stream_config_t *streamList) {
 }
 
 int AiqUnit::initIntelCcaHandle(const std::vector<ConfigMode> &configModes) {
-    if (mCcaInitialized) {
-        return OK;
-    }
+    deinitIntelCcaHandle();
 
     LOG1("<id%d>@%s", mCameraId, __func__);
     mTuningModes.clear();
+    std::vector<int32_t> streamIds;
     for (const auto &cfg : configModes) {
         TuningMode tuningMode;
         int ret = PlatformData::getTuningModeByConfigMode(mCameraId, cfg, tuningMode);
@@ -163,7 +175,7 @@ int AiqUnit::initIntelCcaHandle(const std::vector<ConfigMode> &configModes) {
         std::shared_ptr<GraphConfig> graphConfig =
             CameraContext::getInstance(mCameraId)->getGraphConfig(cfg);
         if (graphConfig != nullptr) {
-            std::vector<int32_t> streamIds;
+            streamIds.clear();
             graphConfig->graphGetStreamIds(streamIds, false);
             params->aic_stream_ids.count = streamIds.size();
             CheckAndLogError(streamIds.size() > cca::MAX_STREAM_NUM, UNKNOWN_ERROR,
@@ -192,6 +204,7 @@ int AiqUnit::initIntelCcaHandle(const std::vector<ConfigMode> &configModes) {
         dumpCcaInitParam(*params);
     }
 
+    mActiveStreamCount = streamIds.size();
     mCcaInitialized = true;
     return OK;
 }
@@ -231,6 +244,7 @@ void AiqUnit::deinitIntelCcaHandle() {
     }
 
     mCcaInitialized = false;
+    mActiveStreamCount = 0U;
 }
 
 int AiqUnit::start() {

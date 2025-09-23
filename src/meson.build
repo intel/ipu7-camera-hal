@@ -29,7 +29,6 @@ libcamera_sources += files([
     '3a/intel3a/Intel3AParameter.cpp',
     'core/BufferQueue.cpp',
     'core/CameraBuffer.cpp',
-    'core/CameraBufferPool.cpp',
     'core/CameraContext.cpp',
     'core/CameraEvent.cpp',
     'core/CameraStream.cpp',

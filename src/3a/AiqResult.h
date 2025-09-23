@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef AIQ_RESULT_H
-#define AIQ_RESULT_H
+#pragma once
 
 #include "AiqUtils.h"
 #include "AiqSetting.h"
@@ -74,5 +73,3 @@ private:
 };
 
 } /* namespace icamera */
-
-#endif // AIQ_RESULT_H

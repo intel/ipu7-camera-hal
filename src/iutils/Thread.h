@@ -134,7 +134,7 @@ class Thread {
     bool isExited() const;
 
     /**
-     * Overrided by derived class
+     * Overridden by derived class
      */
     virtual void run() {}
 

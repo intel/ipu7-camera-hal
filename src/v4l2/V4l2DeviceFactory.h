@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef V4L2_DEVICE_FACTORY_H
-#define V4L2_DEVICE_FACTORY_H
+#pragma once
 
 #include <map>
 #include <string>
@@ -57,5 +56,3 @@ class V4l2DeviceFactory {
 };
 
 }  // namespace icamera
-
-#endif // V4L2_DEVICE_FACTORY_H

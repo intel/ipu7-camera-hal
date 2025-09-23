@@ -27,11 +27,6 @@
 
 #include "Ipu75xaStaticGraphDataPreloadAutogen.h"
 
-int isSapEnable(char* binaryData)
-{
-    return ((BinaryHeader*)binaryData)->isSapEnable;
-}
-
 void parseTable(char* binaryData, GraphHashCodesTable* table)
 {
     char* fileOffset = binaryData;

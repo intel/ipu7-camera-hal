@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_METADATA_H
-#define CAMERA_METADATA_H
-
+#pragma once
 #include <string>
 
 #include "icamera_metadata_base.h"
@@ -110,7 +108,7 @@ class CameraMetadata {
     size_t entryCount() const;
 
     /**
-     * Is the buffer empty (no entires)
+     * Is the buffer empty (no entries)
      */
     bool isEmpty() const;
 
@@ -192,4 +190,3 @@ class CameraMetadata {
 
 }  // namespace icamera
 
-#endif // CAMERA_METADATA_H

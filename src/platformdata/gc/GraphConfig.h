@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Intel Corporation
+ * Copyright (C) 2019-2025 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -173,7 +173,7 @@ class GraphConfig {
                               IGraphType::ConnectionConfig* conn);
 
     OuterNode* findFrameTerminalOwner(const GraphLink* link);
-    const StaticGraphRunKernel* findKernalForFrameTerminal(const OuterNode* node,
+    const StaticGraphRunKernel* findKernelForFrameTerminal(const OuterNode* node,
                                                            int32_t terminalId);
 
     uint32_t createQueryKeyAttribute(int cameraId);

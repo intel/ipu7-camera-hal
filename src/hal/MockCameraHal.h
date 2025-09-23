@@ -37,7 +37,7 @@ namespace icamera {
  * If open dual cameras in different process, the shared memory must be used to
  * keep the account of the open times.
  *
- * The CameraHal create and maintains followings singleton instancs
+ * The CameraHal create and maintains following singleton instances
  * 1. MediaControl Instance
  * 2. PlatformData Instance
  */

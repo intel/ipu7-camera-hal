@@ -36,8 +36,9 @@ MockPSysDevice::MockPSysDevice(int cameraId) : PSysDevice(cameraId) {
 }
 
 MockPSysDevice::~MockPSysDevice() {
-    mPollThread->exit();
     mExitPending = true;
+    mPollThread->exit();
+    mTaskReadyCondition.notify_one();
     mPollThread->wait();
 
     delete mPollThread;
@@ -54,41 +55,56 @@ void MockPSysDevice::registerPSysDeviceCallback(uint8_t contextId, IPSysDeviceCa
 }
 
 int MockPSysDevice::addTask(const PSysTask& task) {
-    std::lock_guard<std::mutex> l(mDataLock);
-    mTasksMap[task.sequence].insert(task.nodeCtxId);
-
     for (const auto& item : task.terminalBuffers) {
         if (task.sequence < kStartingFrameCount && item.second.handle > 0) {
             char* addr =
                 reinterpret_cast<char*>(::mmap(nullptr, item.second.size, PROT_READ | PROT_WRITE,
                                                MAP_SHARED, item.second.handle, 0));
-            if (mFileSource)
+            if (mFileSource) {
                 mFileSource->fillFrameBuffer(addr, item.second.size, task.sequence);
-            else
+            } else {
                 memset(addr, 0x99, item.second.size);
+            }
             munmap(addr, item.second.size);
         }
     }
 
+    {
+        std::unique_lock<std::mutex> lock(mDataLock);
+        mTasksMap[task.sequence].insert(task.nodeCtxId);
+
+        mTaskReadyCondition.notify_one();
+    }
     return OK;
 }
 
 int MockPSysDevice::poll() {
-    std::lock_guard<std::mutex> l(mDataLock);
     if (mExitPending) {
         return -1;
     }
 
-    if (!mTasksMap.empty()) {
-        auto it = mTasksMap.begin();
-        auto sec = it->second.begin();
+    auto task = mTasksMap.begin();
+    {
+        std::unique_lock<std::mutex> lock(mDataLock);
+        if (mTasksMap.empty()) {
+            const std::cv_status ret =
+                mTaskReadyCondition.wait_for(lock, std::chrono::nanoseconds(2000000000));
+            if (mTasksMap.empty() || (ret == std::cv_status::timeout)) {
+                return 0;
+            }
+        }
+        task = mTasksMap.begin();
+    }
 
-        LOG2("%s, task.nodeCtxId %u, task.sequence %ld", __func__, *sec, it->first);
-        mPSysDeviceCallbackMap[*sec]->bufferDone(it->first);
+    auto sec = task->second.begin();
+    LOG2("%s, task.nodeCtxId %u, task.sequence %ld", __func__, *sec, task->first);
+    mPSysDeviceCallbackMap[*sec]->bufferDone(task->first);
 
-        it->second.erase(sec);
-        if (it->second.empty()) {
-            mTasksMap.erase(it);
+    {
+        std::unique_lock<std::mutex> lock(mDataLock);
+        task->second.erase(sec);
+        if (task->second.empty()) {
+            mTasksMap.erase(task);
         }
     }
 

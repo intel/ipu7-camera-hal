@@ -228,7 +228,7 @@ void SWJpegEncoder::deInit(void) {
 }
 
 /**
- * configue every thread for multi thread jpeg
+ * configure every thread for multi thread jpeg
  *
  * \param package: jpeg encode package
  */
@@ -416,7 +416,8 @@ SWJpegEncoder::CodecWorkerThread::~CodecWorkerThread() {
  */
 status_t SWJpegEncoder::CodecWorkerThread::runThread(const char* name) {
     LOG2("@%s, line:%d", __func__, __LINE__);
-    return this->start();
+    this->start();
+    return OK;
 }
 
 /**
@@ -539,8 +540,8 @@ void SWJpegEncoder::Codec::setJpegQuality(int quality) {
  *
  * mainly, it will set the destination buffer manager, color space, quality.
  *
- * \param width: the width of the jpeg dimentions.
- * \param height: the height of the jpeg dimentions.
+ * \param width: the width of the jpeg dimensions.
+ * \param height: the height of the jpeg dimensions.
  * \param jpegBuf: the dest buffer to store the jpeg data
  * \param jpegBufSize: the size of jpegBuf buffer
  *

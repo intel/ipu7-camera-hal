@@ -18,8 +18,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CAMERA_INCLUDE_CAMERA_V4L2_DEVICE_H_
-#define CAMERA_INCLUDE_CAMERA_V4L2_DEVICE_H_
+#pragma once
 
 #include <errno.h>
 #include <poll.h>
@@ -550,4 +549,3 @@ class V4L2Subdevice final : public V4L2Device {
 };
 
 }  // namespace icamera
-#endif //CAMERA_INCLUDE_CAMERA_V4L2_DEVICE_H_

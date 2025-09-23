@@ -187,7 +187,8 @@ DataContext* CameraContext::getReprocessingDataContextBySeq(int64_t sequence) {
 
     auto it = mSeqToDataContextMap.upper_bound(sequence);
     if (it != mSeqToDataContextMap.begin()) {
-        *mDataContext[mCurrentIndex] = *(--it)->second;
+        --it;
+        *mDataContext[mCurrentIndex] = *(it)->second;
     }
     mDataContext[mCurrentIndex]->setSequence(sequence);
     mSeqToDataContextMap[sequence] = mDataContext[mCurrentIndex];

@@ -48,7 +48,7 @@ void V4l2DeviceFactory::createDeviceFactory(int cameraId) {
 
 /**
  * Release the static instance of V4l2DeviceFactory for cameraId.
- * All device related to the instance of of V4l2DeviceFactory will be release here as well
+ * All device related to the instance of V4l2DeviceFactory will be release here as well
  * After calling this function, all device could not be used anymore.
  */
 void V4l2DeviceFactory::releaseDeviceFactory(int cameraId) {
@@ -64,7 +64,7 @@ void V4l2DeviceFactory::releaseDeviceFactory(int cameraId) {
  *
  * The caller is supposed to get an opened sub device.
  * If openSubDev failed, it just return non-opened instance,
- * and using this instance to call its funtion will cause 'device not open' error,
+ * and using this instance to call its function will cause 'device not open' error,
  *
  * Return a not nullptr sub device pointer
  */

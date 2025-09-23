@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef PLATFORM_DATA_H
-#define PLATFORM_DATA_H
+#pragma once
 
 #include <limits.h>
 #include <map>
@@ -223,9 +222,6 @@ class PlatformData {
                       mUseSensorDigitalGain(false),
                       mUseIspDigitalGain(false),
                       mNeedPreRegisterBuffers(false),
-                      // FRAME_SYNC_S
-                      mFrameSyncCheckEnabled(false),
-                      // FRAME_SYNC_E
                       mEnableAiqd(false),
                       mCurrentMcConf(nullptr),
                       mDVSType(MORPH_TABLE),
@@ -316,9 +312,6 @@ class PlatformData {
             bool mUseSensorDigitalGain;
             bool mUseIspDigitalGain;
             bool mNeedPreRegisterBuffers;
-            // FRAME_SYNC_S
-            bool mFrameSyncCheckEnabled;
-            // FRAME_SYNC_E
             bool mEnableAiqd;
             MediaCtlConf* mCurrentMcConf;
             std::map<int, stream_array_t> mStreamToMcMap;
@@ -466,7 +459,7 @@ class PlatformData {
      * get the sensor description
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return const char*: the sensor descrition string.
+     * \return const char*: the sensor description string.
      */
     static const char* getSensorDescription(int cameraId);
 
@@ -614,16 +607,6 @@ class PlatformData {
      * \return if pre-register buffers or not.
      */
     static bool isNeedToPreRegisterBuffer(int cameraId);
-
-    // FRAME_SYNC_S
-    /**
-     * Check Frame Sync is enabled or not
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return if Frame Sync is enabled or not.
-     */
-    static bool isEnableFrameSyncCheck(int cameraId);
-    // FRAME_SYNC_E
 
     /**
      * Get exposure number
@@ -885,7 +868,7 @@ class PlatformData {
      * in the mMediaCtlConfs.
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return MediaCtlConf*, if it doens't find one, this function will return nullptr.
+     * \return MediaCtlConf*, if it doesn't find one, this function will return nullptr.
      */
     static MediaCtlConf* getMediaCtlConf(int cameraId);
 
@@ -1026,14 +1009,6 @@ class PlatformData {
      */
     static int getISysRawFormat(int cameraId);
 
-    /**
-     * Get the config of the ISYS output per port
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return the config of the ISYS output for the given port.
-     */
-    static stream_t getISysOutputByPort(int cameraId, uuid port);
-
     // CSI_META_S
     /**
      * get CSI meta enabled status
@@ -1086,7 +1061,7 @@ class PlatformData {
     static int calculateFrameParams(int cameraId, SensorFrameParams& sensorFrameParams);
 
     /**
-     * Get the optmized resolutions that supported by input system
+     * Get the optimized resolutions that supported by input system
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
      * \param width:    The width of the request frame
@@ -1148,12 +1123,12 @@ class PlatformData {
     static int getStreamIdByConfigMode(int cameraId, ConfigMode configMode);
 
     /*
-     * Get the max requests number in HAL
+     * Get max pipeline depth
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return the max requests number in HAL
+     * \return the max pipeline depth
      */
-    static int getMaxRequestsInHAL(int cameraId);
+    static int32_t getMaxPipelineDepth(int cameraId);
 
     /*
      * Get the max requests number in flight
@@ -1167,7 +1142,7 @@ class PlatformData {
      * get yuv color range mode
      *
      * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return the correponding camera_yuv_color_range_mode_t.
+     * \return the corresponding camera_yuv_color_range_mode_t.
      */
     static camera_yuv_color_range_mode_t getYuvColorRangeMode(int cameraId);
 
@@ -1206,14 +1181,6 @@ class PlatformData {
      * \return true if the current sensor is CSI Back End capture or not
      */
     static bool isCSIBackEndCapture(int cameraId);
-
-    /**
-     * if ISYS CSI Front End capture enabled
-     *
-     * \param cameraId: [0, MAX_CAMERA_NUMBER - 1]
-     * \return true if the current sensor is CSI Front End capture or not
-     */
-    static bool isCSIFrontEndCapture(int cameraId);
 
     /**
      * if AIQD enabled
@@ -1538,4 +1505,3 @@ class PlatformData {
 
 };
 } /* namespace icamera */
-#endif // PLATFORM_DATA_H
