@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef AIQ_CORE_H
-#define AIQ_CORE_H
+#pragma once
 
 #include <memory>
 #include <unordered_map>
@@ -136,7 +135,7 @@ class AiqCore {
     bool bypassAe(const aiq_parameter_t& param);
     bool bypassAf(const aiq_parameter_t& param);
     bool bypassAwb(const aiq_parameter_t& param);
-    // return ture if skip algo running
+    // return true if skip algo running
     bool skipAlgoRunning(RunRateInfo* info, int algo, bool converged);
     // return true if run rate is larger than config run rate
     bool checkRunRate(float configRunningRate, const RunRateInfo* info);
@@ -204,5 +203,3 @@ class AiqCore {
 };
 
 } /* namespace icamera */
-
-#endif // AIQ_CORE_H

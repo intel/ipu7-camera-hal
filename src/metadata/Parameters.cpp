@@ -49,7 +49,7 @@ void Parameters::merge(const Parameters& other) {
 }
 
 int Parameters::setAeMode(camera_ae_mode_t aeMode) {
-    uint8_t mode = aeMode;
+    uint8_t mode = static_cast<uint8_t>(aeMode);
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(CAMERA_AE_MODE, &mode, 1);
 }
@@ -65,7 +65,7 @@ int Parameters::getAeMode(camera_ae_mode_t& aeMode) const {
 }
 
 int Parameters::setAeState(camera_ae_state_t aeState) {
-    uint8_t state = aeState;
+    uint8_t state = static_cast<uint8_t>(aeState);
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(CAMERA_AE_STATE, &state, 1);
 }
@@ -222,7 +222,7 @@ int Parameters::getFrameRate(float& fps) const {
 }
 
 int Parameters::setAntiBandingMode(camera_antibanding_mode_t bandingMode) {
-    uint8_t mode = bandingMode;
+    uint8_t mode = static_cast<uint8_t>(bandingMode);
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(CAMERA_AE_ANTIBANDING_MODE, &mode, 1);
 }
@@ -238,7 +238,7 @@ int Parameters::getAntiBandingMode(camera_antibanding_mode_t& bandingMode) const
 }
 
 int Parameters::setAwbMode(camera_awb_mode_t awbMode) {
-    uint8_t mode = awbMode;
+    uint8_t mode = static_cast<uint8_t>(awbMode);
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(CAMERA_AWB_MODE, &mode, 1);
 }
@@ -254,7 +254,7 @@ int Parameters::getAwbMode(camera_awb_mode_t& awbMode) const {
 }
 
 int Parameters::setAwbState(camera_awb_state_t awbState) {
-    uint8_t state = awbState;
+    uint8_t state = static_cast<uint8_t>(awbState);
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(CAMERA_AWB_STATE, &state, 1);
 }
@@ -325,7 +325,7 @@ int Parameters::getAwbGains(camera_awb_gains_t& awbGains) const {
 
 int Parameters::setAwbResult(void* data) {
     const uint32_t size = sizeof(camera_awb_result_t);
-    const uint32_t tag = CAMERA_AWB_RESULT;
+    const uint32_t tag = static_cast<uint32_t>(CAMERA_AWB_RESULT);
     ParameterHelper::AutoWLock wl(mData);
 
     if (data == NULL) {
@@ -340,7 +340,7 @@ int Parameters::getAwbResult(void* data) const {
     }
 
     const uint32_t size = sizeof(camera_awb_result_t);
-    const uint32_t tag = CAMERA_AWB_RESULT;
+    const uint32_t tag = static_cast<uint32_t>(CAMERA_AWB_RESULT);
     ParameterHelper::AutoRLock rl(mData);
 
     auto entry = ParameterHelper::getMetadataEntry(mData, tag);
@@ -1149,20 +1149,20 @@ int Parameters::getRun3ACadence(int& cadence) const {
     return OK;
 }
 
-int Parameters::setFisheyeDewarpingMode(camera_fisheye_dewarping_mode_t mode) {
-    uint8_t dewarpingMode = static_cast<uint8_t>(mode);
+int Parameters::setFisheyeDewarpingMode(camera_fisheye_dewarping_mode_t dewarpingMode) {
+    uint8_t mode = static_cast<uint8_t>(dewarpingMode);
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(INTEL_CONTROL_FISHEYE_DEWARPING_MODE,
-                                                      &dewarpingMode, 1);
+                                                      &mode, 1);
 }
 
-int Parameters::getFisheyeDewarpingMode(camera_fisheye_dewarping_mode_t& mode) const {
+int Parameters::getFisheyeDewarpingMode(camera_fisheye_dewarping_mode_t& dewarpingMode) const {
     ParameterHelper::AutoRLock rl(mData);
     auto entry = ParameterHelper::getMetadataEntry(mData, INTEL_CONTROL_FISHEYE_DEWARPING_MODE);
     if (entry.count != 1) {
         return NAME_NOT_FOUND;
     }
-    mode = static_cast<camera_fisheye_dewarping_mode_t>(entry.data.u8[0]);
+    dewarpingMode = static_cast<camera_fisheye_dewarping_mode_t>(entry.data.u8[0]);
     return OK;
 }
 
@@ -1501,7 +1501,7 @@ int Parameters::getAfState(camera_af_state_t& afState) const {
 }
 
 int Parameters::setLensState(bool lensMoving) {
-    uint8_t state = (lensMoving) ? 1 : 0;
+    uint8_t state = (lensMoving) ? 1U : 0U;
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(CAMERA_LENS_STATE, &state, 1);
 }
@@ -1568,7 +1568,7 @@ int Parameters::getSensorMountType(camera_mount_type_t& sensorMountType) const {
     return OK;
 }
 
-// User can set envrionment and then call api to update the debug level.
+// User can set environment and then call api to update the debug level.
 int Parameters::updateDebugLevel() {
     Log::setDebugLevel();
     return OK;
@@ -1632,7 +1632,7 @@ int Parameters::getFaceDetectMode(uint8_t& faceDetectMode) const {
     return OK;
 }
 
-int Parameters::setFaceIds(int* faceIds, int faceNum) {
+int Parameters::setFaceIds(const int* faceIds, int faceNum) {
     ParameterHelper::AutoWLock wl(mData);
     return ParameterHelper::getMetadata(mData).update(CAMERA_STATISTICS_FACE_IDS, faceIds, faceNum);
 }

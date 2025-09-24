@@ -97,7 +97,7 @@ void EXIFMaker::readProperty() {
  * Fills EXIF data after a picture has been taken to
  * record the active sensor, 3A and ISP state to EXIF metadata.
  *
- * This function is intented to set EXIF tags belonging
+ * This function is intended to set EXIF tags belonging
  * to the EXIF "Per Picture Camera Setting" group.
  *
  * @arg params active Android HAL parameters

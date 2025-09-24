@@ -29,10 +29,10 @@ std::vector<IntelCca::CCAHandle> IntelCca::sCcaInstance;
 Mutex IntelCca::sLock;
 
 IntelCca* IntelCca::getInstance(int cameraId, TuningMode mode) {
+    AutoMutex lock(sLock);
     LOG2("<id%d>@%s, tuningMode:%d, cca instance size:%zu", cameraId, __func__, mode,
          sCcaInstance.size());
 
-    AutoMutex lock(sLock);
     for (auto &it : sCcaInstance) {
         if (cameraId == it.cameraId) {
             if (it.ccaHandle.find(mode) == it.ccaHandle.end()) {

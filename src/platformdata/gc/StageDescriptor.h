@@ -22,8 +22,11 @@
 
 namespace icamera {
 
-#define STAGE_UID(stream, stage)          ((((stream)&0xFFFFU) << 16) | (((stage) & 0xFFU) << 8))
-#define PORT_UID(stream, stage, terminal) (STAGE_UID(stream, stage) + ((terminal) & 0xFFU)+ 1U)
+#define STAGE_UID(stream, stage)                                        \
+        ((((static_cast<uint32_t>(stream)) & 0xFFFFU) << 16U) |     \
+         (((static_cast<uint32_t>(stage)) & 0xFFU) << 8U))
+#define PORT_UID(stream, stage, terminal)                               \
+        (STAGE_UID(stream, stage) + ((static_cast<uint32_t>(terminal)) & 0xFFU) + 1U)
 
 #define GET_STREAM_ID(uuid)   (((uuid) >> 16) & 0xFFFF)
 #define GET_STAGE_ID(uuid)    (((uuid) >> 8) & 0xFF)

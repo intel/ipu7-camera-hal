@@ -54,6 +54,8 @@ public:
     int init(std::vector<int> streamIds);
     int reinitAic(const int32_t aicId);
     int deinit();
+    void clearAicResult();
+
     status_t pacConfig(int streamId, const cca::cca_aic_config& aicConfig,
                        const cca::cca_aic_kernel_offset& kernelOffset, uint32_t* offsetPtr,
                        cca::cca_aic_terminal_config* termCfg, const int32_t* statsBufToTermIds);

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef AIQ_RESULT_STORAGE_H
-#define AIQ_RESULT_STORAGE_H
+#pragma once
 
 #include <map>
 
@@ -66,10 +65,10 @@ public:
      *
      * param[in] int64_t sequence: specify which aiq result is needed.
      *
-     * return 1. when sequence id is -1 or not provided, the lastest result will be returned.
+     * return 1. when sequence id is -1 or not provided, the latest result will be returned.
      *        2. when sequence id is larger than -1, the result with gaven sequence id will be returned.
      *        3. if cannot find in result storage, it means either sequence id is too old and its
-     *           result was overrided, or the sequence id is too new, and its result has not been
+     *           result was overridden, or the sequence id is too new, and its result has not been
      *           saved into storage yet. For both cases, nullptr will be returned.
      */
     const AiqResult* getAiqResult(int64_t sequence = -1);
@@ -99,7 +98,7 @@ public:
     const AiqStatistics* getAndLockAiqStatistics();
 
     /**
-     * \brief Clear the mInUse flag of all the AIQ statitics in internal storage.
+     * \brief Clear the mInUse flag of all the AIQ statistics in internal storage.
      */
     void unLockAiqStatistics();
 
@@ -145,5 +144,3 @@ private:
 };
 
 } //namespace icamera
-
-#endif // AIQ_RESULT_STORAGE_H

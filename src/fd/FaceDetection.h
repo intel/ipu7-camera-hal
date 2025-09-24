@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef FACE_DETECTION_H
-#define FACE_DETECTION_H
-
+#pragma once
 #include <ia_types.h>
 
 #include "CameraBuffer.h"
@@ -72,4 +70,3 @@ class FaceDetection {
 
 }  // namespace icamera
 
-#endif // FACE_DETECTION_H

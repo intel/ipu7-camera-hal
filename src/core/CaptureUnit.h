@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef CAPTURE_UNIT_H
-#define CAPTURE_UNIT_H
-
+#pragma once
 #include <map>
 #include <vector>
 
@@ -82,16 +80,16 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
     virtual void removeAllFrameAvailableListener();
 
     /**
-     * \brief CaptureUnit initialze
+     * \brief CaptureUnit initialize
      */
     virtual int init();
 
     /**
      * \brief CaptureUnit deinit
      *
-     * 1. Destory all the buffer pool
+     * 1. Destroy all the buffer pool
      * 2. Deinit the v4l2 device
-     * 3. Destory the poll thread
+     * 3. Destroy the poll thread
      */
     virtual void deinit();
 
@@ -129,12 +127,11 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
     virtual void removeListener(EventType eventType, EventListener* eventListener);
 
     // Overwrite DeviceCallback API
-    void onDequeueBuffer();
+    virtual void onDequeueBuffer();
 
     int createDevices();
     void destroyDevices();
     DeviceBase* findDeviceByPort(uuid port);
-    uuid findDefaultPort(const std::map<uuid, stream_t>& frames) const;
 
     int streamOn();
     void streamOff();
@@ -143,7 +140,10 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
     int processPendingBuffers();
     int queueAllBuffers();
 
- private:
+   private:
+    bool IsSupportPort(uuid port, const std::map<uuid, stream_t>& frames);
+
+    private:
     PollThread<CaptureUnit>* mPollThread;
     int mFlushFd[2];  // Flush file descriptor
 
@@ -172,4 +172,3 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
 
 }  // namespace icamera
 
-#endif // CAPTURE_UNIT_H

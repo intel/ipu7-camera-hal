@@ -57,8 +57,13 @@ static bool get_ipu_info(const std::string& path) {
         return retval;
     }
 
-    struct dirent* entry;
-    while ((entry = readdir(dir)) != nullptr) {
+    struct dirent* entry = nullptr;
+    while (true) {
+        entry = readdir(dir);
+        if (entry == nullptr) {
+            break;
+        }
+
         if ((entry->d_type != DT_LNK) || (strstr(entry->d_name, "0000:") == nullptr)) {
             continue;
         }

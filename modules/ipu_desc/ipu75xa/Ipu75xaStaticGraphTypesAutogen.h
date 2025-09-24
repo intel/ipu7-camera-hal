@@ -34,6 +34,7 @@
 typedef aic::ImagingKernelGroup StaticGraphNodeKernels;
 typedef aic::ia_pac_kernel_info StaticGraphPacRunKernel;
 typedef aic::IaAicFragmentDesc StaticGraphFragmentDesc;
+typedef aic::IaAicUpscalerFragDesc StaticGraphUpscalerFragmentDesc;
 #endif
 
 #ifdef STATIC_GRAPH_USE_IA_LEGACY_TYPES
@@ -60,7 +61,11 @@ enum class NodeResourceId : uint8_t {
     Bbps = 1,
     SwIsys = 2,
     SwGdc = 3,
+    SwScaler = 4,
     SwNntm = 5,
+    SwImv = 6,
+    SwB2b = 7,
+    SwRemosaic = 8,
 };
 
 enum class StaticGraphStatus : uint8_t
@@ -94,6 +99,7 @@ enum class HwSink : uint8_t
     ImageDpSink,
     GmvMatchOutSink,
     ProcessedMainSink,
+    ProcessedSecondarySink,
     AwbSveOutSink,
     IrAeOutSink,
     IrAfStdOutSink,
@@ -137,6 +143,7 @@ struct StaticGraphKernelRes {
 // We add only the fields that are used by tests
 struct StaticGraphKernelSystemApiIoBuffer1_4 {
     uint32_t x_output_offset_per_stripe[4];
+    uint32_t plane_start_address_per_stripe[12];
 };
 
 #endif
@@ -227,10 +234,19 @@ struct StaticGraphRunKernel {
 
 #ifndef STATIC_GRAPH_USE_IA_AIC_TYPES
 
+struct StaticGraphUpscalerFragmentDesc {
+    uint16_t fragmentInputCropLeft = 0;
+    uint16_t fragmentInputCropRight = 0;
+};
+
 struct StaticGraphFragmentDesc {
-    uint16_t inputWidth = 0;
-    uint16_t outputWidth = 0;
-    uint16_t left = 0;
+    uint16_t fragmentInputWidth = 0;
+    uint16_t fragmentOutputWidth = 0;
+    uint16_t fragmentStartX = 0;
+    union
+    {
+        StaticGraphUpscalerFragmentDesc upscalerFragDesc;
+    };
 };
 
 // ia_pac_kernel_info
@@ -279,6 +295,7 @@ enum class GraphElementType : uint8_t {
     ImageDp,
     GmvMatchOut,
     ProcessedMain,
+    ProcessedSecondary,
     AwbSveOut,
     IrAeOut,
     IrAfStdOut,
@@ -296,6 +313,7 @@ enum class GraphElementType : uint8_t {
     LbffBayerWithGmv,
     BbpsWithTnr,
     SwGdc,
+    SwScaler,
     SwNntm,
     LbffRgbIr,
     LbffIrNoGmvIrStream,
@@ -316,6 +334,12 @@ enum class GraphElementType : uint8_t {
     LbffIrWithGmvIrStream,
     LbffDol2InputsWithGmv,
     LbffDol3InputsWithGmv,
+    SwB2b,
+    SwImv,
+    SwRemosaic,
+    LbffDol2InputsBayerStat,
+    LbffDol3InputsBayerStat,
+    LbffDol2InputsWithGmvBayerStat,
 };
 
 enum class LinkType : uint8_t {

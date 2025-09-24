@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_STREAM_H
-#define CAMERA_STREAM_H
-
+#pragma once
 #include "ParamDataType.h"
 #include "BufferQueue.h"
 #include "CameraBuffer.h"
@@ -69,7 +67,7 @@ class CameraStream : public BufferConsumer, public EventSource {
      *
      * \return OK if succeed and BAD_VALUE if failed
      */
-    int allocateMemory(camera_buffer_t* buffer);
+    int allocateMemory(camera_buffer_t* ubuffer);
 
     /**
      * \brief Register the mBufferProducer
@@ -79,7 +77,7 @@ class CameraStream : public BufferConsumer, public EventSource {
     /**
      * \brief The notify when polled or processed one frame buffer
      */
-    virtual int onFrameAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
+    virtual int onBufferAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
 
  private:
     std::shared_ptr<CameraBuffer> userBufferToCameraBuffer(camera_buffer_t* ubuffer);
@@ -99,4 +97,3 @@ class CameraStream : public BufferConsumer, public EventSource {
 
 }  // namespace icamera
 
-#endif // CAMERA_STREAM_H

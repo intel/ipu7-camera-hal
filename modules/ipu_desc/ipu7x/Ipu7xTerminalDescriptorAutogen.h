@@ -169,6 +169,13 @@ enum SW_VAITerminalID
     SW_VAI_TERMINAL_CONNECT_OUTPUT,
 };
 
+enum SW_IMVTerminalID
+{
+    SW_IMV_TERMINAL_CONNECT_INPUT,
+    SW_IMV_TERMINAL_CONNECT_OUTPUT_1,
+    SW_IMV_TERMINAL_CONNECT_OUTPUT_2,
+};
+
 extern TerminalDescriptor SW_ISYSTerminalDesc[];
 extern TerminalDescriptor LBFFTerminalDesc[];
 extern TerminalDescriptor BBPSTerminalDesc[];
@@ -178,6 +185,7 @@ extern TerminalDescriptor SW_GTMTerminalDesc[];
 extern TerminalDescriptor SW_NNTMTerminalDesc[];
 extern TerminalDescriptor SW_SCALERTerminalDesc[];
 extern TerminalDescriptor SW_VAITerminalDesc[];
+extern TerminalDescriptor SW_IMVTerminalDesc[];
 
 extern int CountOfSW_ISYSTerminalDesc;
 extern int CountOfLBFFTerminalDesc;
@@ -188,3 +196,4 @@ extern int CountOfSW_GTMTerminalDesc;
 extern int CountOfSW_NNTMTerminalDesc;
 extern int CountOfSW_SCALERTerminalDesc;
 extern int CountOfSW_VAITerminalDesc;
+extern int CountOfSW_IMVTerminalDesc;

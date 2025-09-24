@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LENS_HW_H
-#define LENS_HW_H
+#pragma once
 
 #include <string>
 
@@ -49,5 +48,3 @@ private:
 };  // class LensHW
 
 } // namespace icamera
-
-#endif // LENS_HW_H

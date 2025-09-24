@@ -30,6 +30,10 @@
 #include <algorithm>
 #include <math.h>
 
+#if SUPPORT_FRAGMENTS == 1
+#include "FragmentsConfigurator.h"
+#endif
+
 #define GRA_CONVERT_TO_RADIANS(degreeAngle) ((double)((degreeAngle)*M_PI/180.0))
 /*
  * External Interfaces
@@ -122,10 +126,20 @@
         sensorMode->verticalCropOffset - sensorMode->croppedImageHeight;
 
     // Input crop to scaler includes sensor, so we need to remove it
-    _originalCropInputToScaler.top = static_cast<int32_t>((_originalCropInputToScaler.top - static_cast<int32_t>(_sensorVerticalCropTop)) * _sensorHorizontalScaling);
-    _originalCropInputToScaler.bottom = static_cast<int32_t>((_originalCropInputToScaler.bottom - static_cast<int32_t>(_sensorVerticalCropBottom)) * _sensorHorizontalScaling);
-    _originalCropInputToScaler.left = static_cast<int32_t>((_originalCropInputToScaler.left - static_cast<int32_t>(_sensorHorizontalCropLeft)) * _sensorVerticalScaling);
-    _originalCropInputToScaler.right = static_cast<int32_t>((_originalCropInputToScaler.right - static_cast<int32_t>(_sensorHorizontalCropRight)) * _sensorVerticalScaling);
+    _originalCropInputToScaler.left = static_cast<int32_t>((_originalCropInputToScaler.left - static_cast<int32_t>(_sensorHorizontalCropLeft)) * _sensorHorizontalScaling);
+    _originalCropInputToScaler.right = static_cast<int32_t>((_originalCropInputToScaler.right - static_cast<int32_t>(_sensorHorizontalCropRight)) * _sensorHorizontalScaling);
+    _originalCropInputToScaler.top = static_cast<int32_t>((_originalCropInputToScaler.top - static_cast<int32_t>(_sensorVerticalCropTop)) * _sensorVerticalScaling);
+    _originalCropInputToScaler.bottom = static_cast<int32_t>((_originalCropInputToScaler.bottom - static_cast<int32_t>(_sensorVerticalCropBottom)) * _sensorVerticalScaling);
+
+    _originalCropScalerToOutput.left = static_cast<int32_t>(_originalCropScalerToOutput.left * _sensorHorizontalScaling);
+    _originalCropScalerToOutput.right = static_cast<int32_t>(_originalCropScalerToOutput.right * _sensorHorizontalScaling);
+    _originalCropScalerToOutput.top = static_cast<int32_t>(_originalCropScalerToOutput.top * _sensorVerticalScaling);
+    _originalCropScalerToOutput.bottom = static_cast<int32_t>(_originalCropScalerToOutput.bottom * _sensorVerticalScaling);
+
+    _originalCropScalerToOutput.left -= cropperRunKernel->resolution_info->input_crop.left;
+    _originalCropScalerToOutput.right -= cropperRunKernel->resolution_info->input_crop.right;
+    _originalCropScalerToOutput.top -= cropperRunKernel->resolution_info->input_crop.top;
+    _originalCropScalerToOutput.bottom -= cropperRunKernel->resolution_info->input_crop.bottom;
  }
 
 /*
@@ -204,77 +218,79 @@ StaticGraphStatus GraphResolutionConfigurator::updateStaticGraphConfig(const Reg
     {
         return StaticGraphStatus::SG_ERROR;
     }
-
-    // Key resolution index
-    uint32_t keyResIndex = 0;
-    if (isCenteredZoom == true)
+    if (roi.fromInput == false)
     {
-        ZoomKeyResolutions* zoomKeyResolutions = nullptr;
-        if (_staticGraph->getZoomKeyResolutions(&zoomKeyResolutions) != StaticGraphStatus::SG_OK)
+        // Key resolution index
+        uint32_t keyResIndex = 0;
+        if (isCenteredZoom == true)
         {
-            return StaticGraphStatus::SG_ERROR;
+            ZoomKeyResolutions* zoomKeyResolutions = nullptr;
+            if (_staticGraph->getZoomKeyResolutions(&zoomKeyResolutions) != StaticGraphStatus::SG_OK)
+            {
+                return StaticGraphStatus::SG_ERROR;
+            }
+
+            // Get key resolution for this ROI
+            // Special case for factor 1, this means there is no zoom, so we select index 0
+            if (userRoi.zoomFactor == 1.0)
+            {
+                keyResIndex = 0;
+            }
+            else if (getZoomKeyResolutionIndex(zoomKeyResolutions, sensorRoi, keyResIndex) != StaticGraphStatus::SG_OK)
+            {
+                return StaticGraphStatus::SG_ERROR;
+            }
+
+            // Update the static configuration according to the key resolution index
+            // Copy the original kernels configuration a _kernels
+            if (_staticGraph->updateConfiguration(keyResIndex) != StaticGraphStatus::SG_OK)
+            {
+                return StaticGraphStatus::SG_ERROR;
+            }
+        }
+        else
+        {
+            if (_staticGraph->updateConfiguration() != StaticGraphStatus::SG_OK)
+            {
+                return StaticGraphStatus::SG_ERROR;
+            }
         }
 
-        // Get key resolution for this ROI
-        // Special case for factor 1, this means there is no zoom, so we select index 0
-        if (userRoi.zoomFactor == 1.0)
-        {
-            keyResIndex = 0;
-        }
-        else if (getZoomKeyResolutionIndex(zoomKeyResolutions, sensorRoi, keyResIndex) != StaticGraphStatus::SG_OK)
-        {
-            return StaticGraphStatus::SG_ERROR;
-        }
+        // Get key resolution for previous ROI
+        uint32_t prevKeyResIndex = 0;
 
-        // Update the static configuration according to the key resolution index
-        // Copy the original kernels configuration a _kernels
-        if (_staticGraph->updateConfiguration(keyResIndex) != StaticGraphStatus::SG_OK)
+        if (prevIsCenteredZoom == true)
         {
-            return StaticGraphStatus::SG_ERROR;
+            ZoomKeyResolutions* zoomKeyResolutions = nullptr;
+            if (_staticGraph->getZoomKeyResolutions(&zoomKeyResolutions) != StaticGraphStatus::SG_OK)
+            {
+                return StaticGraphStatus::SG_ERROR;
+            }
+
+            SensorRoi prevSensorRoi;
+            if (getSensorRoi(prevUserRoi, prevSensorRoi) != StaticGraphStatus::SG_OK)
+            {
+                return StaticGraphStatus::SG_ERROR;
+            }
+
+            // Special case for factor 1, this means there is no zoom, so we select index 0
+            if (prevUserRoi.zoomFactor == 1.0)
+            {
+                prevKeyResIndex = 0;
+            }
+            else if (getZoomKeyResolutionIndex(zoomKeyResolutions, prevSensorRoi, prevKeyResIndex) != StaticGraphStatus::SG_OK)
+            {
+                return StaticGraphStatus::SG_ERROR;
+            }
         }
+        // Update whether if key resolution has changed
+        isKeyResolutionChanged = (keyResIndex == prevKeyResIndex) ? false : true;
     }
-    else
-    {
-        if (_staticGraph->updateConfiguration() != StaticGraphStatus::SG_OK)
-        {
-            return StaticGraphStatus::SG_ERROR;
-        }
-    }
-
-     // Get key resolution for previous ROI
-    uint32_t prevKeyResIndex = 0;
-
-    if (prevIsCenteredZoom == true)
-    {
-        ZoomKeyResolutions* zoomKeyResolutions = nullptr;
-        if (_staticGraph->getZoomKeyResolutions(&zoomKeyResolutions) != StaticGraphStatus::SG_OK)
-        {
-            return StaticGraphStatus::SG_ERROR;
-        }
-
-        SensorRoi prevSensorRoi;
-        if (getSensorRoi(prevUserRoi, prevSensorRoi) != StaticGraphStatus::SG_OK)
-        {
-            return StaticGraphStatus::SG_ERROR;
-        }
-
-        // Special case for factor 1, this means there is no zoom, so we select index 0
-        if (prevUserRoi.zoomFactor == 1.0)
-        {
-            prevKeyResIndex = 0;
-        }
-        else if (getZoomKeyResolutionIndex(zoomKeyResolutions, prevSensorRoi, prevKeyResIndex) != StaticGraphStatus::SG_OK)
-        {
-            return StaticGraphStatus::SG_ERROR;
-        }
-    }
-    // Update whether if key resolution has changed
-    isKeyResolutionChanged = (keyResIndex == prevKeyResIndex) ? false : true;
 
     //
     // Step #2 Dynamic update according to this ROI
     //
-    return updateRunKernelOfScalers(sensorRoi);
+    return updateRunKernelOfScalers(roi.fromInput,sensorRoi);
 }
 
 #endif
@@ -289,14 +305,26 @@ StaticGraphStatus GraphResolutionConfigurator::getSensorRoi(const RegionOfIntere
         return StaticGraphStatus::SG_ERROR;
     }
 
-    auto outputRunKernel = getRunKernel(_outputRunKernelCoord);
-
     if (userRoi.fromInput == true)
     {
-        // Not supported
-        return StaticGraphStatus::SG_ERROR;
+        if (userRoi.zoomFactor == 1 && userRoi.panFactor == 0)
+        {
+            auto cropRunKernel = getRunKernel(_cropperRunKernelCoord);
+            sensorRoi.width = cropRunKernel->resolution_info->output_width;
+            sensorRoi.height = cropRunKernel->resolution_info->output_height;
+            sensorRoi.cropLeft = cropRunKernel->resolution_info->input_crop.left;
+            sensorRoi.cropRight = cropRunKernel->resolution_info->input_crop.right;
+            sensorRoi.cropTop = GRA_ROUND_DOWN(std::min(cropRunKernel->resolution_history->input_height- cropRunKernel->resolution_info->output_height, std::max(0, static_cast<int32_t>(static_cast<int32_t>(cropRunKernel->resolution_history->input_height * userRoi.tiltFactor)))), 2);
+            sensorRoi.cropBottom = cropRunKernel->resolution_info->input_height - cropRunKernel->resolution_info->output_height - sensorRoi.cropTop;
+            // Not supported
+            return StaticGraphStatus::SG_OK;
+        }
+        else
+        {
+            return StaticGraphStatus::SG_ERROR;
+        }
     }
-
+    auto outputRunKernel = getRunKernel(_outputRunKernelCoord);
     // Calculate ROI on output, using original output since user ROI is relative to full output ROI (not after some zoom was performed)
     StaticGraphKernelRes* outputRunKernelResolution = outputRunKernel->resolution_info;
     if (outputRunKernelResolution == nullptr)
@@ -331,90 +359,117 @@ StaticGraphStatus GraphResolutionConfigurator::getSensorRoi(const RegionOfIntere
     return StaticGraphStatus::SG_OK;
 }
 
-StaticGraphStatus GraphResolutionConfigurator::updateRunKernelOfScalers(SensorRoi& roi)
+StaticGraphStatus GraphResolutionConfigurator::updateRunKernelOfScalers(bool fromInput, SensorRoi& roi)
 {
     StaticGraphStatus ret = StaticGraphStatus::SG_OK;
-
     auto downscalerRunKernel = getRunKernel(_downscalerRunKernelCoord);
     auto upscalerRunKernel = getRunKernel(_upscalerRunKernelCoord);
     auto cropperRunKernel = getRunKernel(_cropperRunKernelCoord);
 
-    uint32_t inputWidth = downscalerRunKernel->resolution_info->input_width;
-    uint32_t inputHeight = downscalerRunKernel->resolution_info->input_height;
-
-    uint32_t outputWidth = cropperRunKernel->resolution_info->output_width;
-    uint32_t outputHeight = cropperRunKernel->resolution_info->output_height;
-
-    StaticGraphKernelResCrop downscalerCropHistory;
-    downscalerCropHistory.left = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.left - static_cast<int32_t>(_sensorHorizontalCropLeft)) * _sensorHorizontalScaling);
-    downscalerCropHistory.right = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.right - static_cast<int32_t>(_sensorHorizontalCropRight)) * _sensorHorizontalScaling);
-    downscalerCropHistory.top = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.top - static_cast<int32_t>(_sensorVerticalCropTop)) * _sensorVerticalScaling);
-    downscalerCropHistory.bottom = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.bottom - static_cast<int32_t>(_sensorVerticalCropBottom)) * _sensorVerticalScaling);
-
-    // If ROI is larger than scaler's output resolution - we downscale
-    if (roi.width >= outputWidth)
+    if (fromInput)
     {
-        // Only down scaler is active
-        if (updateRunKernelDownScaler(downscalerRunKernel, roi, inputWidth, inputHeight,
-            outputWidth, outputHeight, &downscalerCropHistory) != StaticGraphStatus::SG_OK)
+        cropperRunKernel->resolution_info->input_crop.top = roi.cropTop;
+        cropperRunKernel->resolution_info->input_crop.bottom = roi.cropBottom;
+
+        // Update resolution history for relevant kernels
+        for (auto& runKernelForUpdate : _kernelsForUpdate)
         {
-            ret = StaticGraphStatus::SG_ERROR;
+            // We update all histories according to upscaler... ignoring any cropping from now on, even if we configured ESPA cropper.
+            StaticGraphRunKernel* runKernelPtr = getRunKernel(runKernelForUpdate);
+            if (updateRunKernelResolutionHistory(runKernelPtr, cropperRunKernel, false) != StaticGraphStatus::SG_OK)
+            {
+                ret = StaticGraphStatus::SG_ERROR;
+            }
         }
-
-        updateRunKernelPassThrough(upscalerRunKernel, outputWidth, outputHeight);
-
-        // When downscaling, cropper is not a part of dynamic scaling, even if it was a part of static configuration.
-        updateRunKernelPassThrough(cropperRunKernel, outputWidth, outputHeight);
     }
     else
     {
-        // Configure downscaler and upscaler according to upscaler constraints
 
-        // Update upscaler info, according constraints. Returns the expected input width and height for upscaler.
-        uint32_t upscalerActualInputWidth;
-        uint32_t upscalerActualInputHeight;
-        uint32_t upscalerActualOutputWidth;
-        uint32_t upscalerActualOutputHeight;
-        if (updateRunKernelUpScaler(upscalerRunKernel, roi.width, roi.height, outputWidth, outputHeight,
-            upscalerActualInputWidth, upscalerActualInputHeight,
-            upscalerActualOutputWidth, upscalerActualOutputHeight) != StaticGraphStatus::SG_OK)
+        uint32_t inputWidth = downscalerRunKernel->resolution_info->input_width;
+        uint32_t inputHeight = downscalerRunKernel->resolution_info->input_height;
+
+        uint32_t outputWidth = cropperRunKernel->resolution_info->output_width;
+        uint32_t outputHeight = cropperRunKernel->resolution_info->output_height;
+
+        StaticGraphKernelResCrop downscalerCropHistory;
+        downscalerCropHistory.left = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.left - static_cast<int32_t>(_sensorHorizontalCropLeft)) * _sensorHorizontalScaling);
+        downscalerCropHistory.right = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.right - static_cast<int32_t>(_sensorHorizontalCropRight)) * _sensorHorizontalScaling);
+        downscalerCropHistory.top = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.top - static_cast<int32_t>(_sensorVerticalCropTop)) * _sensorVerticalScaling);
+        downscalerCropHistory.bottom = static_cast<int32_t>((downscalerRunKernel->resolution_history->input_crop.bottom - static_cast<int32_t>(_sensorVerticalCropBottom)) * _sensorVerticalScaling);
+        if (roi.width == outputWidth || roi.height == outputHeight)
+        {
+            updateRunKernelPassThrough(downscalerRunKernel, inputWidth, inputHeight);
+            updateRunKernelPassThrough(upscalerRunKernel, inputWidth, inputHeight);
+            // Update ESPA crop if required
+            updateRunKernelFinalCropper(cropperRunKernel, inputWidth, inputHeight, outputWidth, outputHeight);
+        }
+        // If ROI is larger than scaler's output resolution - we downscale
+        else if (roi.width > outputWidth)
+        {
+            // Only down scaler is active
+            if (updateRunKernelDownScaler(downscalerRunKernel, roi, inputWidth, inputHeight,
+                outputWidth, outputHeight, &downscalerCropHistory) != StaticGraphStatus::SG_OK)
+            {
+                ret = StaticGraphStatus::SG_ERROR;
+            }
+
+            updateRunKernelPassThrough(upscalerRunKernel, outputWidth, outputHeight);
+
+            // When downscaling, cropper is not a part of dynamic scaling, even if it was a part of static configuration.
+            updateRunKernelPassThrough(cropperRunKernel, outputWidth, outputHeight);
+
+        }
+        else
+        {
+            // Configure downscaler and upscaler according to upscaler constraints
+
+            // Update upscaler info, according constraints. Returns the expected input width and height for upscaler.
+            uint32_t upscalerActualInputWidth;
+            uint32_t upscalerActualInputHeight;
+            uint32_t upscalerActualOutputWidth;
+            uint32_t upscalerActualOutputHeight;
+            if (updateRunKernelUpScaler(upscalerRunKernel, roi.width, roi.height, outputWidth, outputHeight,
+                upscalerActualInputWidth, upscalerActualInputHeight,
+                upscalerActualOutputWidth, upscalerActualOutputHeight) != StaticGraphStatus::SG_OK)
+            {
+                ret = StaticGraphStatus::SG_ERROR;
+            }
+
+            // Update DS cropping and downscale according to the resolution the upscaler requires.
+            if (updateRunKernelDownScaler(downscalerRunKernel, roi, inputWidth, inputHeight,
+                upscalerActualInputWidth, upscalerActualInputHeight, &downscalerCropHistory) != StaticGraphStatus::SG_OK)
+            {
+                ret = StaticGraphStatus::SG_ERROR;
+            }
+
+            // Now that we're done, if downscaler is not doing any scaling, it is better to let it be bypassed and move the cropping to upscaler
+            updateCroppingScaler(downscalerRunKernel, upscalerRunKernel);
+
+            // Update ESPA crop if required
+            updateRunKernelFinalCropper(cropperRunKernel, upscalerActualOutputWidth, upscalerActualOutputHeight, outputWidth, outputHeight);
+        }
+
+        // Update resolution histories according to decisions made above
+        if (updateRunKernelResolutionHistory(upscalerRunKernel, downscalerRunKernel) != StaticGraphStatus::SG_OK)
         {
             ret = StaticGraphStatus::SG_ERROR;
         }
 
-        // Update DS cropping and downscale according to the resolution the upscaler requires.
-        if (updateRunKernelDownScaler(downscalerRunKernel, roi, inputWidth, inputHeight,
-            upscalerActualInputWidth, upscalerActualInputHeight, &downscalerCropHistory) != StaticGraphStatus::SG_OK)
+        if (updateRunKernelResolutionHistory(cropperRunKernel, upscalerRunKernel) != StaticGraphStatus::SG_OK)
         {
             ret = StaticGraphStatus::SG_ERROR;
         }
 
-        // Now that we're done, if downscaler is not doing any scaling, it is better to let it be bypassed and move the cropping to upscaler
-        updateCroppingScaler(downscalerRunKernel, upscalerRunKernel);
-
-        // Update ESPA crop if required
-        updateRunKernelFinalCropper(cropperRunKernel, upscalerActualOutputWidth, upscalerActualOutputHeight, outputWidth, outputHeight);
-    }
-
-    // Update resolution histories according to decisions made above
-    if (updateRunKernelResolutionHistory(upscalerRunKernel, downscalerRunKernel) != StaticGraphStatus::SG_OK)
-    {
-        ret = StaticGraphStatus::SG_ERROR;
-    }
-
-    if (updateRunKernelResolutionHistory(cropperRunKernel, upscalerRunKernel) != StaticGraphStatus::SG_OK)
-    {
-        ret = StaticGraphStatus::SG_ERROR;
-    }
-
-    // Update resolution history for relevant kernels
-    for (auto& runKernelForUpdate : _kernelsForUpdate)
-    {
-        // We update all histories according to upscaler... ignoring any cropping from now on, even if we configured ESPA cropper.
-        StaticGraphRunKernel* runKernelPtr = getRunKernel(runKernelForUpdate);
-        if (updateRunKernelResolutionHistory(runKernelPtr, upscalerRunKernel, false) != StaticGraphStatus::SG_OK)
+        // Update resolution history for relevant kernels
+        for (auto& runKernelForUpdate : _kernelsForUpdate)
         {
-            ret = StaticGraphStatus::SG_ERROR;
+            // We update all histories according to upscaler... ignoring any cropping from now on, even if we configured ESPA cropper.
+            // Anna - I don't know why cropping was ignored. I think it should be after cropping
+            StaticGraphRunKernel* runKernelPtr = getRunKernel(runKernelForUpdate);
+            if (updateRunKernelResolutionHistory(runKernelPtr, cropperRunKernel, false) != StaticGraphStatus::SG_OK)
+            {
+                ret = StaticGraphStatus::SG_ERROR;
+            }
         }
     }
 
@@ -717,11 +772,11 @@ StaticGraphStatus GraphResolutionConfigurator::updateRunKernelFinalCropper(Stati
     runKernel->resolution_info->output_width = outputWidth;
     runKernel->resolution_info->output_height = outputHeight;
 
-     // Crop on the right & bottom in order not to influence resolution history
-    runKernel->resolution_info->input_crop.left = 0;
-    runKernel->resolution_info->input_crop.right = inputWidth - outputWidth;
-    runKernel->resolution_info->input_crop.top = 0;
-    runKernel->resolution_info->input_crop.bottom = inputHeight - outputHeight;
+    // Crop symmetrically
+    runKernel->resolution_info->input_crop.left = GRA_ROUND_DOWN(static_cast<int32_t>((inputWidth - outputWidth) / 2.0), 2);
+    runKernel->resolution_info->input_crop.right = inputWidth - outputWidth - runKernel->resolution_info->input_crop.left;
+    runKernel->resolution_info->input_crop.top = GRA_ROUND_DOWN(static_cast<int32_t>((inputHeight - outputHeight) / 2.0), 2);
+    runKernel->resolution_info->input_crop.bottom = inputHeight - outputHeight - runKernel->resolution_info->input_crop.top;
 
     return StaticGraphStatus::SG_OK;
 }
@@ -733,6 +788,16 @@ StaticGraphStatus GraphResolutionConfigurator::updateCroppingScaler(StaticGraphR
         downscalerRunKernel->resolution_info->input_crop.left - downscalerRunKernel->resolution_info->input_crop.right;
     int32_t heightAfterCtop = downscalerRunKernel->resolution_info->input_height -
         downscalerRunKernel->resolution_info->input_crop.top - downscalerRunKernel->resolution_info->input_crop.bottom;
+
+    int32_t extraPixelsWidth = (downscalerRunKernel->resolution_info->input_width - downscalerRunKernel->resolution_info->input_crop.left - downscalerRunKernel->resolution_info->input_crop.right)-
+                                downscalerRunKernel->resolution_info->output_width;
+
+    widthAfterCtop -= extraPixelsWidth % 4;
+
+    int32_t extraPixelsHeight = (downscalerRunKernel->resolution_info->input_width - downscalerRunKernel->resolution_info->input_crop.left - downscalerRunKernel->resolution_info->input_crop.right) -
+                                downscalerRunKernel->resolution_info->output_width;
+
+    heightAfterCtop -= extraPixelsHeight % 4;
 
      if (widthAfterCtop == downscalerRunKernel->resolution_info->output_width &&
          heightAfterCtop == downscalerRunKernel->resolution_info->output_height)
@@ -1026,8 +1091,8 @@ StaticGraphStatus GraphResolutionConfigurator::undoSensorScaleRipAngle(int32_t& 
 StaticGraphStatus GraphResolutionConfigurator::sensorCropOrScaleExist(bool& sensor_crop_or_scale_exist)
 {
     sensor_crop_or_scale_exist = false;
-    if ((abs(_sensorHorizontalScaling - 1.0F) < 0.01F) ||
-        (abs(_sensorVerticalScaling - 1.0F) < 0.01F) ||
+    if ((abs(_sensorHorizontalScaling - 1.0F) > 0.01F) ||
+        (abs(_sensorVerticalScaling - 1.0F) > 0.01F) ||
         (_sensorHorizontalCropLeft > 0) ||
         (_sensorHorizontalCropRight > 0) ||
         (_sensorVerticalCropTop > 0) ||
@@ -1056,7 +1121,8 @@ Ipu8GraphResolutionConfigurator::Ipu8GraphResolutionConfigurator(IStaticGraphCon
         initRunKernel(GraphResolutionConfiguratorKernelRole::UpScaler, _upscalerRunKernel) != StaticGraphStatus::SG_OK ||
         initRunKernel(GraphResolutionConfiguratorKernelRole::EspaCropper, _cropperRunKernel) != StaticGraphStatus::SG_OK ||
         initOutputRunKernel() != StaticGraphStatus::SG_OK ||
-        initKernelsForUpdate() != StaticGraphStatus::SG_OK)
+        initKernelsForUpdate() != StaticGraphStatus::SG_OK ||
+        _node == nullptr)
     {
         _staticGraph = nullptr;
         return;
@@ -1079,7 +1145,17 @@ Ipu8GraphResolutionConfigurator::Ipu8GraphResolutionConfigurator(IStaticGraphCon
     _upscalerStepW *= 2;
     _upscalerStepH *= 2;
 
-     // Save original values for kernels that are being updated
+    // Due to upscaler constraints, we should avoid having too many units.
+    // Number of pixels that cannot be used when upscaling a stripe may be up to ~ 2*units
+    // For details: https://hsdes.intel.com/appstore/article-one/#/article/15018342122
+    // This affects the number of possible zoom steps, but for large resolutions it is OK to enlarge the step
+    while (outputWidth / _upscalerStepW > 70)
+    {
+        _upscalerStepW *= 2;
+        _upscalerStepH *= 2;
+    }
+
+    // Save original values for kernels that are being updated
 
     _originalCropOfDownScaler = _downscalerRunKernel->resolution_info->input_crop;
     _originalCropOfEspaCropper = _cropperRunKernel->resolution_info->input_crop;
@@ -1106,12 +1182,36 @@ Ipu8GraphResolutionConfigurator::Ipu8GraphResolutionConfigurator(IStaticGraphCon
         return;
     }
 
-    if (sensorMode->horizontalScalingDenominator) {
+    if (sensorMode->horizontalScalingDenominator)
+    {
         _sensorHorizontalScaling = static_cast<double>(sensorMode->horizontalScalingNumerator) / sensorMode->horizontalScalingDenominator;
     }
-    if (sensorMode->verticalScalingDenominator) {
+
+    if (sensorMode->verticalScalingDenominator)
+    {
         _sensorVerticalScaling = static_cast<double>(sensorMode->verticalScalingNumerator) / sensorMode->verticalScalingDenominator;
     }
+
+#if SUPPORT_FRAGMENTS == 1
+    if (_node != nullptr && _node->GetNumberOfFragments() > 1)
+    {
+        _fragmentsConfigurator = new Ipu8FragmentsConfigurator(_staticGraph, _node, _upscalerStepW);
+    }
+#endif
+}
+
+Ipu8GraphResolutionConfigurator::~Ipu8GraphResolutionConfigurator()
+{
+    _kernelsForUpdateAfterCropper.clear();
+    _kernelsForUpdateAfterUpscaler.clear();
+
+#if SUPPORT_FRAGMENTS == 1
+    if (_fragmentsConfigurator != nullptr)
+    {
+        delete _fragmentsConfigurator;
+        _fragmentsConfigurator = nullptr;
+    }
+#endif
 }
 
 StaticGraphStatus Ipu8GraphResolutionConfigurator::initRunKernel(GraphResolutionConfiguratorKernelRole role, StaticGraphRunKernel*& runKernel)
@@ -1139,6 +1239,10 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::initRunKernel(uint32_t kernel
                 if (node->nodeKernels.kernelList[j].run_kernel.kernel_uuid == kernelUuid)
                 {
                     runKernel = &node->nodeKernels.kernelList[j].run_kernel;
+                    if (node->type == NodeTypes::Cb)
+                    {
+                        _node = node;
+                    }
                     return StaticGraphStatus::SG_OK;
                 }
             }
@@ -1213,6 +1317,21 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::initKernelsForUpdate()
         if (initRunKernel(kernelUuid, runKernel) == StaticGraphStatus::SG_OK)
         {
             _kernelsForUpdateAfterUpscaler.push_back(runKernel);
+        }
+    }
+
+    std::vector<std::pair<uint32_t, uint32_t>> smurfUuids;
+    GraphResolutionConfiguratorHelper::getSmurfRunKernelUuid(smurfUuids);
+
+    for (auto& smurfUuid : smurfUuids)
+    {
+        StaticGraphRunKernel* runKernel;
+        StaticGraphRunKernel* deviceRunKernel;
+        if (initRunKernel(smurfUuid.first, runKernel) == StaticGraphStatus::SG_OK &&
+            initRunKernel(smurfUuid.second, deviceRunKernel) == StaticGraphStatus::SG_OK)
+        {
+            std::pair<StaticGraphRunKernel*, StaticGraphRunKernel*> runKernelPair = std::make_pair(runKernel, deviceRunKernel);
+            _smurfKernels.push_back(runKernelPair);
         }
     }
 
@@ -1306,11 +1425,6 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelOfScalers(Reso
 {
     StaticGraphStatus ret = StaticGraphStatus::SG_OK;
 
-    //uint32_t fragments = 1;
-    //auto downscalerFragments = getKernelFragments(_downscalerRunKernelCoord);
-    //auto upscalerFragments = getKernelFragments(_upscalerRunKernelCoord);
-    //auto cropperFragments = getKernelFragments(_cropperRunKernelCoord);
-
     uint32_t inputWidth = _downscalerRunKernel->resolution_info->input_width;
     uint32_t inputHeight = _downscalerRunKernel->resolution_info->input_height;
 
@@ -1323,17 +1437,20 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelOfScalers(Reso
     if (roi.width >= outputWidth)
     {
         // Only down scaler is active
-        if (updateRunKernelDownScaler(_downscalerRunKernel, roi, outputWidth, outputHeight) != StaticGraphStatus::SG_OK)
+        uint32_t dsOutputWidth = outputWidth;
+        uint32_t dsOutputHeight = outputHeight;
+
+        if (updateRunKernelDownScaler(_downscalerRunKernel, roi, dsOutputWidth, dsOutputHeight) != StaticGraphStatus::SG_OK)
         {
             ret = StaticGraphStatus::SG_ERROR;
         }
 
-        // Pass-through. Must call cropper function in order to update the system API.
         StaticGraphKernelResCrop EmptyCrop = { 0, 0, 0, 0 };
-        if (updateRunKernelCropper(_cropperRunKernel, roi, outputWidth, outputHeight, outputWidth, outputHeight, EmptyCrop) != StaticGraphStatus::SG_OK)
+        if (updateRunKernelCropper(_cropperRunKernel, roi, dsOutputWidth, dsOutputHeight, outputWidth, outputHeight, downscalerCropHist) != StaticGraphStatus::SG_OK)
         {
             ret = StaticGraphStatus::SG_ERROR;
         }
+
         updateRunKernelPassThrough(_upscalerRunKernel, outputWidth, outputHeight);
     }
     else
@@ -1385,32 +1502,66 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelOfScalers(Reso
         }
     }
 
-    // :TODO: Striping Support
-    // Currently we assume one stripe.
-    //updateKernelFragments(_downscalerRunKernel, downscalerFragments, fragments);
-    //updateKernelFragments(_upscalerRunKernel, upscalerFragments, fragments);
-    //updateKernelFragments(_cropperRunKernel, cropperFragments, fragments);
+    // After resolution history was updated, re-configure SAP devices to get the correct FOV
+    // We do not change the sap feeders configuration, only update the crop & scale of smurfs
+    for (auto& runKernelForUpdate : _smurfKernels)
+    {
+        if (updateRunKernelSmurf(runKernelForUpdate.first, runKernelForUpdate.second) != StaticGraphStatus::SG_OK)
+        {
+            ret = StaticGraphStatus::SG_ERROR;
+        }
+    }
 
     if (ret == StaticGraphStatus::SG_OK)
     {
         ret = SanityCheck();
     }
 
+    if (_fragmentsConfigurator != nullptr)
+    {
+        // Configure fragments according to the new zoomed run kernels information
+        _fragmentsConfigurator->configureFragments();
+    }
+
     return ret;
 }
 
-StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelDownScaler(StaticGraphRunKernel* runKernel, ResolutionRoi& roi,
-    uint32_t outputWidth, uint32_t outputHeight)
+StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelDownScaler(StaticGraphRunKernel* runKernel, ResolutionRoi& roi, uint32_t& outputWidth, uint32_t& outputHeight)
 {
     StaticGraphStatus ret = StaticGraphStatus::SG_OK;
 
-    runKernel->resolution_info->output_width = outputWidth;
-    runKernel->resolution_info->output_height = outputHeight;
+    if (_fragmentsConfigurator == nullptr)
+    {
+        // No fragments, crop to ROI and downscale to output resolution
+        runKernel->resolution_info->output_width = outputWidth;
+        runKernel->resolution_info->output_height = outputHeight;
 
-    runKernel->resolution_info->input_crop.left = roi.left;
-    runKernel->resolution_info->input_crop.right = roi.right;
-    runKernel->resolution_info->input_crop.top = roi.top;
-    runKernel->resolution_info->input_crop.bottom = roi.bottom;
+        runKernel->resolution_info->input_crop.left = roi.left;
+        runKernel->resolution_info->input_crop.right = roi.right;
+        runKernel->resolution_info->input_crop.top = roi.top;
+        runKernel->resolution_info->input_crop.bottom = roi.bottom;
+    }
+    else
+    {
+        // Fragments, leave the crop to espa crop, configure according to desired scale factor
+        // Since ESPA can only crop, make sure new output sizes are larger or equal to requested sizes
+        auto resInfo = runKernel->resolution_info;
+
+        // If we have frgments, downscaler cannot perform left cropping
+        auto scaleFactorW = static_cast<double>(roi.width) / outputWidth;
+        auto scaleFactorH = static_cast<double>(roi.height) / outputHeight;
+        auto scaleFactor = std::max(scaleFactorW, scaleFactorH);
+
+        runKernel->resolution_info->input_crop = _originalCropOfDownScaler;
+
+        runKernel->resolution_info->output_width = std::max(outputWidth,
+            GRA_ROUND_UP(static_cast<uint32_t>(ceil(static_cast<double>(resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right) / scaleFactor)), 4));
+        runKernel->resolution_info->output_height = std::max(outputHeight,
+            GRA_ROUND_UP(static_cast<uint32_t>(ceil(static_cast<double>(resInfo->input_height - resInfo->input_crop.top - resInfo->input_crop.bottom) / scaleFactor)), 2));
+
+        outputWidth = runKernel->resolution_info->output_width;
+        outputHeight = runKernel->resolution_info->output_height;
+    }
 
     return ret;
 }
@@ -1433,23 +1584,6 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelCropper(Static
     runKernel->resolution_info->input_crop.bottom = 0;
 
     // In certain cases need to adjust negative and/or odd crop values.
-    if (downscalerCropHist.left < 0)
-    {
-        downscalerCropHist.left = 0;
-    }
-    if (downscalerCropHist.right < 0)
-    {
-        downscalerCropHist.right = 0;
-    }
-    if (downscalerCropHist.top < 0)
-    {
-        downscalerCropHist.top = 0;
-    }
-    if (downscalerCropHist.bottom < 0)
-    {
-        downscalerCropHist.bottom = 0;
-    }
-
     if (downscalerCropHist.left & 1)
     {
         downscalerCropHist.left = downscalerCropHist.left - 1;
@@ -1470,29 +1604,30 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelCropper(Static
     // Configure to crop the required amount. First try to use the original DS cropping (Remove padding)
     int32_t totalHorizontalCrop = inputWidth - outputWidth;
 
-    int32_t originalDsPadding = downscalerCropHist.left < 0 ? -downscalerCropHist.left : 0;
-    if (totalHorizontalCrop >= originalDsPadding && originalDsPadding > 0)
+    int32_t originalDsCrop = downscalerCropHist.left < 0 ? -downscalerCropHist.left : 0;
+    if (totalHorizontalCrop >= originalDsCrop && originalDsCrop > 0)
     {
-        runKernel->resolution_info->input_crop.left = originalDsPadding;
-        totalHorizontalCrop -= originalDsPadding;
+        runKernel->resolution_info->input_crop.left = originalDsCrop;
+        totalHorizontalCrop -= originalDsCrop;
 
         // Padding was handled, no need to handle again
         downscalerCropHist.left = 0;
     }
 
-    originalDsPadding = downscalerCropHist.right < 0 ? -downscalerCropHist.right : 0;
-    if (totalHorizontalCrop >= originalDsPadding && originalDsPadding > 0)
+    originalDsCrop = downscalerCropHist.right < 0 ? -downscalerCropHist.right : 0;
+    if (totalHorizontalCrop >= originalDsCrop && originalDsCrop > 0)
     {
-        runKernel->resolution_info->input_crop.right = originalDsPadding;
-        totalHorizontalCrop -= originalDsPadding;
+        runKernel->resolution_info->input_crop.right = originalDsCrop;
+        totalHorizontalCrop -= originalDsCrop;
 
         // Padding was handled, no need to handle again
         downscalerCropHist.right = 0;
     }
 
     // Now crop symmetrically to TNR size if any more cropping is required
+    // :TODO: fix this for PTZ with striping since should take roi into account
     runKernel->resolution_info->input_crop.left += GRA_ROUND_DOWN(static_cast<uint32_t>(static_cast<double>(totalHorizontalCrop)) / 2, 2);
-    runKernel->resolution_info->input_crop.right += GRA_ROUND_UP(static_cast<uint32_t>(static_cast<double>(totalHorizontalCrop)) / 2, 2);
+    runKernel->resolution_info->input_crop.right += (totalHorizontalCrop - GRA_ROUND_DOWN(static_cast<uint32_t>(static_cast<double>(totalHorizontalCrop)) / 2, 2));
 
     if (roi.left < static_cast<uint32_t>(runKernel->resolution_info->input_crop.left))
     {
@@ -1508,29 +1643,30 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelCropper(Static
     // Configure to crop the required amount. First try to use the original DS cropping (Remove padding)
     int32_t totalVerticalCrop = inputHeight - outputHeight;
 
-    originalDsPadding = downscalerCropHist.top < 0 ? -downscalerCropHist.top : 0;
-    if (totalVerticalCrop >= originalDsPadding && originalDsPadding > 0)
+    originalDsCrop = downscalerCropHist.top < 0 ? -downscalerCropHist.top : 0;
+    if (totalVerticalCrop >= originalDsCrop && originalDsCrop > 0)
     {
-        runKernel->resolution_info->input_crop.top = originalDsPadding;
-        totalVerticalCrop -= originalDsPadding;
+        runKernel->resolution_info->input_crop.top = originalDsCrop;
+        totalVerticalCrop -= originalDsCrop;
 
         // Padding was handled, no need to handle again
         downscalerCropHist.top = 0;
     }
 
-    originalDsPadding = downscalerCropHist.bottom < 0 ? -downscalerCropHist.bottom : 0;
-    if (totalVerticalCrop >= originalDsPadding && originalDsPadding > 0)
+    originalDsCrop = downscalerCropHist.bottom < 0 ? -downscalerCropHist.bottom : 0;
+    if (totalVerticalCrop >= originalDsCrop && originalDsCrop > 0)
     {
-        runKernel->resolution_info->input_crop.bottom = originalDsPadding;
-        totalVerticalCrop -= originalDsPadding;
+        runKernel->resolution_info->input_crop.bottom = originalDsCrop;
+        totalVerticalCrop -= originalDsCrop;
 
         // Padding was handled, no need to handle again
         downscalerCropHist.bottom = 0;
     }
 
     // Now crop symmetrically to TNR size if any more cropping is required
+    // :TODO: fix this for PTZ with striping since should take roi into account
     runKernel->resolution_info->input_crop.top += GRA_ROUND_DOWN(static_cast<uint32_t>(static_cast<double>(totalVerticalCrop)) / 2, 2);
-    runKernel->resolution_info->input_crop.bottom += GRA_ROUND_UP(static_cast<uint32_t>(static_cast<double>(totalVerticalCrop)) / 2, 2);
+    runKernel->resolution_info->input_crop.bottom += (totalVerticalCrop - GRA_ROUND_DOWN(static_cast<uint32_t>(static_cast<double>(totalVerticalCrop)) / 2, 2));
 
     if (roi.top < static_cast<uint32_t>(runKernel->resolution_info->input_crop.top))
     {
@@ -1559,6 +1695,8 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelCropper(Static
         return StaticGraphStatus::SG_ERROR;
     }
 
+    // The following will update the system API for single stripe. In case there are additional stripes system API will
+    // be configured by FrgamentsConfigurator.
     StaticGraphKernelSystemApiIoBuffer1_4* systemApi = reinterpret_cast<StaticGraphKernelSystemApiIoBuffer1_4*>
         (static_cast<int8_t*>(runKernel->system_api.data) + GRA_ROUND_UP(sizeof(SystemApiRecordHeader), 4));
 
@@ -1591,13 +1729,15 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelUpScaler(Stati
     uint32_t actualCropW = units * _upscalerStepW;
     uint32_t actualCropH = units * _upscalerStepH;
 
-    uint32_t deltaW = GRA_ROUND_DOWN((totalCropW - actualCropW) / 2, 2);
-    uint32_t deltaH = GRA_ROUND_DOWN((totalCropH - actualCropH) / 2, 2);
+    uint32_t deltaLeft = GRA_ROUND_DOWN((totalCropW - actualCropW) / 2, 2);
+    uint32_t deltaRight = totalCropW - actualCropW - deltaLeft;
+    uint32_t deltaTop = GRA_ROUND_DOWN((totalCropH - actualCropH) / 2, 2);
+    uint32_t deltaBottom = totalCropH - actualCropH - deltaTop;
 
-    runKernel->resolution_info->input_crop.left = roi.left - cropperKernelCrop.left - deltaW;
-    runKernel->resolution_info->input_crop.right = actualCropW - runKernel->resolution_info->input_crop.left;
-    runKernel->resolution_info->input_crop.top = roi.top - cropperKernelCrop.top - deltaH;
-    runKernel->resolution_info->input_crop.bottom = actualCropH - runKernel->resolution_info->input_crop.top;
+    runKernel->resolution_info->input_crop.left = roi.left - cropperKernelCrop.left - deltaLeft;
+    runKernel->resolution_info->input_crop.right = roi.right - cropperKernelCrop.right - deltaRight;
+    runKernel->resolution_info->input_crop.top = roi.top - cropperKernelCrop.top - deltaTop;
+    runKernel->resolution_info->input_crop.bottom = roi.bottom - cropperKernelCrop.bottom - deltaBottom;
 
     if (runKernel->resolution_info->input_crop.left < 0)
     {
@@ -1623,34 +1763,36 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelUpScaler(Stati
     return ret;
 }
 
-StaticGraphFragmentDesc* Ipu8GraphResolutionConfigurator::getKernelFragments(RunKernelCoords& coord)
+StaticGraphStatus Ipu8GraphResolutionConfigurator::updateRunKernelSmurf(StaticGraphRunKernel* smurfRunKernel, StaticGraphRunKernel* deviceRunKernel)
 {
-    GraphTopology* graphTopology = nullptr;
-    StaticGraphStatus status = _staticGraph->getGraphTopology(&graphTopology);
+    StaticGraphStatus ret = StaticGraphStatus::SG_OK;
 
-    if (status != StaticGraphStatus::SG_OK) {
-        return nullptr;
-    }
-
-    auto node = graphTopology->links[coord.nodeInd]->destNode;
-    return node->nodeKernels.kernelList[coord.kernelInd].fragment_descs;
-}
-
-StaticGraphStatus Ipu8GraphResolutionConfigurator::updateKernelFragments(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* fragmentsDesc, uint32_t fragments)
-{
-    if (runKernel == nullptr || fragmentsDesc == nullptr)
+    auto resInfo = smurfRunKernel->resolution_info;
+    if (resInfo->input_width == 0 || resInfo->input_height == 0)
     {
-        return StaticGraphStatus::SG_ERROR;
-    }
-
-    if (fragments == 1)
-    {
-        // Nothing to do
         return StaticGraphStatus::SG_OK;
     }
 
-    // Add support here
-    return StaticGraphStatus::SG_OK;
+    // We need to reach new history for device, without the crop already done by feeder.
+    // The hist of the smurf is the crop already being done by feeder, mutliplied by segmap factor (without smurf factor which changes)
+    StaticGraphKernelResCrop smurfNewCrop;
+    smurfNewCrop.left = deviceRunKernel->resolution_history->input_crop.left - smurfRunKernel->resolution_history->input_crop.left;
+    smurfNewCrop.right = deviceRunKernel->resolution_history->input_crop.right - smurfRunKernel->resolution_history->input_crop.right;
+    smurfNewCrop.top = deviceRunKernel->resolution_history->input_crop.top - smurfRunKernel->resolution_history->input_crop.top;
+    smurfNewCrop.bottom = deviceRunKernel->resolution_history->input_crop.bottom - smurfRunKernel->resolution_history->input_crop.bottom;
+
+    // Now calculate how much is left for the smurf to crop
+    // Translate from history units to device units
+    double newInputToDeviceFactor = static_cast<double>(deviceRunKernel->resolution_history->input_width - deviceRunKernel->resolution_history->input_crop.left - deviceRunKernel->resolution_history->input_crop.right) /
+        deviceRunKernel->resolution_history->output_width;
+
+    // Now translate from history units to smurf output (device)
+    smurfRunKernel->resolution_info->output_crop.left = static_cast<int32_t>(smurfNewCrop.left / newInputToDeviceFactor);
+    smurfRunKernel->resolution_info->output_crop.right = static_cast<int32_t>(smurfNewCrop.right / newInputToDeviceFactor);
+    smurfRunKernel->resolution_info->output_crop.top = static_cast<int32_t>(smurfNewCrop.top / newInputToDeviceFactor);
+    smurfRunKernel->resolution_info->output_crop.bottom = static_cast<int32_t>(smurfNewCrop.bottom / newInputToDeviceFactor);
+
+    return ret;
 }
 
 StaticGraphStatus Ipu8GraphResolutionConfigurator::SanityCheck()
@@ -1691,12 +1833,12 @@ StaticGraphStatus Ipu8GraphResolutionConfigurator::SanityCheck()
     int32_t widthAfterCrop = _downscalerRunKernel->resolution_info->input_width - _downscalerRunKernel->resolution_info->input_crop.left - _downscalerRunKernel->resolution_info->input_crop.right;
     int32_t heightAfterCrop = _downscalerRunKernel->resolution_info->input_height - _downscalerRunKernel->resolution_info->input_crop.top - _downscalerRunKernel->resolution_info->input_crop.bottom;
 
-     if (widthAfterCrop < 0 || widthAfterCrop < _downscalerRunKernel->resolution_info->output_width ||
-         heightAfterCrop < 0 || heightAfterCrop < _downscalerRunKernel->resolution_info->output_height ||
-         static_cast<double>(widthAfterCrop) / _downscalerRunKernel->resolution_info->output_width > 16)
-     {
-         return StaticGraphStatus::SG_ERROR;
-     }
+    if (widthAfterCrop < 0 || widthAfterCrop < _downscalerRunKernel->resolution_info->output_width ||
+        heightAfterCrop < 0 || heightAfterCrop < _downscalerRunKernel->resolution_info->output_height ||
+        static_cast<double>(widthAfterCrop) / _downscalerRunKernel->resolution_info->output_width > 16)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
 
     // Make sure US is actually up scaling
     widthAfterCrop = _upscalerRunKernel->resolution_info->input_width - _upscalerRunKernel->resolution_info->input_crop.left - _upscalerRunKernel->resolution_info->input_crop.right;

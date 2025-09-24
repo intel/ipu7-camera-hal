@@ -161,7 +161,6 @@ struct MediaCtlConf {
     std::vector<McLink> links;
     std::map<std::string, std::vector<McRoute>> routings;
     std::vector<McFormat> formats;
-    std::vector<McOutput> outputs;
     std::vector<McVideoNode> videoNodes;
     int mcId;
     int outputWidth;

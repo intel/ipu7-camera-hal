@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef I_PIPE_MANAGER_FACTORY
-#define I_PIPE_MANAGER_FACTORY
+#pragma once
 
 #include "IPipeManager.h"
 #include "CameraScheduler.h"
@@ -29,7 +28,7 @@ namespace icamera {
 class IPipeManagerFactory {
  public:
     /**
-     * \brief Select the IPipeManager accroding to config
+     * \brief Select the IPipeManager according to config
      *
      * \param cameraId: the camera id
      * \param PipeManagerCallback: the callback object
@@ -40,5 +39,3 @@ class IPipeManagerFactory {
                                             std::shared_ptr<CameraScheduler>& scheduler);
 };
 }  // namespace icamera
-
-#endif // I_PIPE_MANAGER_FACTORY

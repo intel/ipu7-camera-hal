@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef IPROCESSING_UNIT_FACTORY_H
-#define IPROCESSING_UNIT_FACTORY_H
+#pragma once
 
 #include "AiqUnit.h"
 #include "CameraScheduler.h"
@@ -41,5 +40,3 @@ class IProcessingUnitFactory {
                                                   std::shared_ptr<CameraScheduler> scheduler);
 };
 }  // namespace icamera
-
-#endif // IPROCESSING_UNIT_FACTORY_H

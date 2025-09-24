@@ -74,7 +74,7 @@ int V4L2Subdevice::SetFormat(const struct v4l2_subdev_format& format) {
     LOG1("@%s", __func__);
 
     if ((state_ != SubdevState::OPEN) && (state_ != SubdevState::CONFIGURED)) {
-        LOGE("%s: Invaild Device status: %d", __func__, state_);
+        LOGE("%s: Invalid Device status: %d", __func__, state_);
         return -EINVAL;
     }
 
@@ -93,7 +93,7 @@ int V4L2Subdevice::GetFormat(struct v4l2_subdev_format* format) {
     LOG1("@%s", __func__);
 
     if ((state_ != SubdevState::OPEN) && (state_ != SubdevState::CONFIGURED)) {
-        LOGE("%s: Invaild Device status: %d", __func__, state_);
+        LOGE("%s: Invalid Device status: %d", __func__, state_);
         return -EINVAL;
     }
 
@@ -131,7 +131,7 @@ int V4L2Subdevice::SetSelection(const struct v4l2_subdev_selection& selection) {
     LOG1("@%s", __func__);
 
     if ((state_ != SubdevState::OPEN) && (state_ != SubdevState::CONFIGURED)) {
-        LOGE("%s: Invaild Device status: %d", __func__, state_);
+        LOGE("%s: Invalid Device status: %d", __func__, state_);
         return -EINVAL;
     }
 

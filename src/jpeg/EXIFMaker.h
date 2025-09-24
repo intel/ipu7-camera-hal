@@ -19,7 +19,7 @@
 #include <string>
 
 #include "EXIFMetaData.h"
-#include "ExifCreater.h"
+#include "ExifCreator.h"
 #include "AiqResult.h"
 #include "CameraContext.h"
 #include "iutils/Utils.h"
@@ -53,7 +53,7 @@ class EXIFMaker {
     void setSensorAeConfig(const AiqResult* aiqResult, const DataContext* dataContext);
 
  private:  // member variables
-    ExifCreater mEncoder;
+    ExifCreator mEncoder;
     exif_attribute_t mExifAttributes;
     size_t mExifSize;
     bool mInitialized;

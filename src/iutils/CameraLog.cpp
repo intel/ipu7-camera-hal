@@ -41,12 +41,12 @@ GroupDesc globalGroupsDescp[TAGS_MAX_NUM];
 namespace icamera {
 
 uint32_t gLogLevel = 0U;
-uint32_t gPerfLevel = 0U;
+static uint32_t gPerfLevel = 0U;
 int32_t gSlowlyRunRatio = 0;
 // DUMP_ENTITY_TOPOLOGY_S
-bool gIsDumpMediaTopo = false;
+static bool gIsDumpMediaTopo = false;
 // DUMP_ENTITY_TOPOLOGY_E
-bool gIsDumpMediaInfo = false;
+static bool gIsDumpMediaInfo = false;
 
 const char* cameraDebugLogToString(uint32_t level) {
     switch (level) {
@@ -147,26 +147,26 @@ void doLogBody(int logTag, uint32_t level, const char* fmt, ...) {
 
 namespace Log {
 
-#define DEFAULT_LOG_SINK "GLOG"
-#define FILELOG_SINK     "FILELOG"
-
 static void initLogSinks() {
 #ifdef LIBCAMERA_BUILD
-    globalLogSink = new LibcameraLogSink();
-    LOG2("Enable libcamera LOG");
+    if (globalLogSink == nullptr) {
+        globalLogSink = new LibcameraLogSink();
+        LOG2("Enable libcamera LOG");
+        return;
+    }
 #else
+#endif
     globalLogSink = new StdconLogSink();
     LOG2("Enable Stdcon LOG");
-#endif
 }
 
 static void setLogTagLevel() {
     static const char* LOG_FILE_TAG = "cameraTags";
     char* logFileTag = ::getenv(LOG_FILE_TAG);
-
     if (logFileTag == nullptr) {
         return;
     }
+
     std::string s = logFileTag;
     std::istringstream is(s);
     std::string token;
@@ -189,7 +189,8 @@ static void setLogTagLevel() {
             }
 
             if (!levelStr.empty()) {
-                globalGroupsDescp[itemIdx].level = strtoul(levelStr.c_str(), nullptr, 0);
+                globalGroupsDescp[itemIdx].level =
+                    static_cast<uint32_t>(strtoul(levelStr.c_str(), nullptr, 0));
             }
         }
     }
@@ -206,7 +207,7 @@ void setDebugLevel(void) {
     gLogLevel = CAMERA_DEBUG_LOG_ERR | CAMERA_DEBUG_LOG_WARNING | CAMERA_DEBUG_LOG_INFO;
 
     if (dbgLevel != nullptr) {
-        gLogLevel = strtoul(dbgLevel, nullptr, 0);
+        gLogLevel = static_cast<uint32_t>(strtoul(dbgLevel, nullptr, 0));
         LOG1("Debug level is 0x%x", gLogLevel);
     }
 
@@ -226,7 +227,7 @@ void setDebugLevel(void) {
     const char* PROP_CAMERA_HAL_PERF = "cameraPerf";
     char* perfLevel = getenv(PROP_CAMERA_HAL_PERF);
     if (perfLevel != nullptr) {
-        gPerfLevel = strtoul(perfLevel, nullptr, 0);
+        gPerfLevel = static_cast<uint32_t>(strtoul(perfLevel, nullptr, 0));
         LOGI("Performance level is 0x%x", gPerfLevel);
 
         // bitmask of tracing categories

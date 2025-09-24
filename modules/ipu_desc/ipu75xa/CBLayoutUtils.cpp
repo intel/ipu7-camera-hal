@@ -169,6 +169,7 @@ static const payload_descriptor_t *sLBCBPayloadDescriptors[] = {
     &lbff_0_descriptors,    // TERMINAL_LOAD_ALGO_CACHED
     &lbff_1_descriptors,    // TERMINAL_LOAD_ALGO_FRAG_SEQ
     &lbff_2_descriptors,    // TERMINAL_LOAD_SYSTEM
+    &lbff_3_descriptors,    // DOL, TNR and CAS
 };
 
 static const payload_descriptor_t *sBBCBPayloadDescriptors[] = {

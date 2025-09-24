@@ -163,7 +163,10 @@ int SensorHwCtrl::setExposure(const vector<int>& coarseExposures,
 
     LOG2("%s coarseExposure=%d fineExposure=%d", __func__, coarseExposures[0], fineExposures[0]);
     LOG2("SENSORCTRLINFO: exposure_value=%d", coarseExposures[0]);
-    return mPixelArraySubdev->SetControl(V4L2_CID_EXPOSURE, coarseExposures[0]);
+    int status = mPixelArraySubdev->SetControl(V4L2_CID_EXPOSURE, coarseExposures[0]);
+    CheckAndLogError((status != 0), status, "failed to set exposure %d.", coarseExposures[0]);
+
+    return OK;
 }
 
 // CRL_MODULE_S
@@ -230,7 +233,7 @@ int SensorHwCtrl::setAnalogGains(const vector<int>& analogGains) {
 
     // CRL_MODULE_S
     if (analogGains.size() > 1) {
-        if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_CONVERTION_AG) {
+        if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_CONVERSION_AG) {
             return setConversionGain(analogGains);
         } else if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_DIRECT_AG) {
             LOG2("sensor multi conversion gain");
@@ -240,7 +243,10 @@ int SensorHwCtrl::setAnalogGains(const vector<int>& analogGains) {
     // CRL_MODULE_E
 
     LOG2("%s analogGain=%d", __func__, analogGains[0]);
-    return mPixelArraySubdev->SetControl(V4L2_CID_ANALOGUE_GAIN, analogGains[0]);
+    int status = mPixelArraySubdev->SetControl(V4L2_CID_ANALOGUE_GAIN, analogGains[0]);
+    CheckAndLogError((status != 0), status, "failed to set analog gain %d.", analogGains[0]);
+
+    return OK;
 }
 
 int SensorHwCtrl::setDigitalGains(const vector<int>& digitalGains) {
@@ -250,7 +256,7 @@ int SensorHwCtrl::setDigitalGains(const vector<int>& digitalGains) {
 
     // CRL_MODULE_S
     if (digitalGains.size() > 1) {
-        if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_CONVERTION_AG) {
+        if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_CONVERSION_AG) {
             return setMultiDigitalGain(digitalGains);
         } else if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_DIRECT_AG) {
             LOG2("sensor multi conversion gain");
@@ -269,7 +275,10 @@ int SensorHwCtrl::setDigitalGains(const vector<int>& digitalGains) {
     // CRL_MODULE_E
 
     LOG2("%s digitalGain=%d", __func__, digitalGains[0]);
-    return mPixelArraySubdev->SetControl(V4L2_CID_DIGITAL_GAIN, digitalGains[0]);
+    int status = mPixelArraySubdev->SetControl(V4L2_CID_DIGITAL_GAIN, digitalGains[0]);
+    CheckAndLogError((status != 0), status, "failed to set digitalGain gain %d.", digitalGains[0]);
+
+    return OK;
 }
 
 // CRL_MODULE_S
@@ -390,12 +399,12 @@ int SensorHwCtrl::setFrameLengthLines(int fll) {
 
 int SensorHwCtrl::setFrameDuration(int llp, int fll) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(!mPixelArraySubdev, NO_INIT, "pixel array sub device is not set");
+    CheckAndLogError(mPixelArraySubdev == nullptr, NO_INIT, "pixel array sub device is not set");
     LOG2("@%s, llp:%d, fll:%d", __func__, llp, fll);
 
     /* only set them to driver when llp or fll is not 0 */
     if (llp != 0) {
-        (void)setLineLengthPixels(llp);   
+        (void)setLineLengthPixels(llp);
     }
 
     if (fll != 0) {

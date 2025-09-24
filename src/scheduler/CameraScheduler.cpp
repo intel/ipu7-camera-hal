@@ -35,7 +35,7 @@ CameraScheduler::CameraScheduler(int cameraId) : mCameraId(cameraId), mTriggerCo
 }
 
 CameraScheduler::~CameraScheduler() {
-    destoryExecutors();
+    destroyExecutors();
 }
 
 int32_t CameraScheduler::configurate(int32_t graphId) {
@@ -43,7 +43,7 @@ int32_t CameraScheduler::configurate(int32_t graphId) {
     CheckAndLogError(ret != OK, ret, "configurate %d error", graphId);
 
     mTriggerCount = 0;
-    destoryExecutors();
+    destroyExecutors();
     return createExecutors();
 }
 
@@ -76,7 +76,7 @@ int32_t CameraScheduler::createExecutors() {
     return OK;
 }
 
-void CameraScheduler::destoryExecutors() {
+void CameraScheduler::destroyExecutors() {
     std::lock_guard<std::mutex> l(mLock);
     mRegisteredNodes.clear();
     mExeGroups.clear();
@@ -155,7 +155,7 @@ CameraScheduler::Executor::Executor(const char* name)
           mTriggerTick(0) {}
 
 CameraScheduler::Executor::~Executor() {
-    LOG1("%s: destory", getName());
+    LOG1("%s: destroy", getName());
     CameraScheduler::Executor::stop();
 }
 
@@ -242,7 +242,7 @@ bool CameraScheduler::Executor::threadLoop() {
 }
 
 void CameraScheduler::SystemTimerExecutor::trigger(int64_t tick) {
-    // Ingore external trigger
+    // Ignore external trigger
     UNUSED(tick);
 }
 
@@ -268,6 +268,7 @@ int CameraScheduler::SystemTimerExecutor::waitTrigger() {
         }
     }
 
+    std::lock_guard<std::mutex> l(Executor::mNodeLock);
     PERF_CAMERA_ATRACE_PARAM1(getName(), mTriggerTick);
     mTriggerTick++;
     return mTriggerTick;

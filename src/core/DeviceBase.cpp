@@ -23,9 +23,6 @@
 
 #include "CameraEventType.h"
 #include "PlatformData.h"
-// FRAME_SYNC_S
-#include "SyncManager.h"
-// FRAME_SYNC_E
 #include "V4l2DeviceFactory.h"
 #include "iutils/CameraDump.h"
 #include "iutils/CameraLog.h"
@@ -68,12 +65,6 @@ DeviceBase::~DeviceBase() {
 
 int DeviceBase::openDevice() {
     LOG1("<id%d>%s, device:%s", mCameraId, __func__, mName);
-
-    // FRAME_SYNC_S
-    if (PlatformData::isEnableFrameSyncCheck(mCameraId)) {
-        SyncManager::getInstance()->updateSyncCamNum();
-    }
-    // FRAME_SYNC_E
 
     return mDevice->Open(O_RDWR);
 }
@@ -157,7 +148,7 @@ int DeviceBase::queueBuffer(int64_t sequence) {
         AutoMutex l(mBufferLock);
         if (mBufferQueuing) {
             LOG2("buffer is queuing");
-            return OK;
+            return DEV_BUSY;
         }
 
         if (mPendingBuffers.empty()) {
@@ -222,7 +213,7 @@ int DeviceBase::dequeueBuffer() {
 
     PERF_CAMERA_ATRACE_PARAM3("grabFrame SeqID", camBuffer->getSequence(), "csi2_port",
                               camBuffer->getCsi2Port(), "virtual_channel",
-                              camBuffer->getVirtualChannel());  
+                              camBuffer->getVirtualChannel());
     (void)onDequeueBuffer(camBuffer);
 
     // Skip initial frames if needed.
@@ -272,23 +263,6 @@ shared_ptr<CameraBuffer> DeviceBase::getFirstDeviceBuffer() {
     return mBuffersInDevice.empty() ? nullptr : mBuffersInDevice.front();
 }
 
-// FRAME_SYNC_S
-bool DeviceBase::skipFrameAfterSyncCheck(int64_t sequence) {
-    // For multi-camera sensor, to check whether the frame synced or not
-    int count = 0;
-    const int timeoutDuration = gSlowlyRunRatio != 0 ? (gSlowlyRunRatio * 1000000) : 1000;
-    const int maxCheckTimes = 10;  // 10 times
-    while (!SyncManager::getInstance()->isSynced(mCameraId, sequence)) {
-        usleep(timeoutDuration);
-        count++;
-        if (count > maxCheckTimes) {
-            return true;
-        }
-    }
-    return false;
-}
-// FRAME_SYNC_E
-
 void DeviceBase::popBufferFromDevice() {
     AutoMutex l(mBufferLock);
     if (mBuffersInDevice.empty()) {
@@ -330,25 +304,11 @@ int MainDevice::createBufferPool(const stream_t& config) {
     struct v4l2_format v4l2fmt;
     v4l2fmt.fmt.pix_mp.field = config.field;
 
-    if (PlatformData::isCSIFrontEndCapture(DeviceBase::mCameraId)) {
-        const int planesNum = CameraUtils::getNumOfPlanes(config.format);
-        LOG1("@%s Num of planes: %d, mCameraId:%d", __func__, planesNum, DeviceBase::mCameraId);
-
-        v4l2fmt.fmt.pix_mp.width = config.width;
-        v4l2fmt.fmt.pix_mp.height = config.height;
-        v4l2fmt.fmt.pix_mp.num_planes = planesNum;
-        v4l2fmt.fmt.pix_mp.pixelformat = config.format;
-        for (int i = 0; i < v4l2fmt.fmt.pix_mp.num_planes; i++) {
-            v4l2fmt.fmt.pix_mp.plane_fmt[i].bytesperline = config.width;
-            v4l2fmt.fmt.pix_mp.plane_fmt[i].sizeimage = 0;
-        }
-    } else {
-        v4l2fmt.fmt.pix.width = config.width;
-        v4l2fmt.fmt.pix.height = config.height;
-        v4l2fmt.fmt.pix.pixelformat = config.format;
-        v4l2fmt.fmt.pix.bytesperline = config.width;
-        v4l2fmt.fmt.pix.sizeimage = 0;
-    }
+    v4l2fmt.fmt.pix.width = config.width;
+    v4l2fmt.fmt.pix.height = config.height;
+    v4l2fmt.fmt.pix.pixelformat = config.format;
+    v4l2fmt.fmt.pix.bytesperline = config.width;
+    v4l2fmt.fmt.pix.sizeimage = 0;
 
     v4l2fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     V4L2Format tmpbuf{v4l2fmt};
@@ -388,16 +348,18 @@ int MainDevice::onDequeueBuffer(shared_ptr<CameraBuffer> buffer) {
     DeviceBase::dumpFrame(buffer);
 
     for (auto& consumer : DeviceBase::mConsumers) {
-        consumer->onFrameAvailable(DeviceBase::mPort, buffer);
+        consumer->onBufferAvailable(DeviceBase::mPort, buffer);
     }
 
-    EventData frameData;
-    frameData.type = EVENT_ISYS_FRAME;
-    frameData.buffer = nullptr;
-    frameData.data.frame.sequence = buffer->getSequence();
-    frameData.data.frame.timestamp.tv_sec = buffer->getTimestamp().tv_sec;
-    frameData.data.frame.timestamp.tv_usec = buffer->getTimestamp().tv_usec;
-    notifyListeners(frameData);
+    if (DeviceBase::mPort == MAIN_INPUT_PORT_UID) {
+        EventData frameData;
+        frameData.type = EVENT_ISYS_FRAME;
+        frameData.buffer = nullptr;
+        frameData.data.frame.sequence = buffer->getSequence();
+        frameData.data.frame.timestamp.tv_sec = buffer->getTimestamp().tv_sec;
+        frameData.data.frame.timestamp.tv_usec = buffer->getTimestamp().tv_usec;
+        notifyListeners(frameData);
+    }
 
     return OK;
 }
@@ -407,26 +369,13 @@ bool MainDevice::needQueueBack(shared_ptr<CameraBuffer> buffer) {
 
     const V4L2Buffer& vbuf = buffer->getV4L2Buffer();
     // Check for STR2MMIO Error from kernel space
-    if ((vbuf.Flags() & static_cast<uint32_t>(V4L2_BUF_FLAG_ERROR)) &&
+    if (((vbuf.Flags() & static_cast<uint32_t>(V4L2_BUF_FLAG_ERROR)) != 0U) &&
          (PlatformData::isSkipFrameOnSTR2MMIOErr(this->mCameraId))) {
         // On STR2MMIO error, enqueue this buffer back to V4L2 before notifying the
         // listener/consumer and return
         needSkipFrame = true;
         LOGW("<seq%u>%s: buffer error", buffer->getSequence(), __func__);
     }
-    // FRAME_SYNC_S
-    if (PlatformData::isEnableFrameSyncCheck(DeviceBase::mCameraId)) {
-        struct camera_buf_info sharedCamBufInfo;
-        sharedCamBufInfo.sequence = buffer->getSequence();
-        sharedCamBufInfo.sof_ts = buffer->getTimestamp();
-        SyncManager::getInstance()->updateCameraBufInfo(DeviceBase::mCameraId, &sharedCamBufInfo);
-        if (DeviceBase::skipFrameAfterSyncCheck(buffer->getSequence())) {
-            LOG1("<id%d:seq%u>@%s: dropped due to frame not sync", DeviceBase::mCameraId,
-                 buffer->getSequence(), __func__);
-            needSkipFrame = true;
-        }
-    }
-    // FRAME_SYNC_E
     return needSkipFrame;
 }
 }  // namespace icamera

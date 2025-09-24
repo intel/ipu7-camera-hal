@@ -102,6 +102,7 @@ void AiqUtils::dumpAfResults(const cca::cca_af_results& afResult) {
     case ia_aiq_af_status_idle:
     default:
         LOG3("AF state idle");
+        break;
     }
 }
 
@@ -173,36 +174,46 @@ void AiqUtils::dumpSaResults(const cca::cca_sa_results& saResult) {
 }
 
 int AiqUtils::convertError(ia_err iaErr) {
+    int ret;
     switch (iaErr) {
     case ia_err_none:
-        return OK;
+        ret = OK;
+        break;
     case ia_err_general:
-        return UNKNOWN_ERROR;
+        ret = UNKNOWN_ERROR;
+        break;
     case ia_err_nomemory:
-        return NO_MEMORY;
+        ret = NO_MEMORY;
+        break;
     case ia_err_data:
-        return BAD_VALUE;
+        ret = BAD_VALUE;
+        break;
     case ia_err_internal:
-        return INVALID_OPERATION;
+        ret = INVALID_OPERATION;
+        break;
     case ia_err_argument:
-        return BAD_VALUE;
+        ret = BAD_VALUE;
+        break;
     default:
-        return UNKNOWN_ERROR;
+        ret = UNKNOWN_ERROR;
+        break;
     }
+    return ret;
 }
 
 /**
  * Convert SensorFrameParams defined in PlatformData to ia_aiq_frame_params in aiq
  */
 void AiqUtils::convertToAiqFrameParam(const SensorFrameParams &sensor, ia_aiq_frame_params &aiq) {
-    aiq.cropped_image_height = sensor.cropped_image_height;
-    aiq.cropped_image_width = sensor.cropped_image_width;
-    aiq.horizontal_crop_offset = sensor.horizontal_crop_offset;
-    aiq.horizontal_scaling_denominator = sensor.horizontal_scaling_denominator;
-    aiq.horizontal_scaling_numerator = sensor.horizontal_scaling_numerator;
-    aiq.vertical_crop_offset = sensor.vertical_crop_offset;
-    aiq.vertical_scaling_denominator = sensor.vertical_scaling_denominator;
-    aiq.vertical_scaling_numerator = sensor.vertical_scaling_numerator;
+    aiq.cropped_image_height = static_cast<uint16_t>(sensor.cropped_image_height);
+    aiq.cropped_image_width = static_cast<uint16_t>(sensor.cropped_image_width);
+    aiq.horizontal_crop_offset = static_cast<uint16_t>(sensor.horizontal_crop_offset);
+    aiq.horizontal_scaling_denominator =
+        static_cast<uint8_t>(sensor.horizontal_scaling_denominator);
+    aiq.horizontal_scaling_numerator = static_cast<uint8_t>(sensor.horizontal_scaling_numerator);
+    aiq.vertical_crop_offset = static_cast<uint16_t>(sensor.vertical_crop_offset);
+    aiq.vertical_scaling_denominator = static_cast<uint8_t>(sensor.vertical_scaling_denominator);
+    aiq.vertical_scaling_numerator = static_cast<uint8_t>(sensor.vertical_scaling_numerator);
 }
 
 camera_coordinate_t AiqUtils::convertCoordinateSystem(const camera_coordinate_system_t& srcSystem,
@@ -252,7 +263,7 @@ camera_window_t AiqUtils::convertToIaWindow(const camera_coordinate_system_t& sr
  * Map user input manual gain(0, 255) to (AWB_GAIN_NORMALIZED_START, AWB_GAIN_NORMALIZED_END)
  */
 float AiqUtils::normalizeAwbGain(int gain) {
-    gain = CLIP(gain, AWB_GAIN_MAX, AWB_GAIN_MIN);
+    gain = CLIP(gain, static_cast<int>(AWB_GAIN_MAX), static_cast<int>(AWB_GAIN_MIN));
     return static_cast<float>(AWB_GAIN_NORMALIZED_START) +
                              (static_cast<float>(gain) - AWB_GAIN_MIN) *
                               static_cast<float>(AWB_GAIN_RANGE_NORMALIZED) /
@@ -260,7 +271,8 @@ float AiqUtils::normalizeAwbGain(int gain) {
 }
 
 int AiqUtils::convertToUserAwbGain(float normalizedGain) {
-    normalizedGain = CLIP(normalizedGain, AWB_GAIN_NORMALIZED_START, AWB_GAIN_NORMALIZED_END);
+    normalizedGain = CLIP(normalizedGain, static_cast<float>(AWB_GAIN_NORMALIZED_START),
+                          static_cast<float>(AWB_GAIN_NORMALIZED_END));
     return AWB_GAIN_MIN + (normalizedGain - AWB_GAIN_NORMALIZED_START) * \
                           AWB_GAIN_RANGE_USER / AWB_GAIN_RANGE_NORMALIZED;
 }
@@ -315,26 +327,34 @@ float AiqUtils::convertSpeedModeToTimeForHDR(camera_converge_speed_t mode) {
  * Convert frame usage to ia_aiq_frame_use
  */
 ia_aiq_frame_use AiqUtils::convertFrameUsageToIaFrameUsage(int frameUsage) {
+    ia_aiq_frame_use ret;
     switch (frameUsage) {
         case FRAME_USAGE_VIDEO:
-            return ia_aiq_frame_use_video;
+            ret = ia_aiq_frame_use_video;
+            break;
         case FRAME_USAGE_STILL:
-            return ia_aiq_frame_use_still;
+            ret = ia_aiq_frame_use_still;
+            break;
         case FRAME_USAGE_CONTINUOUS:
-            return ia_aiq_frame_use_continuous;
+            ret = ia_aiq_frame_use_continuous;
+            break;
+        default:
+            ret = ia_aiq_frame_use_preview;
+            break;
     }
-    return ia_aiq_frame_use_preview;
+    return ret;
 }
 
 void AiqUtils::applyTonemapGamma(float gamma, cca::cca_gbce_params* results) {
     CheckAndLogError(gamma < EPSILON, VOID_VALUE, "Bad gamma %f", gamma);
-    CheckAndLogError(!results, VOID_VALUE, "gbce results nullptr");
+    CheckAndLogError(results == nullptr, VOID_VALUE, "gbce results nullptr");
 
     int lutSize = results->gamma_lut_size;
     CheckAndLogError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
                      "Bad gamma lut size (%d) in gbce results", lutSize);
     for (int i = 0; i < lutSize; i++) {
-        results->g_gamma_lut[i] = pow(i / static_cast<float>(lutSize), 1 / gamma);
+        results->g_gamma_lut[i] =
+            static_cast<float>(pow(i / static_cast<float>(lutSize), 1 / gamma));
     }
 
     MEMCPY_S(results->b_gamma_lut, lutSize * sizeof(float),

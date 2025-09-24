@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef AIQ_UNIT_H
-#define AIQ_UNIT_H
-
+#pragma once
 #ifdef IPA_SANDBOXING
 #include "CcaClient.h"
 #else
@@ -77,27 +75,27 @@ public:
     /**
      * \brief Init 3a related objects
      */
-    void init();
+    virtual void init();
 
     /**
      * \brief Deinit 3a related objects
      */
-    void deinit();
+    virtual void deinit();
 
     /**
      * \brief configure 3a engine with stream configuration
      */
-    int configure(const stream_config_t *streamList);
+    virtual int configure(const stream_config_t *streamList);
 
     /**
      * \brief Start 3a Engine
      */
-    int start();
+    virtual int start();
 
     /**
      * \brief Stop 3a Engine
      */
-    void stop();
+    virtual void stop();
 
     /**
      * \brief Run 3a to get new 3a settings.
@@ -111,17 +109,17 @@ public:
      *
      * Return 0 if the operation succeeds.
      */
-    int run3A(int64_t ccaId, int64_t applyingSeq, int64_t frameNumber, int64_t* effectSeq);
+    virtual int run3A(int64_t ccaId, int64_t applyingSeq, int64_t frameNumber, int64_t* effectSeq);
 
     /**
      * \brief Get software EventListener
      */
-    std::vector<EventListener*> getSofEventListener();
+    virtual std::vector<EventListener*> getSofEventListener();
 
     /**
      * \brief Get stats EventListener
      */
-    std::vector<EventListener*> getStatsEventListener();
+    virtual std::vector<EventListener*> getStatsEventListener();
 
 private:
     DISALLOW_COPY_AND_ASSIGN(AiqUnit);
@@ -152,8 +150,8 @@ private:
 
     std::vector<TuningMode> mTuningModes;
     bool mCcaInitialized;
+    size_t mActiveStreamCount;
 };
 
 } /* namespace icamera */
 
-#endif // AIQ_UNIT_H

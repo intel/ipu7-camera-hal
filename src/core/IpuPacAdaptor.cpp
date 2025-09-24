@@ -79,7 +79,7 @@ int IpuPacAdaptor::reinitAic(const int32_t aicId) {
 
     const ia_err iaErr = mIntelCca->reinitAic(aicId);
     CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
-                     "%s, Faield to reinit aic, aicId: %d", __func__, aicId);
+                     "%s, Failed to reinit aic, aicId: %d", __func__, aicId);
 
     return OK;
 }
@@ -120,9 +120,14 @@ status_t IpuPacAdaptor::pacConfig(int streamId, const cca::cca_aic_config& aicCo
     const ia_err iaErr = mIntelCca->configAic(aicConfig, kernelOffset, offsetPtr, *termCfg,
                                               streamId, statsBufToTermIds);
     CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
-                     "%s, Faield to configure pac, streamId: %d", __func__, streamId);
+                     "%s, Failed to configure pac, streamId: %d", __func__, streamId);
 
     return OK;
+}
+
+void IpuPacAdaptor::clearAicResult() {
+    AutoMutex l(mPacAdaptorLock);
+    mPacRunHistMap.clear();
 }
 
 void* IpuPacAdaptor::allocateBuffer(int streamId, uint8_t contextId,
@@ -191,7 +196,7 @@ status_t IpuPacAdaptor::registerBuffer(int streamId, const cca::cca_aic_terminal
 
     const ia_err iaErr = mIntelCca->registerAicBuf(termCfg, streamId);
     CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
-                     "%s, Faield to register pac buffer, streamId: %d", __func__, streamId);
+                     "%s, Failed to register pac buffer, streamId: %d", __func__, streamId);
 
     return OK;
 }
@@ -229,7 +234,7 @@ status_t IpuPacAdaptor::storeTerminalResult(int64_t sequence, int32_t streamId) 
              __func__, streamId, data.first.second, index);
         const ia_err iaErr = mIntelCca->getAicBuf(ccaTermConfig, streamId);
         CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
-                         "<seq:%ld>%s, Faield to getAicBuf. streamId: %d, contextId: %d",
+                         "<seq:%ld>%s, Failed to getAicBuf. streamId: %d, contextId: %d",
                          sequence, __func__, streamId, data.first.second);
 
         index = 0;
@@ -307,7 +312,7 @@ void IpuPacAdaptor::applyMediaFormat(const AiqResult* aiqResult,
             *mediaFormat = media_format_custom;
             LOG2("%s: a linear gamma curve. curveX: %f, curveY: %f", __func__, curveX, curveY);
         } else if (abs(curveY - pow(curveX, (1 / 2.2))) < EPSILON) {
-            // Its a standard 2_2 gamma curves
+            // It's a standard 2_2 gamma curves
             *mediaFormat = media_format_bt709_8b;
             LOG2("%s: a 2.2 gamma curve. curveX: %f, curveY: %f", __func__, curveX, curveY);
         } else {
@@ -445,7 +450,7 @@ status_t IpuPacAdaptor::updateResolutionSettings(int streamId,
     const ia_err iaErr = mIntelCca->updateConfigurationResolutions(aicConfig, streamId,
                                                                    isKeyResChanged);
     CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
-                     "%s, Faield to configure pac, streamId: %d", __func__, streamId);
+                     "%s, Failed to configure pac, streamId: %d", __func__, streamId);
 
     return OK;
 }
@@ -532,22 +537,22 @@ status_t IpuPacAdaptor::decodeStats(int streamId, uint8_t contextId, int64_t seq
     }
 
     const ia_err iaErr = mIntelCca->decodeStats(contextId, sequenceId, streamId, outStats);
-    CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
-                     "<seq:%ld>%s, Faield to decode stats. streamId: %d, contextId: %d",
-                     sequenceId, __func__, streamId, contextId);
+    if (iaErr == ia_err::ia_err_none) {
+        if (statsUsed) {
+            AiqStatistics* aiqStatistics = mAiqResultStorage->acquireAiqStatistics();
+            aiqStatistics->mSequence = sequenceId;
+            aiqStatistics->mTimestamp = timestamp;
+            aiqStatistics->mTuningMode = TUNING_MODE_VIDEO;
 
-    if (statsUsed) {
-        AiqStatistics* aiqStatistics = mAiqResultStorage->acquireAiqStatistics();
-        aiqStatistics->mSequence = sequenceId;
-        aiqStatistics->mTimestamp = timestamp;
-        aiqStatistics->mTuningMode = TUNING_MODE_VIDEO;
-
-        mAiqResultStorage->updateAiqStatistics(sequenceId);
+            mAiqResultStorage->updateAiqStatistics(sequenceId);
+        }
+        mLastStatsSequence = sequenceId;
+    } else {
+        LOGE("<seq:%ld>%s, Failed to decode stats. streamId: %d, contextId: %d", sequenceId,
+             __func__, streamId, contextId);
     }
 
-    mLastStatsSequence = sequenceId;
     mPacRunHistMap[pacItem] = true;
-
     if (mPacRunHistMap.size() >= MAX_CACHE_PAC_HIST) {
         for (auto iter = mPacRunHistMap.begin(); iter != mPacRunHistMap.end(); iter++) {
             if (iter->second) {
@@ -557,7 +562,7 @@ status_t IpuPacAdaptor::decodeStats(int streamId, uint8_t contextId, int64_t seq
         }
     }
 
-    return OK;
+    return (iaErr == ia_err_none) ? OK : UNKNOWN_ERROR;
 }
 
 } // namespace icamera

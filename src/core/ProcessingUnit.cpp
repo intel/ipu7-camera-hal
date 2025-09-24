@@ -146,6 +146,7 @@ int ProcessingUnit::start() {
     }
 
     IProcessingUnit::mThreadRunning = true;
+    BufferQueue::setThreadWaiting(true);
     mProcessThread->start();
 
     ret = mPipeManager->start();
@@ -154,9 +155,6 @@ int ProcessingUnit::start() {
     auto cameraContext = CameraContext::getInstance(mCameraId);
     auto dataContext = cameraContext->getDataContextBySeq(0);
     (void)setParameters(dataContext);
-    AutoWMutex wl(mIspSettingsLock);
-    // Predict to run AIC with video pipe for the first frame
-    mPipeManager->prepareIpuParams(&mIspSettings);
 
     return OK;
 }
@@ -166,6 +164,7 @@ void ProcessingUnit::stop() {
     mPipeManager->stop();
 
     IProcessingUnit::mThreadRunning = false;
+    BufferQueue::setThreadWaiting(false);
     mProcessThread->exit();
 
     {
@@ -180,6 +179,7 @@ void ProcessingUnit::stop() {
 
     mProcessThread->wait();
 
+    mRawBufferMap.clear();
     // Thread is not running. It is safe to clear the Queue
     BufferQueue::clearBufferQueues();
 }
@@ -229,6 +229,7 @@ int ProcessingUnit::setParameters(const DataContext* dataContext) {
             break;
         default:
             mIspSettings.eeSetting.strength = static_cast<char>(EXTREME_STRENGTH_LEVEL2);
+            break;
     }
 
     LOG2("%s: ISP EE setting, level: %d, strength: %d", __func__,
@@ -267,7 +268,7 @@ int ProcessingUnit::setParameters(const DataContext* dataContext) {
 
     mIspSettings.videoStabilization
         = (dataContext->mAiqParams.videoStabilizationMode == VIDEO_STABILIZATION_MODE_ON);
-    LOG2("%s: Video stablilization enabled:%d", __func__, mIspSettings.videoStabilization);
+    LOG2("%s: Video stabilization enabled:%d", __func__, mIspSettings.videoStabilization);
 
     mIspSettings.zoom = dataContext->zoomRegion;
 
@@ -363,7 +364,8 @@ int ProcessingUnit::processNewFrame() {
           }
         // set timeout only when there are already pending tasks in the Queue
         int64_t timeout = mSequencesInflight.size() > 0 ? kQueueTimeout : 0;
-        ret = BufferQueue::waitFreeBuffersInQueue(lock, srcBuffers, BufferQueue::mInputQueue, timeout);
+        ret = BufferQueue::waitFreeBuffersInQueue(lock, srcBuffers, BufferQueue::mInputQueue,
+                                                  timeout);
 
         if (!this->mThreadRunning) {
             return -1;  // Already stopped
@@ -399,7 +401,14 @@ int ProcessingUnit::processNewFrame() {
         CheckAndLogError(ret != OK, UNKNOWN_ERROR, "%s, Failed to process frame", __func__);
     }
 
-    if (!mSequencesInflight.empty()) {
+    bool execute = true;
+    {
+        std::lock_guard<std::mutex> lock(mBufferQueueLock);
+        // Do not trigger scheduler if no pending task
+        execute = !mSequencesInflight.empty();
+    }
+
+    if (execute) {
         std::string source;
         mScheduler->executeNode(source, inputSequence);
     }
@@ -407,7 +416,7 @@ int ProcessingUnit::processNewFrame() {
     return OK;
 }
 
-int ProcessingUnit::handleYuvReprocessing(CameraBufferPortMap* buffersMap) {
+int ProcessingUnit::handleYuvReprocessing(const CameraBufferPortMap* buffersMap) {
     CheckAndLogError(buffersMap->empty(), UNKNOWN_ERROR,
                      "%s, the input or output buffer is empty", __func__);
 
@@ -441,7 +450,7 @@ int ProcessingUnit::handleYuvReprocessing(CameraBufferPortMap* buffersMap) {
     // handle buffer done for normal YUV output
     sendPsysRequestEvent(&dstBuffers, bufSequence, timestamp, EVENT_PSYS_REQUEST_BUF_READY);
 
-    // Prepare the task input paramerters including input and output buffers, settings etc.
+    // Prepare the task input parameters including input and output buffers, settings etc.
     PipeTaskData taskParam;
     taskParam.mTuningMode = mTuningMode;
     taskParam.mInputBuffers = srcBuffers;
@@ -514,7 +523,7 @@ void ProcessingUnit::handleRawReprocessing(CameraBufferPortMap* srcBuffers,
 
         // Return opaque RAW buffer
         for (auto& it : BufferQueue::mBufferConsumerList) {
-            it->onFrameAvailable(rawPort, rawOutputBuffer);
+            it->onBufferAvailable(rawPort, rawOutputBuffer);
         }
 
         // Remove input stream from dstBuffers map
@@ -536,7 +545,7 @@ void ProcessingUnit::handleRawReprocessing(CameraBufferPortMap* srcBuffers,
 
         // Return opaque RAW buffer
         for (auto& it : BufferQueue::mBufferConsumerList) {
-            it->onFrameAvailable(rawPort, rawOutputBuffer);
+            it->onBufferAvailable(rawPort, rawOutputBuffer);
         }
         *hasRawOutput = true;
 
@@ -590,7 +599,7 @@ void ProcessingUnit::returnRawBuffer() {
     AutoMutex lock(mBufferMapLock);
     // If too many buffers are holden in mRawQueue, return back to producer
     if (mRawBufferMap.size() > (PlatformData::getMaxRawDataNum(mCameraId) -
-                                PlatformData::getMaxRequestsInHAL(mCameraId))) {
+                                PlatformData::getMaxPipelineDepth(mCameraId))) {
         auto it = mRawBufferMap.cbegin();
         {
             AutoMutex l(mBufferQueueLock);
@@ -756,7 +765,7 @@ status_t ProcessingUnit::prepareTask(CameraBufferPortMap* srcBuffers,
     return OK;
 }
 
-void ProcessingUnit::extractZslInfo(CameraBufferPortMap* dstBuffers, bool& reprocess,
+void ProcessingUnit::extractZslInfo(const CameraBufferPortMap* dstBuffers, bool& reprocess,
                                     CameraBufferPortMap& videoBuf, CameraBufferPortMap& stillBuf,
                                     int64_t& zslSequence) {
     for (const auto& item : *dstBuffers) {
@@ -894,11 +903,11 @@ void ProcessingUnit::dispatchTask(CameraBufferPortMap& inBuf, CameraBufferPortMa
     {
         std::unique_lock<std::mutex> lock(mBufferQueueLock);
         mSequencesInflight.insert(currentSequence);
+        LOG2("<id%d:seq:%ld>@%s, fake task %d, pending task: %zu", mCameraId, currentSequence,
+             __func__, fakeTask, mSequencesInflight.size());
     }  // End of lock mBufferQueueLock
-    LOG2("<id%d:seq:%ld>@%s, fake task %d, pending task: %zu", mCameraId, currentSequence, __func__,
-         fakeTask, mSequencesInflight.size());
 
-    // Prepare the task input paramerters including input and output buffers, settings etc.
+    // Prepare the task input parameters including input and output buffers, settings etc.
     PipeTaskData taskParam;
     taskParam.mTuningMode = mTuningMode;
     taskParam.mInputBuffers = inBuf;
@@ -944,7 +953,7 @@ void ProcessingUnit::onBufferDone(int64_t sequence, uuid port,
 
     if (!needSkipOutputFrame(sequence)) {
         for (auto& it : BufferQueue::mBufferConsumerList) {
-            it->onFrameAvailable(port, camBuffer);
+            it->onBufferAvailable(port, camBuffer);
         }
     }
 }
@@ -1004,13 +1013,13 @@ void ProcessingUnit::onTaskDone(const PipeTaskData& result) {
     if (result.mYuvTask) {
         auto iter = result.mInputBuffers.find(YUV_REPROCESSING_INPUT_PORT_ID);
         if (iter == result.mInputBuffers.end()) {
-            LOGW("<id%d:seq%ld>@%s can't find YUV reprocesing input buffer",
+            LOGW("<id%d:seq%ld>@%s can't find YUV reprocessing input buffer",
                  mCameraId, sequence, __func__);
             return;
         }
         // Return YUV reprocessing input buffer
         for (auto& it : BufferQueue::mBufferConsumerList) {
-            it->onFrameAvailable(YUV_REPROCESSING_INPUT_PORT_ID, iter->second);
+            it->onBufferAvailable(YUV_REPROCESSING_INPUT_PORT_ID, iter->second);
         }
         return;
     }
@@ -1032,7 +1041,7 @@ void ProcessingUnit::onTaskDone(const PipeTaskData& result) {
                 if ((src.second->getStreamUsage() != CAMERA_STREAM_OPAQUE_RAW) &&
                     (src.second->getStreamType() == CAMERA_STREAM_INPUT)) {
                     for (auto& it : BufferQueue::mBufferConsumerList) {
-                        it->onFrameAvailable(src.first, src.second);
+                        it->onBufferAvailable(src.first, src.second);
                     }
                 } else {
                     mBufferProducer->qbuf(src.first, src.second);
@@ -1073,7 +1082,7 @@ void ProcessingUnit::outputRawImage(shared_ptr<CameraBuffer>& srcBuf,
 
     // Send output buffer to its consumer
     for (auto& it : BufferQueue::mBufferConsumerList) {
-        it->onFrameAvailable(mRawPort, dstBuf);
+        it->onBufferAvailable(mRawPort, dstBuf);
     }
 }
 }  // namespace icamera

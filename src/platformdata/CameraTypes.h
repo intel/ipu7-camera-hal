@@ -62,7 +62,7 @@ enum {
 
 enum {
     SENSOR_GAIN_NONE = 0,
-    SENSOR_MULTI_DG_AND_CONVERTION_AG,  /* Multi-DigitalGain and convertion AnalogGain are set
+    SENSOR_MULTI_DG_AND_CONVERSION_AG,  /* Multi-DigitalGain and conversion AnalogGain are set
                                            to sensor driver */
     ISP_DG_AND_SENSOR_DIRECT_AG,        /* All digital gain is passed to ISP */
     SENSOR_MULTI_DG_AND_DIRECT_AG       /* Multi analog and digital gains, i.e. DCG */

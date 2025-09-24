@@ -530,7 +530,7 @@ void ImageScalerCore::downScaleNv12ImageFrom800x600ToQvga(unsigned char *dest, c
                  0 * ((a2 >> 0) & 0xff) + 2 * ((a2 >> 8) & 0xff) + 4 * ((a2 >> 16) & 0xff) + 4 * ((a2 >> 24) & 0xff) +
                  0 * ((a3 >> 0) & 0xff) + 1 * ((a3 >> 8) & 0xff) + 2 * ((a3 >> 16) & 0xff) + 2 * ((a3 >> 24) & 0xff));
             t = (t + 12) / 25;
-            b |= t << 24; // Eigth pixel
+            b |= t << 24; // Eight pixel
             *d++ = b;
         }
         s1 = (u_int32_t *)(&src[(i * 5 + 4) * src_stride]);
@@ -611,7 +611,7 @@ void ImageScalerCore::downScaleNv12ImageFrom800x600ToQvga(unsigned char *dest, c
                  0 * ((a2 >> 0) & 0xff) + 2 * ((a2 >> 8) & 0xff) + 4 * ((a2 >> 16) & 0xff) + 4 * ((a2 >> 24) & 0xff) +
                  0 * ((a3 >> 0) & 0xff) + 1 * ((a3 >> 8) & 0xff) + 2 * ((a3 >> 16) & 0xff) + 2 * ((a3 >> 24) & 0xff));
             t = (t + 12) / 25;
-            b |= t << 24; // Eigth pixel
+            b |= t << 24; // Eight pixel
             *d++ = b;
         }
     }

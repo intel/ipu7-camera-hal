@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef SENSOR_MANAGER_H
-#define SENSOR_MANAGER_H
-
+#pragma once
 #include <map>
 
 #include "iutils/Thread.h"
@@ -104,9 +102,9 @@ private:
 
     int mAnalogGainDelay;  // Analog gain delay comparing exposure
     int mDigitalGainDelay;  // Digital gain delay comparing exposure
-    // fisrt: sequence id, second: analog gain vector
+    // first: sequence id, second: analog gain vector
     std::map<int64_t, std::vector<int>> mAnalogGainMap;
-    // fisrt: sequence id, second: digital gain vector
+    // first: sequence id, second: digital gain vector
     std::map<int64_t, std::vector<int>> mDigitalGainMap;
     typedef struct {
         std::vector<int> coarseExposures;
@@ -122,4 +120,3 @@ private:
 
 } /* namespace icamera */
 
-#endif // SENSOR_MANAGER_H

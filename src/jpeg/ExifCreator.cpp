@@ -15,15 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * JPEG DRIVER MODULE (ExifCreater.cpp)
+ * JPEG DRIVER MODULE (ExifCreator.cpp)
  * Author  : ge.lee       -- initial version
  * Date    : 03 June 2010
  * Purpose : This file implements the JPEG encoder APIs as needed by Camera HAL
  */
 
-#define LOG_TAG ExifCreater
+#define LOG_TAG ExifCreator
 
-#include "ExifCreater.h"
+#include "ExifCreator.h"
 
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -37,14 +37,14 @@ static const char ExifAsciiPrefix[] = {0x41, 0x53, 0x43, 0x49, 0x49, 0x0, 0x0, 0
 
 namespace icamera {
 
-ExifCreater::ExifCreater() {
+ExifCreator::ExifCreator() {
     m_thumbBuf = nullptr;
     m_thumbSize = 0;
 }
 
-ExifCreater::~ExifCreater() {}
+ExifCreator::~ExifCreator() {}
 
-exif_status ExifCreater::setThumbData(const void* thumbBuf, unsigned int thumbSize) {
+exif_status ExifCreator::setThumbData(const void* thumbBuf, unsigned int thumbSize) {
     if ((thumbSize + EXIF_SIZE_WITHOUT_THUMBNAIL) >= EXIF_SIZE_LIMITATION) {
         LOGE("ERROR: Too big thumb size %d (limit: %d)", thumbSize, EXIF_SIZE_LIMITATION);
         m_thumbBuf = nullptr;
@@ -57,12 +57,12 @@ exif_status ExifCreater::setThumbData(const void* thumbBuf, unsigned int thumbSi
     return EXIF_SUCCESS;
 }
 
-bool ExifCreater::isThumbDataSet() const {
+bool ExifCreator::isThumbDataSet() const {
     return m_thumbBuf != nullptr;
 }
 
 // if exif tags size + thumbnail size is > 64K, it will disable thumbnail
-exif_status ExifCreater::makeExif(void* exifOut, exif_attribute_t* exifInfo, size_t* size) {
+exif_status ExifCreator::makeExif(void* exifOut, exif_attribute_t* exifInfo, size_t* size) {
     LOG1("makeExif start");
 
     unsigned char *pCur, *pApp1Start, *pIfdStart, *pGpsIfdPtr, *pNextIfdOffset;
@@ -354,7 +354,7 @@ exif_status ExifCreater::makeExif(void* exifOut, exif_attribute_t* exifInfo, siz
     return status;
 }
 
-void ExifCreater::writeMarkerSizeToBuf(unsigned char* ptrTo, unsigned int size) {
+void ExifCreator::writeMarkerSizeToBuf(unsigned char* ptrTo, unsigned int size) {
     unsigned char size_mm[2] = {static_cast<unsigned char>((size >> 8) & 0xFF),
                                 static_cast<unsigned char>(size & 0xFF)};
 
@@ -372,7 +372,7 @@ void ExifCreater::writeMarkerSizeToBuf(unsigned char* ptrTo, unsigned int size) 
  * \param writeId [IN] Whether to write the Intel Makernote ID string.
  * \param size [OUT] Total size after APP2 is written
  */
-exif_status ExifCreater::makeApp2(void* pStartApp2, size_t& size, exif_attribute_t* exifInfo,
+exif_status ExifCreator::makeApp2(void* pStartApp2, size_t& size, exif_attribute_t* exifInfo,
                                   bool writeId) {
     // APP2 marker will be written starting from the pos pointed to by
     // pStartApp2
@@ -446,7 +446,7 @@ exif_status ExifCreater::makeApp2(void* pStartApp2, size_t& size, exif_attribute
     return EXIF_SUCCESS;
 }
 
-void ExifCreater::writeThumbData(unsigned char* pIfdStart, unsigned char* pNextIfdOffset,
+void ExifCreator::writeThumbData(unsigned char* pIfdStart, unsigned char* pNextIfdOffset,
                                  unsigned int* LongerTagOffset, exif_attribute_t* exifInfo) {
     unsigned char* pCur;
     unsigned int tmp;
@@ -501,7 +501,7 @@ void ExifCreater::writeThumbData(unsigned char* pIfdStart, unsigned char* pNextI
     }
 }
 
-void ExifCreater::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
+void ExifCreator::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
                                unsigned int count, uint32_t value) {
     MEMCPY_S(*pCur, 2, (int8_t*)&tag, 2);
     *pCur += 2;
@@ -513,7 +513,7 @@ void ExifCreater::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigne
     *pCur += 4;
 }
 
-void ExifCreater::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
+void ExifCreator::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
                                unsigned int count, unsigned char* pValue) {
     char buf[4] = {
         0,
@@ -530,7 +530,7 @@ void ExifCreater::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigne
     *pCur += 4;
 }
 
-void ExifCreater::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
+void ExifCreator::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
                                unsigned int count, unsigned char* pValue, unsigned int* offset,
                                unsigned char* start) {
     MEMCPY_S(*pCur, 2, (int8_t*)&tag, 2);
@@ -545,7 +545,7 @@ void ExifCreater::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigne
     *offset += count;
 }
 
-void ExifCreater::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
+void ExifCreator::writeExifIfd(unsigned char** pCur, unsigned short tag, unsigned short type,
                                unsigned int count, rational_t* pValue, unsigned int* offset,
                                unsigned char* start) {
     MEMCPY_S(*pCur, 2, (int8_t*)&tag, 2);

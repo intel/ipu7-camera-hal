@@ -20,8 +20,8 @@
 
 namespace icamera {
 
-const int32_t ATRACE_LEN = 128;
-uint32_t  gScopedAtraceLevel = 0U;
+static const int32_t ATRACE_LEN = 128;
+static uint32_t gScopedAtraceLevel = 0U;
 
 ScopedAtrace::ScopedAtrace(uint32_t level, const char* func, const char* tag, const char* note,
                            long value, const char* note2, int value2, const char* note3,

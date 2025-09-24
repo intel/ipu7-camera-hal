@@ -46,29 +46,38 @@ PipeLine::~PipeLine() {
     }
 }
 
-void PipeLine::updateIspTuningMode(TuningMode tuningMode) {
-    if (PlatformData::supportUpdateTuning(mCameraId)) {
-        uint32_t ispTuningMode = 0;
-        auto ret = mGraphConfig->getIspTuningModeByStreamId(mStreamId, ispTuningMode);
-        if (ret == OK) {
-            ia_lard_input_params lardParam = {
-                IA_MKN_CHTOUL('D', 'F', 'L', 'T'),
-                IA_MKN_CHTOUL('D', 'F', 'L', 'T'),
-                ispTuningMode,
-                IA_MKN_CHTOUL('D', 'F', 'L', 'T'),
-            };
-            cca::cca_nvm tmpNvm = {};
-
-            auto intelCca = IntelCca::getInstance(mCameraId, tuningMode);
-            CheckAndLogError(!intelCca, VOID_VALUE, "Failed to get IntelCca");
-
-            ia_err iaErr = intelCca->updateTuning(cca::CCA_LARD_ISP, lardParam, tmpNvm, mStreamId);
-            CheckAndLogError(iaErr != ia_err_none, VOID_VALUE, "Failed to update tuning %u",
-                             ispTuningMode);
-
-            LOG1("Update isp tuning mode %u, streamId %d", ispTuningMode, mStreamId);
-        }
+void PipeLine::deinit() {
+    if (mPSysDevice != nullptr) {
+        mPSysDevice->deinit();
     }
+}
+
+void PipeLine::updateIspTuningMode(TuningMode tuningMode) {
+    if (!PlatformData::supportUpdateTuning(mCameraId)) {
+        return;
+    }
+
+    uint32_t ispTuningMode = 0;
+    int ret = mGraphConfig->getIspTuningModeByStreamId(mStreamId, ispTuningMode);
+    CheckAndLogError(ret != OK, VOID_VALUE, "Failed to get tuning mode");
+
+    uint32_t aiqMode = IA_MKN_CHTOUL('D', 'F', 'L', 'T');
+    ia_lard_input_params lardParam = {
+        IA_MKN_CHTOUL('D', 'F', 'L', 'T'),
+        aiqMode,
+        ispTuningMode,
+        IA_MKN_CHTOUL('D', 'F', 'L', 'T'),
+    };
+    cca::cca_nvm tmpNvm = {};
+
+    IntelCca* intelCca = IntelCca::getInstance(mCameraId, tuningMode);
+    CheckAndLogError(!intelCca, VOID_VALUE, "Failed to get IntelCca");
+
+    ia_err iaErr = intelCca->updateTuning(cca::CCA_LARD_ISP, lardParam, tmpNvm, mStreamId);
+    CheckAndLogError(iaErr != ia_err_none, VOID_VALUE, "Failed to update tuning %u",
+                     ispTuningMode);
+
+    LOG1("Update isp tuning mode %u, streamId %d", ispTuningMode, mStreamId);
 }
 
 int PipeLine::configure(TuningMode tuningMode, IpuPacAdaptor* adaptor) {
@@ -204,7 +213,7 @@ void PipeLine::releasePipeStage() {
 status_t PipeLine::createPipeStages() {
     std::map<int32_t, std::string> stages;
     status_t ret = mGraphConfig->getStagesByStreamId(mStreamId, &stages);
-    CheckAndLogError(ret != OK, ret, "%s: Get pipeStages from grpah failed", __func__);
+    CheckAndLogError(ret != OK, ret, "%s: Get pipeStages from graph failed", __func__);
 
     if (mPSysDevice) {
         delete mPSysDevice;
@@ -385,10 +394,6 @@ status_t PipeLine::createPSysGraph(int32_t numLinks, GraphLink** links) {
         }
 #endif
         mPSysGraph.links.push_back(pLink);
-
-        if (link->linkCompressionConfiguration && link->linkCompressionConfiguration->isEnabled) {
-            LOGE("Don't support compression now!");
-        }
     }
 
     mPSysGraph.nodes.clear();

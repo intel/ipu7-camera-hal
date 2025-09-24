@@ -135,7 +135,7 @@ int CsiMetaDevice::initEmdMetaData() {
     mEmbeddedMetaData.csiMetaFormat = V4L2_FMT_IPU_ISYS_META;
     // for embedded meta data, width is equal with bytes per line
     mEmbeddedMetaData.width = bpl;
-    // for compatible, set 1 as default, if the *.xml have configed it, use the config value repalce
+    // for compatible, set 1 as default, if the *.xml have configured it, use the config value repalce
     mEmbeddedMetaData.height = 1;
     ret = PlatformData::getVideoNodeNameByType(mCameraId, VIDEO_CSI_META, videoNodeName);
     if (ret == OK) {

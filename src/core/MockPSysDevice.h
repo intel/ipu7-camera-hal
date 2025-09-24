@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Intel Corporation.
+ * Copyright (C) 2024-2025 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,6 +41,7 @@ class MockPSysDevice : public PSysDevice {
     virtual ~MockPSysDevice();
 
     virtual int init() override;
+    virtual void deinit() override {}
     virtual void registerPSysDeviceCallback(uint8_t contextId,
                                             IPSysDeviceCallback* callback) override;
 
@@ -58,12 +59,14 @@ class MockPSysDevice : public PSysDevice {
     virtual int poll() override;
 
  private:
-    static const int kStartingFrameCount = 100;
+    static const int kStartingFrameCount = 20;
     icamera::FileSourceFromDir* mFileSource;
-    const char* PNP_INJECTION_NAME = "/run/camera/libcamera/";
+    const char* PNP_INJECTION_NAME = "/data/cameraPnp/libcamera";
 
     PollThread<MockPSysDevice>* mPollThread;
+    std::condition_variable mTaskReadyCondition;
     bool mExitPending = false;
+
     int mFd = 0;
     std::mutex mDataLock;
     std::unordered_map<uint8_t, IPSysDeviceCallback*> mPSysDeviceCallbackMap;

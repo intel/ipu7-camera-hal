@@ -23,12 +23,17 @@
 
 namespace icamera {
 
-ImageProcessorCore::ImageProcessorCore() {
-    mRotationMode = {{0, libyuv::RotationMode::kRotate0},
-                     {90, libyuv::RotationMode::kRotate90},
-                     {180, libyuv::RotationMode::kRotate180},
-                     {270, libyuv::RotationMode::kRotate270}};
+libyuv::RotationMode getRotationMode(int angle) {
+    switch (angle) {
+        case 0: return libyuv::RotationMode::kRotate0;
+        case 90: return libyuv::RotationMode::kRotate90;
+        case 180: return libyuv::RotationMode::kRotate180;
+        case 270: return libyuv::RotationMode::kRotate270;
+        default: return libyuv::RotationMode::kRotate0;
+    }
 }
+
+ImageProcessorCore::ImageProcessorCore() {}
 
 std::unique_ptr<IImageProcessor> IImageProcessor::createImageProcessor() {
     return std::unique_ptr<ImageProcessorCore>(new ImageProcessorCore());
@@ -126,7 +131,7 @@ status_t ImageProcessorCore::rotateFrame(const std::shared_ptr<CameraBuffer>& in
 
     CheckAndLogError(output->getWidth() != input->getHeight() ||
                      output->getHeight() != input->getWidth(), BAD_VALUE,
-                     "output resolution mis-match [%d x %d] -> [%d x %d]", input->getWidth(),
+                     "output resolution mismatch [%d x %d] -> [%d x %d]", input->getWidth(),
                      input->getHeight(), output->getWidth(), output->getHeight());
     CheckAndLogError((angle != 90 && angle != 270), BAD_VALUE, "angle value:%d is wrong", angle);
 
@@ -144,7 +149,7 @@ status_t ImageProcessorCore::rotateFrame(const std::shared_ptr<CameraBuffer>& in
 
     uint8_t* I420Buffer = rotateBuf.data();
 
-    if (mRotationMode[angle] == libyuv::RotationMode::kRotate0) {
+    if (getRotationMode(angle) == libyuv::RotationMode::kRotate0) {
         libyuv::CopyPlane(inBuffer, inStride, outBuffer, outStride, inW, inH);
         libyuv::CopyPlane(inBuffer + inH * inStride, inStride, outBuffer + outH * outStride,
                           outStride, inW, inH / 2);
@@ -152,7 +157,7 @@ status_t ImageProcessorCore::rotateFrame(const std::shared_ptr<CameraBuffer>& in
         int ret = libyuv::NV12ToI420Rotate(inBuffer, inStride, inBuffer + inH * inStride, inStride,
                                            I420Buffer, outW, I420Buffer + outW * outH, outW / 2,
                                            I420Buffer + outW * outH * 5 / 4, outW / 2, inW, inH,
-                                           mRotationMode[angle]);
+                                           getRotationMode(angle));
         CheckAndLogError((ret < 0), UNKNOWN_ERROR, "NV12ToI420Rotate failed [%d]", ret);
 
         ret = libyuv::I420ToNV12(I420Buffer, outW, I420Buffer + outW * outH, outW / 2,

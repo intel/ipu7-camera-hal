@@ -43,7 +43,7 @@ void CameraParserInvoker::parseSensors() {
                                           mStaticCfg->mCommonConfig.availableSensors);
 
     if (allSensors.empty()) {
-        LOGW("%s: No sensors availabe", __func__);
+        LOGW("%s: No sensors available", __func__);
         return;
     }
 
@@ -68,10 +68,10 @@ void CameraParserInvoker::runParser() {
     dumpSensorInfo();
 }
 
-void CameraParserInvoker::chooseAvaliableJsonFile(
-    const std::vector<const char*>& avaliableJsonFiles, std::string* jsonFile) {
+void CameraParserInvoker::chooseAvailableJsonFile(
+    const std::vector<const char*>& availableJsonFiles, std::string* jsonFile) const {
     struct stat st;
-    for (const auto json : avaliableJsonFiles) {
+    for (const auto json : availableJsonFiles) {
         const int ret = stat(json, &st);
         if (ret == 0) {
             *jsonFile = json;
@@ -87,7 +87,7 @@ std::string CameraParserInvoker::getJsonFileFullName(std::string fileName) {
                                                sysFolderFileName.c_str()};
 
     std::string chosenJsonFile = fileName;
-    chooseAvaliableJsonFile(profiles, &chosenJsonFile);
+    chooseAvailableJsonFile(profiles, &chosenJsonFile);
 
     return chosenJsonFile;
 }

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef HAL_ADAPTOR_H
-#define HAL_ADAPTOR_H
-
+#pragma once
 #include "ICamera.h"
 
 extern "C" {
@@ -51,4 +49,3 @@ struct HalApiHandle {
 }  // namespace icamera
 }  // extern "C"
 
-#endif // HAL_ADAPTOR_H

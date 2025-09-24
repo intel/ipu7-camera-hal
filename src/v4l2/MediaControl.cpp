@@ -507,6 +507,7 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
         LOGE("readlink sysName %s failed ret %d.", sysName, ret);
         return -EINVAL;
     }
+    target[MAX_TARGET_NAME - 1] = '\0';
 
     char* d = strrchr(target, '/');
     if (!d) {
@@ -762,6 +763,9 @@ int MediaControl::setFormat(int cameraId, const McFormat* format, int targetWidt
                 struct v4l2_subdev_format tmt = {};
                 tmt.format = mbusfmt;
                 tmt.pad = link->sink->index;
+                // VIRTUAL_CHANNEL_S
+                tmt.stream = format->stream;
+                // VIRTUAL_CHANNEL_E
                 tmt.which = V4L2_SUBDEV_FORMAT_ACTIVE;
                 subDev->SetFormat(tmt);
             }

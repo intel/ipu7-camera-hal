@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef AIQ_UTILS_H
-#define AIQ_UTILS_H
+#pragma once
 
 #include "CameraTypes.h"
 #include "ParamDataType.h"
@@ -161,5 +160,3 @@ template int resize2dArray<int>(
 float calculateHyperfocalDistance(const cca::cca_cmc &cmc);
 }  // namespace AiqUtils
 }  // namespace icamera
-
-#endif // AIQ_UTILS_H

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef REQUEST_THREAD_H
-#define REQUEST_THREAD_H
-
+#pragma once
 #include <atomic>
 #include <condition_variable>
 #include <deque>
@@ -38,7 +36,7 @@ public:
     void requestStart();
     void requestStop();
 
-    void handleEvent(EventData eventData);
+    virtual void handleEvent(EventData eventData);
 
     /**
      * \Clear pending requests.
@@ -67,13 +65,13 @@ public:
     int configure(const stream_config_t *streamList);
 
 private:
-    void run() {
+    virtual void run() {
         bool ret = true;
         while (ret) {
             ret = threadLoop();
         }
     }
-    bool threadLoop();
+    virtual bool threadLoop();
 
     int mCameraId;
     AiqUnitBase *m3AControl;
@@ -149,4 +147,3 @@ private:
 
 } //namespace icamera
 
-#endif // REQUEST_THREAD_H

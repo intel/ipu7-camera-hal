@@ -251,7 +251,7 @@ void camera_device_close(int camera_id);
  * \param[in]
  *   int camera_id: ID of the camera
  * \param[in]
- *   int inputConfig: Specify which input format, resolution(the output of ISYS) should be used.
+ *   int input_config: Specify which input format, resolution(the output of ISYS) should be used.
  *
  * \return
  *   0 succeed to configure streams
@@ -268,7 +268,7 @@ void camera_device_close(int camera_id);
  *   ret = camera_device_config_sensor_input(camera_id, &input_config);
  * \endcode
  **/
-int camera_device_config_sensor_input(int camera_id, const stream_t* inputConfig);
+int camera_device_config_sensor_input(int camera_id, const stream_t* input_config);
 
 /**
  * \brief

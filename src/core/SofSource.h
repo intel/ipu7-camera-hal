@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef SOF_SOURCE_H
-#define SOF_SOURCE_H
-
+#pragma once
 #include <vector>
 
 #include <v4l2_device.h>
@@ -51,4 +49,3 @@ class SofSource : public EventSource {
 
 }  // namespace icamera
 
-#endif // SOF_SOURCE_H

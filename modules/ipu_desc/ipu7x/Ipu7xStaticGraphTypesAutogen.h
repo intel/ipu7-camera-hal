@@ -34,6 +34,7 @@
 typedef aic::ImagingKernelGroup StaticGraphNodeKernels;
 typedef aic::ia_pac_kernel_info StaticGraphPacRunKernel;
 typedef aic::IaAicFragmentDesc StaticGraphFragmentDesc;
+typedef aic::IaAicUpscalerFragDesc StaticGraphUpscalerFragmentDesc;
 #endif
 
 #ifdef STATIC_GRAPH_USE_IA_LEGACY_TYPES
@@ -63,7 +64,9 @@ enum class NodeResourceId : uint8_t {
     SwGdc = 4,
     SwGtm = 5,
     SwNntm = 6,
+    SwScaler = 7,
     SwVai = 8,
+    SwImv = 9,
 };
 
 enum class StaticGraphStatus : uint8_t
@@ -99,6 +102,7 @@ enum class HwSink : uint8_t
     ImagePppSink,
     GmvMatchOutSink,
     ProcessedMainSink,
+    ProcessedSecondarySink,
     AwbSveOutSink,
     IrAeOutSink,
     IrAfStdOutSink,
@@ -142,6 +146,7 @@ struct StaticGraphKernelRes {
 // We add only the fields that are used by tests
 struct StaticGraphKernelSystemApiIoBuffer1_4 {
     uint32_t x_output_offset_per_stripe[4];
+    uint32_t plane_start_address_per_stripe[12];
 };
 
 #endif
@@ -233,10 +238,19 @@ struct StaticGraphRunKernel {
 
 #ifndef STATIC_GRAPH_USE_IA_AIC_TYPES
 
+struct StaticGraphUpscalerFragmentDesc {
+    uint16_t fragmentInputCropLeft = 0;
+    uint16_t fragmentInputCropRight = 0;
+};
+
 struct StaticGraphFragmentDesc {
-    uint16_t inputWidth = 0;
-    uint16_t outputWidth = 0;
-    uint16_t left = 0;
+    uint16_t fragmentInputWidth = 0;
+    uint16_t fragmentOutputWidth = 0;
+    uint16_t fragmentStartX = 0;
+    union
+    {
+        StaticGraphUpscalerFragmentDesc upscalerFragDesc;
+    };
 };
 
 // ia_pac_kernel_info
@@ -286,6 +300,7 @@ enum class GraphElementType : uint8_t {
     ImagePpp,
     GmvMatchOut,
     ProcessedMain,
+    ProcessedSecondary,
     AwbSveOut,
     IrAeOut,
     IrAfStdOut,
@@ -303,12 +318,14 @@ enum class GraphElementType : uint8_t {
     LbffBayerWithGmv,
     BbpsWithTnr,
     SwGdc,
+    SwScaler,
     SwNntm,
     LbffRgbIr,
     LbffIrNoGmvIrStream,
     BbpsIrWithTnr,
     LbffBayerBurstOutNo3A,
     BbpsIrNoTnr,
+    LbffIrNo2ANoGmv,
     LbffIrNoGmv,
     IsysPdaf2,
     LbffBayerPdaf2,
@@ -322,6 +339,7 @@ enum class GraphElementType : uint8_t {
     LbffRgbIrWithGmv,
     LbffIrWithGmvIrStream,
     SwVai,
+    SwImv,
 };
 
 enum class LinkType : uint8_t {

@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef PROCESSING_UNIT_H
-#define PROCESSING_UNIT_H
-
+#pragma once
 #include <queue>
 #include <set>
 
@@ -58,7 +56,7 @@ class ProcessingUnit : public IProcessingUnit, public PipeManagerCallback {
     DISALLOW_COPY_AND_ASSIGN(ProcessingUnit);
 
  private:
-    int processNewFrame();
+    virtual int processNewFrame();
     std::shared_ptr<CameraBuffer> allocStatsBuffer(int index);
 
     status_t prepareTask(CameraBufferPortMap* srcBuffers, CameraBufferPortMap* dstBuffers);
@@ -73,7 +71,7 @@ class ProcessingUnit : public IProcessingUnit, public PipeManagerCallback {
 
     void outputRawImage(std::shared_ptr<CameraBuffer>& srcBuf,
                         std::shared_ptr<CameraBuffer>& dstBuf);
-    status_t handleYuvReprocessing(CameraBufferPortMap* buffersMap);
+    status_t handleYuvReprocessing(const CameraBufferPortMap* buffersMap);
     void handleRawReprocessing(CameraBufferPortMap* srcBuffers, CameraBufferPortMap* dstBuffers,
                                bool* allBufDone, bool* hasRawOutput, bool* hasRawInput);
     bool isBufferHoldForRawReprocess(int64_t sequence);
@@ -88,7 +86,7 @@ class ProcessingUnit : public IProcessingUnit, public PipeManagerCallback {
     void handleExtraTasksForTnr(int64_t sequence, CameraBufferPortMap* dstBuffers,
                                 const AiqResult* aiqResult);
 
-    void extractZslInfo(CameraBufferPortMap* dstBuffers, bool& reprocess,
+    void extractZslInfo(const CameraBufferPortMap* dstBuffers, bool& reprocess,
                         CameraBufferPortMap& videoBuf, CameraBufferPortMap& stillBuf,
                         int64_t& zslSequence);
     void handleZslReprocessing(int64_t sequence, const CameraBufferPortMap& videoBuf,
@@ -142,4 +140,3 @@ class ProcessingUnit : public IProcessingUnit, public PipeManagerCallback {
 
 }  // namespace icamera
 
-#endif // PROCESSING_UNIT_H

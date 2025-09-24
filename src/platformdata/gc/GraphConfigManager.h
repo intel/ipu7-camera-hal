@@ -71,7 +71,7 @@ class GraphConfigManager {
     PipeUseCase getUseCaseFromStream(ConfigMode configMode, const stream_t& stream);
     void releaseHalStream(std::vector<HalStream*>* halStreamVec);
 
-    // Debuging helpers
+    // Debugging helpers
     void dumpStreamConfig();
 
  private:

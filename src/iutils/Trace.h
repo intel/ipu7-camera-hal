@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef TRACE_H
-#define TRACE_H
+#pragma once
 
 #include <errno.h>
 #include <inttypes.h>
@@ -220,5 +219,3 @@ static inline void atrace_int64(uint64_t tag, const char* name, int64_t value) {
 // ASYNC_TRACE_E
 
 }  // namespace icamera
-
-#endif // TRACE_H

@@ -334,7 +334,7 @@ void FileSource::notifyFrame(std::map<uuid, std::shared_ptr<CameraBuffer>> buffe
         for (auto & port : mOutputPorts) {
             if (buffers.find(port) != buffers.end()) {
                 LOG2("Notify frame to consumer for port:%x", port);
-                consumer->onFrameAvailable(port, buffers[port]);
+                consumer->onBufferAvailable(port, buffers[port]);
             }
         }
     }

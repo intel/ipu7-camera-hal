@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef AIQ_SETTING_H
-#define AIQ_SETTING_H
+#pragma once
 
 #include "CameraTypes.h"
 #include "ParamDataType.h"
@@ -117,5 +116,3 @@ struct aiq_parameter_t {
 };
 
 } /* namespace icamera */
-
-#endif // AIG_SETTING_H

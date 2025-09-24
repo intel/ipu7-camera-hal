@@ -18,6 +18,9 @@
 #include "PostProcessorBase.h"
 
 #include <vector>
+#ifdef LIBCAMERA_BUILD
+#else
+#endif
 
 #include "iutils/CameraLog.h"
 #include "stdlib.h"

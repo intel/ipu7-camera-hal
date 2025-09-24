@@ -15,9 +15,7 @@
  * limitations under the License.
  */
 
-#ifndef ICAMERA_METADATA_BASE_H
-#define ICAMERA_METADATA_BASE_H
-
+#pragma once
 #include <string.h>
 #include <stdint.h>
 
@@ -451,4 +449,3 @@ int icamera_metadata_enum_snprint(uint32_t tag,
 }
 #endif
 
-#endif // ICAMERA_METADATA_BASE_H

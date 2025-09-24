@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef SCOPED_ATRACE_H
-#define SCOPED_ATRACE_H
+#pragma once
 
 #include <unistd.h>
 #include <stdint.h>
@@ -28,9 +27,9 @@ namespace icamera {
 /**
  * Following macros PERF_CAMERA_ATRACE_XXX() can be called in the function
  * we are scoping. Environment variable "camPerf" is need to be set as "16"
- * or "128", to enalbe atrace profiling:
+ * or "128", to enable atrace profiling:
  * 1. When "16" is set, ATRACE with level of CAMERA_DEBUG_LOG_ATRACE_OS is
- * enalbed.
+ * enabled.
  * 2. When "128" is set, ATRACE with level of CAMERA_DEBUG_LOG_ATRACE_IMAGING
  * is enabled.
  */
@@ -75,5 +74,3 @@ class ScopedAtrace {
                                  PERF_LOG_TAG_STR(LOG_TAG), note, value, note2, value2, note3, \
                                  value3);
 }  // namespace icamera
-
-#endif // SCOPED_ATRACE_H

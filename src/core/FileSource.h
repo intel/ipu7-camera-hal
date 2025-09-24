@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef FILE_SOURCE_H
-#define FILE_SOURCE_H
+#pragma once
 
 #include "StreamSource.h"
 #include "iutils/Thread.h"
@@ -36,29 +35,29 @@ namespace icamera {
  *    The value of cameraInjectFile MUST be ended with ".xml".
  * 3. The third mode which can inject files in sequence by specifying injection folder path.
  *    How to enable: export cameraInjectFile="Injection Folder"
- *    ("Injection Folder" is the specifyed injection folder path you want to run file injection)
+ *    ("Injection Folder" is the specified injection folder path you want to run file injection)
  */
 class FileSource : public StreamSource {
  public:
     explicit FileSource(int cameraId);
     ~FileSource();
 
-    int init();
-    void deinit();
-    int configure(const std::map<uuid, stream_t>& outputFrames);
-    int start();
-    int stop();
+    virtual int init();
+    virtual void deinit();
+    virtual int configure(const std::map<uuid, stream_t>& outputFrames);
+    virtual int start();
+    virtual int stop();
 
     virtual int qbuf(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
 
     virtual void addFrameAvailableListener(BufferConsumer* listener);
     virtual void removeFrameAvailableListener(BufferConsumer* listener);
-    void removeAllFrameAvailableListener();
-    int allocateMemory(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) { return OK; }
+    virtual void removeAllFrameAvailableListener();
+    virtual int allocateMemory(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) { return OK; }
 
     // Overwrite EventSource APIs to avoid calling its parent's implementation.
-    void registerListener(EventType eventType, EventListener* eventListener);
-    void removeListener(EventType eventType, EventListener* eventListener);
+    virtual void registerListener(EventType eventType, EventListener* eventListener);
+    virtual void removeListener(EventType eventType, EventListener* eventListener);
 
  private:
     bool produce();
@@ -83,7 +82,7 @@ class FileSource : public StreamSource {
         }
 
      private:
-        bool threadLoop() { return mFileSrc->produce(); }
+        virtual bool threadLoop() { return mFileSrc->produce(); }
     };
 
     ProduceThread* mProduceThread;
@@ -184,5 +183,3 @@ class FileSourceFromDir {
 };
 
 }  // namespace icamera
-
-#endif // FILE_SOURCE_H

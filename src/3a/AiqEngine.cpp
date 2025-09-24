@@ -123,13 +123,13 @@ int AiqEngine::run3A(int64_t ccaId, int64_t applyingSeq, int64_t frameNumber, in
     if (aiqRun) {
         mAiqRunningHistory.aiqResult = aiqResult;
         mAiqRunningHistory.ccaId = ccaId;
-        mAiqRunningHistory.statsSequnce = aiqStats != nullptr ? aiqStats->mSequence : -1;
+        mAiqRunningHistory.statsSequence = aiqStats != nullptr ? aiqStats->mSequence : -1;
     }
 
     if (effectSeq != nullptr) {
         *effectSeq = mAiqResultStorage->getAiqResult()->mSequence;
-        LOG2("%s, effect sequence %ld, statsSequnce %ld", __func__, *effectSeq,
-             mAiqRunningHistory.statsSequnce);
+        LOG2("%s, effect sequence %ld, statsSequence %ld", __func__, *effectSeq,
+             mAiqRunningHistory.statsSequence);
     }
 
     PlatformData::saveMakernoteData(mCameraId, dataContext->mAiqParams.makernoteMode,
@@ -152,7 +152,7 @@ void AiqEngine::handleEvent(EventData eventData) {
 
 int AiqEngine::prepareStatsParams(const aiq_parameter_t& aiqParams,
                                   cca::cca_stats_params* statsParams,
-                                  AiqStatistics* aiqStatistics, AiqResult* aiqResult) {
+                                  const AiqStatistics* aiqStatistics, AiqResult* aiqResult) {
     LOG2("%s, sequence %ld", __func__, aiqStatistics->mSequence);
 
     // update face detection related parameters
@@ -209,8 +209,8 @@ int AiqEngine::prepareStatsParams(const aiq_parameter_t& aiqParams,
             statsParams->dvs_stats_width = resolution.output_width;
         }
 
-        statsParams->frame_id = aiqResult != nullptr ? aiqResult->mFrameId : -1;
-        statsParams->frame_timestamp = timestamp;
+        statsParams->frame_id = aiqResult != nullptr ? aiqResult->mFrameId : 0;
+        statsParams->frame_timestamp = static_cast<uint32_t>(timestamp);
         statsParams->camera_orientation = ia_aiq_camera_orientation_unknown;
     } while (0);
 
@@ -239,7 +239,7 @@ void AiqEngine::setAiqResult(const aiq_parameter_t& aiqParams, AiqResult* aiqRes
     mLensManager->setLensResult(aiqResult->mAfResults, aiqResult->mSequence, aiqParams);
 }
 
-int AiqEngine::getSkippingNum(AiqResult* aiqResult) {
+int AiqEngine::getSkippingNum(const AiqResult* aiqResult) {
     int skipNum = 0;
 
     if (!mFirstAiqRunning) {
@@ -256,7 +256,7 @@ int AiqEngine::getSkippingNum(AiqResult* aiqResult) {
     return skipNum;
 }
 
-bool AiqEngine::needRun3A(AiqStatistics* aiqStatistics, int64_t ccaId) {
+bool AiqEngine::needRun3A(const AiqStatistics* aiqStatistics, int64_t ccaId) {
     // Force to run 3a for per-frame control case
     if (mAiqRunningForPerframe) {
         return true;
@@ -277,8 +277,8 @@ bool AiqEngine::needRun3A(AiqStatistics* aiqStatistics, int64_t ccaId) {
         return false;
     }
 
-    if (mAiqRunningHistory.statsSequnce == aiqStatistics->mSequence) {
-        LOG2("no new stats skip, statsSequnce = %ld", aiqStatistics->mSequence);
+    if (mAiqRunningHistory.statsSequence == aiqStatistics->mSequence) {
+        LOG2("no new stats skip, statsSequence = %ld", aiqStatistics->mSequence);
         return false;
     } else if (mSensorManager->getCurrentExposureAppliedDelay() > kMaxExposureAppliedDelay) {
         LOG2("exposure setting applied delay is too larger, skip it");

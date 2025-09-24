@@ -108,7 +108,7 @@ PnpDebugParser::PnpDebugParser(PnpDebugControl::StaticCfg* cfg)
     std::string fullpath = PlatformData::getCameraCfgPath() + filename;
     bool ret = run(fullpath);
 
-    CheckAndLogError(!ret, VOID_VALUE, "Failed to get policy profiles data frome %s",
+    CheckAndLogError(!ret, VOID_VALUE, "Failed to get policy profiles data from %s",
                      PNP_DEBUG_FILE_NAME);
 }
 

@@ -101,6 +101,7 @@ int PipeManager::stop() {
     for (auto& pipeLine : mPipeLines) {
         pipeLine.second->stop();
     }
+    mPacAdaptor->clearAicResult();
     return icamera::OK;
 }
 
@@ -182,7 +183,7 @@ int PipeManager::bindExternalPorts(
             bool bind = false;
             auto frameInfo = inputFrameInfo.begin();
             while (frameInfo != inputFrameInfo.end()) {
-                const bool match = isSameStreamConfig(portInfo.second, frameInfo->second, false);
+                bool match = isSameStreamConfig(portInfo.second, frameInfo->second, false);
                 if (match) {
                     PortMapping portMap;
                     portMap.mPipeStage = pipeLine.second->getInput();
@@ -268,7 +269,7 @@ int PipeManager::bindYuvReprocessingPort(const std::map<uuid, stream_t>& yuvInpu
     std::map<uuid, stream_t> outputInfo;
     std::map<uuid, stream_t> inputInfo;
 
-    // YUV reporcessing pipe line has only one pipe stage
+    // YUV reprocessing pipe line has only one pipe stage
     IPipeStage* mPipeStage = mYuvPipeLine[YUV_REPROCESSING_STREAM_ID]->getInput();
     mPipeStage->getFrameInfo(inputInfo, outputInfo);
 
@@ -380,6 +381,7 @@ void PipeManager::releasePipeLines() {
         pipeLine.second->removeListener(EVENT_PSYS_STATS_BUF_READY, this);
         pipeLine.second->removeListener(EVENT_PSYS_STATS_SIS_BUF_READY, this);
         pipeLine.second->removeListener(EVENT_STAGE_BUF_READY, this);
+        pipeLine.second->deinit();
     }
     mPipeLines.clear();
 
@@ -555,7 +557,7 @@ bool PipeManager::updateZoomSettings(const camera_zoom_region_t& zoom, PtzInfo* 
          * ---------------------
          * |  |             |  |
          * |  |             |  |
-         * |  |   orignal   |  |
+         * |  |   original  |  |
          * |  |             |  |
          * |  |             |  |
          * |--------------------
@@ -564,7 +566,7 @@ bool PipeManager::updateZoomSettings(const camera_zoom_region_t& zoom, PtzInfo* 
             // Increase h
             ptz->y -= (ptz->xSize - ptz->ySize) / 2;
             ptz->ySize = xSize;
-            // Check the boundry
+            // Check the boundary
             if (ptz->y < 0.0) {
                 ptz->y = 0.0;
             } else {
@@ -576,7 +578,7 @@ bool PipeManager::updateZoomSettings(const camera_zoom_region_t& zoom, PtzInfo* 
             // Increase w
             ptz->x -= (ptz->ySize - ptz->xSize) / 2;
             ptz->xSize = ySize;
-            // Check the boundry
+            // Check the boundary
             if (ptz->x < 0.0) {
                 ptz->x = 0.0;
             } else {
@@ -630,7 +632,7 @@ void PipeManager::queueBuffers(const PipeTaskData& task, const std::vector<PortM
 
                 LOG2("<seq%ld>queue input buffer for stream:%d stage uuid: %u, external:%d",
                      sequence, inputMap.mStreamId, inputMap.mStagePort, inputFrame.first);
-                inputMap.mPipeStage->onFrameAvailable(inputMap.mStagePort, inputFrame.second);
+                inputMap.mPipeStage->onBufferAvailable(inputMap.mStagePort, inputFrame.second);
             }
         }
     }
@@ -679,7 +681,8 @@ int PipeManager::onBufferDone(uuid port, const std::shared_ptr<CameraBuffer>& bu
 
             // Check if buffer belongs to the task because input buffer maybe reused
             for (auto& buf : task.mTaskData.mOutputBuffers) {
-                if (buf.second && (buffer->getUserBuffer() == buf.second->getUserBuffer())) {
+                if ((buf.second != nullptr) &&
+                    (buffer->getUserBuffer() == buf.second->getUserBuffer())) {
                     outputPort = buf.first;
                 }
             }
@@ -710,12 +713,12 @@ int PipeManager::onBufferDone(uuid port, const std::shared_ptr<CameraBuffer>& bu
         return OK;
     }
 
-    if (mPMCallback) {
+    if (mPMCallback != nullptr) {
         // Return buffer
         mPMCallback->onBufferDone(sequence, outputPort, buffer);
     }
 
-    if (needReturn && mPMCallback) {
+    if (needReturn && (mPMCallback != nullptr)) {
         mPMCallback->onTaskDone(result);
     }
 
@@ -745,6 +748,7 @@ void PipeManager::handleEvent(EventData eventData) {
             (void)onBufferDone(eventData.data.stageBufReady.uuid, eventData.buffer);
             break;
         default:
+            // Do not need to callback
             break;
     }
 }

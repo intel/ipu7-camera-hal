@@ -424,7 +424,7 @@ int SwImageConverter::convertFormat(unsigned int width, unsigned int height, uns
          CameraUtils::format2string(dstFmt).c_str(), width, height);
 
     if (dstFmt == srcFmt) {
-        // No need do format convertion.
+        // No need do format conversion.
         LOG2("No conversion needed");
         MEMCPY_S(outBuf, outLength, inBuf, inLength);
         return 0;

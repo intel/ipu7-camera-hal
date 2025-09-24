@@ -281,7 +281,7 @@ int PipeManagerStub::processTask(const PipeTaskData& task) {
             static_cast<unsigned char*>(cInBuffer->getBufferAddr()), cInBuffer->getBufferSize(),
             cInBuffer->getFormat(), static_cast<unsigned char*>(mIntermBuffer->getBufferAddr()),
             mIntermBuffer->getBufferSize(), mIntermBuffer->getFormat());
-        CheckAndLogError((ret < 0), ret, "format convertion failed with %d", ret);
+        CheckAndLogError((ret < 0), ret, "format conversion failed with %d", ret);
     }
     for (auto& outputFrame : task.mOutputBuffers) {
         if (outputFrame.second) {

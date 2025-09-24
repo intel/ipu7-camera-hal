@@ -186,7 +186,7 @@ int RequestThread::processRequest(int bufferNum, camera_buffer_t **ubuffer) {
         mState = PROCESSING;
     }
 
-    mRequestTriggerEvent |= NEW_REQUEST;
+    mRequestTriggerEvent |= static_cast<uint32_t>(NEW_REQUEST);
     mRequestSignal.notify_one();
     return OK;
 }
@@ -257,7 +257,7 @@ void RequestThread::handleEvent(EventData eventData) {
                 }
                 // Just in case too many requests are pending in mPendingRequests.
                 if (!mPendingRequests.empty()) {
-                    mRequestTriggerEvent |= NEW_FRAME;
+                    mRequestTriggerEvent |= static_cast<uint32_t>(NEW_FRAME);
                     mRequestSignal.notify_one();
                 }
             }
@@ -269,7 +269,7 @@ void RequestThread::handleEvent(EventData eventData) {
                 if (mBlockRequest) {
                     mBlockRequest = false;
                 }
-                mRequestTriggerEvent |= NEW_STATS;
+                mRequestTriggerEvent |= static_cast<uint32_t>(NEW_STATS);
                 mRequestSignal.notify_one();
             }
             break;
@@ -277,7 +277,7 @@ void RequestThread::handleEvent(EventData eventData) {
             {
                 AutoMutex l(mPendingReqLock);
                 mLastSofSeq = eventData.data.sync.sequence;
-                mRequestTriggerEvent |= NEW_SOF;
+                mRequestTriggerEvent |= static_cast<uint32_t>(NEW_SOF);
                 mRequestSignal.notify_one();
             }
             break;
@@ -309,7 +309,7 @@ void RequestThread::handleEvent(EventData eventData) {
                     fakeRequest.mBuffer[0] = &mFakeReqBuf;
                     mFakeReqBuf.sequence = -1;
                     mPendingRequests.push_back(fakeRequest);
-                    mRequestTriggerEvent |= NEW_REQUEST;
+                    mRequestTriggerEvent |= static_cast<uint32_t>(NEW_REQUEST);
                     mRequestSignal.notify_one();
                 }
             }
@@ -358,7 +358,7 @@ bool RequestThread::threadLoop() {
             if (blockRequest()) {
                 LOG2("Pending request processing, mBlockRequest %d, Req in processing %d",
                      mBlockRequest, mRequestsInProcessing);
-                mRequestTriggerEvent = NONE_EVENT;
+                mRequestTriggerEvent = static_cast<uint32_t>(NONE_EVENT);
                 return true;
             }
         }
@@ -375,17 +375,18 @@ bool RequestThread::threadLoop() {
             } else if (((mRequestTriggerEvent & static_cast<uint32_t>(NEW_STATS)) != 0U) &&
                        (mLastSofSeq >= mLastAppliedSeq)) {
                 applyingSeq = mLastSofSeq + 1;
-            } else if (((mRequestTriggerEvent & (NEW_REQUEST | NEW_FRAME)) != 0U) &&
+            } else if (((mRequestTriggerEvent & (static_cast<uint32_t>(NEW_REQUEST)
+                        | static_cast<uint32_t>(NEW_FRAME))) != 0U) &&
                        (mRequestsInProcessing == 0U)) {
                 applyingSeq = mLastSofSeq + 1;
             } else {
-                mRequestTriggerEvent = NONE_EVENT;
+                mRequestTriggerEvent = static_cast<uint32_t>(NONE_EVENT);
                 return true;
             }
 
             mLastAppliedSeq = applyingSeq;
             if ((mLastAppliedSeq + PlatformData::getExposureLag(mCameraId)) <= mLastEffectSeq) {
-                mRequestTriggerEvent = NONE_EVENT;
+                mRequestTriggerEvent = static_cast<uint32_t>(NONE_EVENT);
                 LOG2("%s, skip processing request for AE delay issue", __func__);
                 return true;
             }
@@ -404,14 +405,18 @@ bool RequestThread::threadLoop() {
         handleRequest(request, applyingSeq);
         {
             AutoMutex l(mPendingReqLock);
-            mRequestTriggerEvent = NONE_EVENT;
+            mRequestTriggerEvent = static_cast<uint32_t>(NONE_EVENT);
         }
     }
     return true;
 }
 
 void RequestThread::handleRequest(CameraRequest& request, int64_t applyingSeq) {
-    int64_t effectSeq = mLastEffectSeq + 1;
+    int64_t effectSeq = 0;
+    {
+        std::lock_guard<std::mutex> l(mPendingReqLock);
+        effectSeq = mLastEffectSeq + 1;
+    }
     // Reprocessing case, don't run 3A.
     if (IS_INPUT_BUFFER(request.mBuffer[0]->timestamp, request.mBuffer[0]->sequence)) {
         effectSeq = request.mBuffer[0]->sequence;
@@ -422,7 +427,8 @@ void RequestThread::handleRequest(CameraRequest& request, int64_t applyingSeq) {
         {
             AutoMutex l(mPendingReqLock);
             if (mState != EXIT) {
-                ccaId = ++mLastCcaId;
+                ++mLastCcaId;
+                ccaId = mLastCcaId;
             }
         }
 

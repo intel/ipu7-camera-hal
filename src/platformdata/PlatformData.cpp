@@ -104,7 +104,7 @@ int PlatformData::init() {
 /**
  * Read graph descriptor and settings from configuration files.
  *
- * The resulting graphs represend all possible graphs for given sensor, and
+ * The resulting graphs represent all possible graphs for given sensor, and
  * they are stored in capinfo structure.
  */
 void PlatformData::parseGraphFromXmlFile() {
@@ -290,12 +290,6 @@ bool PlatformData::isUsingIspDigitalGain(int cameraId) {
 bool PlatformData::isNeedToPreRegisterBuffer(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mNeedPreRegisterBuffers;
 }
-
-// FRAME_SYNC_S
-bool PlatformData::isEnableFrameSyncCheck(int cameraId) {
-    return getInstance()->mStaticCfg.mCameras[cameraId].mFrameSyncCheckEnabled;
-}
-// FRAME_SYNC_E
 
 int PlatformData::getExposureNum(int cameraId, bool multiExposure) {
     if (multiExposure) {
@@ -697,25 +691,6 @@ int PlatformData::getISysRawFormat(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mISysRawFormat;
 }
 
-stream_t PlatformData::getISysOutputByPort(int cameraId, uuid port) {
-    stream_t config;
-    CLEAR(config);
-
-    MediaCtlConf* mc = PlatformData::getMediaCtlConf(cameraId);
-    CheckAndLogError(!mc, config, "Invalid media control config.");
-
-    for (const auto& output : mc->outputs) {
-        if (output.port == port) {
-            config.format = output.v4l2Format;
-            config.width = output.width;
-            config.height = output.height;
-            break;
-        }
-    }
-
-    return config;
-}
-
 // CSI_META_S
 bool PlatformData::isCsiMetaEnabled(int cameraId) {
     // FILE_SOURCE_S
@@ -1105,7 +1080,7 @@ int PlatformData::getStreamIdByConfigMode(int cameraId, ConfigMode configMode) {
     return modeMap.find(configMode) == modeMap.end() ? -1 : modeMap[configMode];
 }
 
-int PlatformData::getMaxRequestsInHAL(int cameraId) {
+int32_t PlatformData::getMaxPipelineDepth(int cameraId) {
     const std::string str = "request.pipelineMaxDepth";
     auto v = getByteStaticMetadata(cameraId, str);
     if (v.size() == 1) {
@@ -1169,22 +1144,6 @@ bool PlatformData::isCSIBackEndCapture(int cameraId) {
     }
 
     return isCsiBECapture;
-}
-
-bool PlatformData::isCSIFrontEndCapture(int cameraId) {
-    bool isCsiFeCapture = false;
-    MediaCtlConf* mc = getMediaCtlConf(cameraId);
-    CheckAndLogError(!mc, false, "getMediaCtlConf returns nullptr, cameraId:%d", cameraId);
-
-    for (const auto& node : mc->videoNodes) {
-        if ((node.videoNodeType == VIDEO_GENERIC) &&
-            ((node.name.find(CSI_PORT_NAME) != string::npos) ||
-            (node.name.find("TPG") != string::npos))) {
-            isCsiFeCapture = true;
-            break;
-        }
-    }
-    return isCsiFeCapture;
 }
 
 bool PlatformData::isTPGReceiver(int cameraId) {

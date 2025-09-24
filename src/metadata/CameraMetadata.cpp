@@ -145,8 +145,8 @@ status_t CameraMetadata::checkType(uint32_t tag, uint8_t expectedType) {
 
 status_t CameraMetadata::update(uint32_t tag, const int32_t* data, size_t data_count) {
     CheckAndLogError(mLocked, INVALID_OPERATION, "%s: CameraMetadata is locked", __func__);
-    status_t res;
-    if ((res = checkType(tag, ICAMERA_TYPE_INT32)) != OK) {
+    const status_t res = checkType(tag, ICAMERA_TYPE_INT32);
+    if (res != OK) {
         return res;
     }
     return updateImpl(tag, reinterpret_cast<const void*>(data), data_count);
@@ -154,8 +154,8 @@ status_t CameraMetadata::update(uint32_t tag, const int32_t* data, size_t data_c
 
 status_t CameraMetadata::update(uint32_t tag, const uint8_t* data, size_t data_count) {
     CheckAndLogError(mLocked, INVALID_OPERATION, "%s: CameraMetadata is locked", __func__);
-    status_t res;
-    if ((res = checkType(tag, ICAMERA_TYPE_BYTE)) != OK) {
+    const status_t res = checkType(tag, ICAMERA_TYPE_BYTE);
+    if (res != OK) {
         return res;
     }
     return updateImpl(tag, reinterpret_cast<const void*>(data), data_count);
@@ -163,8 +163,8 @@ status_t CameraMetadata::update(uint32_t tag, const uint8_t* data, size_t data_c
 
 status_t CameraMetadata::update(uint32_t tag, const float* data, size_t data_count) {
     CheckAndLogError(mLocked, INVALID_OPERATION, "%s: CameraMetadata is locked", __func__);
-    status_t res;
-    if ((res = checkType(tag, ICAMERA_TYPE_FLOAT)) != OK) {
+    const status_t res = checkType(tag, ICAMERA_TYPE_FLOAT);
+    if (res != OK) {
         return res;
     }
     return updateImpl(tag, reinterpret_cast<const void*>(data), data_count);
@@ -172,8 +172,8 @@ status_t CameraMetadata::update(uint32_t tag, const float* data, size_t data_cou
 
 status_t CameraMetadata::update(uint32_t tag, const int64_t* data, size_t data_count) {
     CheckAndLogError(mLocked, INVALID_OPERATION, "%s: CameraMetadata is locked", __func__);
-    status_t res;
-    if ((res = checkType(tag, ICAMERA_TYPE_INT64)) != OK) {
+    const status_t res = checkType(tag, ICAMERA_TYPE_INT64);
+    if (res != OK) {
         return res;
     }
     return updateImpl(tag, reinterpret_cast<const void*>(data), data_count);
@@ -181,8 +181,8 @@ status_t CameraMetadata::update(uint32_t tag, const int64_t* data, size_t data_c
 
 status_t CameraMetadata::update(uint32_t tag, const double* data, size_t data_count) {
     CheckAndLogError(mLocked, INVALID_OPERATION, "%s: CameraMetadata is locked", __func__);
-    status_t res;
-    if ((res = checkType(tag, ICAMERA_TYPE_DOUBLE)) != OK) {
+    const status_t res = checkType(tag, ICAMERA_TYPE_DOUBLE);
+    if (res != OK) {
         return res;
     }
     return updateImpl(tag, reinterpret_cast<const void*>(data), data_count);
@@ -191,8 +191,8 @@ status_t CameraMetadata::update(uint32_t tag, const double* data, size_t data_co
 status_t CameraMetadata::update(uint32_t tag, const icamera_metadata_rational_t* data,
                                 size_t data_count) {
     CheckAndLogError(mLocked, INVALID_OPERATION, "%s: CameraMetadata is locked", __func__);
-    status_t res;
-    if ((res = checkType(tag, ICAMERA_TYPE_RATIONAL)) != OK) {
+    const status_t res = checkType(tag, ICAMERA_TYPE_RATIONAL);
+    if (res != OK) {
         return res;
     }
     return updateImpl(tag, reinterpret_cast<const void*>(data), data_count);
@@ -200,8 +200,8 @@ status_t CameraMetadata::update(uint32_t tag, const icamera_metadata_rational_t*
 
 status_t CameraMetadata::update(uint32_t tag, const std::string& string) {
     CheckAndLogError(mLocked, INVALID_OPERATION, "%s: CameraMetadata is locked", __func__);
-    status_t res;
-    if ((res = checkType(tag, ICAMERA_TYPE_BYTE)) != OK) {
+    const status_t res = checkType(tag, ICAMERA_TYPE_BYTE);
+    if (res != OK) {
         return res;
     }
     // string.size() doesn't count the null termination character.

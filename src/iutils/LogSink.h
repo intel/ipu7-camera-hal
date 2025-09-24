@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef LOG_SINK
-#define LOG_SINK
+#pragma once
 
 #include <cstdint>
 
@@ -40,8 +39,8 @@ class LibcameraLogSink : public LogOutputSink {
     void sendOffLog(LogItem logItem) override;
 };
 #else
-#endif
 
+#endif
 #ifdef CAMERA_TRACE
 class FtraceLogSink : public LogOutputSink {
  public:
@@ -68,5 +67,3 @@ class FileLogSink : public LogOutputSink {
 };
 
 }  // namespace icamera
-
-#endif

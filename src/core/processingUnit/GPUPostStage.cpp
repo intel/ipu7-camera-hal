@@ -91,7 +91,7 @@ int GPUPostStage::qbuf(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer
 
 bool GPUPostStage::fetchRequestBuffer(int64_t sequence, std::shared_ptr<CameraBuffer>& inBuffer) {
     CameraBufVector& bufV = mInternalBuffers[mInputPort];
-    CheckAndLogError(bufV.empty(), false, "%s: queued %d, no avaiable buffer", getName(),
+    CheckAndLogError(bufV.empty(), false, "%s: queued %d, no available buffer", getName(),
                      mQueuedInputBuffers.size());
     inBuffer = bufV.back();
     bufV.pop_back();

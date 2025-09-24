@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef SENSOR_HW_CTRL_H
-#define SENSOR_HW_CTRL_H
-
+#pragma once
 #include <vector>
 
 #include <v4l2_device.h>
@@ -122,28 +120,27 @@ class DummySensor : public SensorHwCtrl {
     DummySensor(int cameraId) : SensorHwCtrl(cameraId, nullptr, nullptr) {}
     ~DummySensor() {}
 
-    int setTestPatternMode(int32_t testPatternMode) { return OK; }
+    virtual int setTestPatternMode(int32_t testPatternMode) { return OK; }
     int setDevice(V4L2Subdevice* pixelArraySubdev) { return OK; }
-    int getPixelRate(int& pixelRate) { return OK; }
-    int setExposure(const std::vector<int>& coarseExposures,
+    virtual int getPixelRate(int& pixelRate) { return OK; }
+    virtual int setExposure(const std::vector<int>& coarseExposures,
                     const std::vector<int>& fineExposures) {
         return OK;
     }
-    int setAnalogGains(const std::vector<int>& analogGains) { return OK; }
-    int setDigitalGains(const std::vector<int>& digitalGains) { return OK; }
-    int setFrameDuration(int llp, int fll) { return OK; }
-    int getFrameDuration(int& llp, int& fll) { return OK; }
-    int getVBlank(int& vblank) { return OK; }
-    int getActivePixelArraySize(int& width, int& height, int& code) { return OK; }
-    int getExposureRange(int& exposureMin, int& exposureMax, int& exposureStep) { return OK; }
+    virtual int setAnalogGains(const std::vector<int>& analogGains) { return OK; }
+    virtual int setDigitalGains(const std::vector<int>& digitalGains) { return OK; }
+    virtual int setFrameDuration(int llp, int fll) { return OK; }
+    virtual int getFrameDuration(int& llp, int& fll) { return OK; }
+    virtual int getVBlank(int& vblank) { return OK; }
+    virtual int getActivePixelArraySize(int& width, int& height, int& code) { return OK; }
+    virtual int getExposureRange(int& exposureMin, int& exposureMax, int& exposureStep) { return OK; }
     // HDR_FEATURE_S
-    int setWdrMode(int mode) { return OK; }
+    virtual int setWdrMode(int mode) { return OK; }
     // HDR_FEATURE_E
     // CRL_MODULE_S
-    int setFrameRate(float fps) { return OK; }
+    virtual int setFrameRate(float fps) { return OK; }
     // CRL_MODULE_E
 };
 
 }  // namespace icamera
 
-#endif // SENSOR_HW_CTRL_H

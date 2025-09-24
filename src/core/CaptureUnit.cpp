@@ -105,20 +105,17 @@ int CaptureUnit::createDevices() {
     LOG1("<id%d>%s", mCameraId, __func__);
     destroyDevices();
 
-    const uuid kDefaultPort = INVALID_PORT;
-    const uuid portOfMainDevice = findDefaultPort(mOutputFrameInfo);
-    const stream_t& kDefaultStream = mOutputFrameInfo.at(portOfMainDevice);
-    const VideoNodeType nodeType = VIDEO_GENERIC;
-    mDevices.push_back(new MainDevice(mCameraId, nodeType, this));
-
     // targetPorts specifies the desired port for the device.
     // But the real port which will be used is deciced whether
     // the port is provided by the consumer.
     vector<uuid> targetPorts;
-    targetPorts.push_back(portOfMainDevice);
+    targetPorts.push_back(MAIN_INPUT_PORT_UID);
+    // Configure has checked the main port is valid.
+    mDevices.push_back(new MainDevice(mCameraId, VIDEO_GENERIC, this));
 
     // Open and configure the devices. The stream and port that are used by the device is
     // decided by whether consumer has provided such info, use the default one if not.
+    const stream_t& kDefaultStream = mOutputFrameInfo.at(MAIN_INPUT_PORT_UID);
     for (uint8_t i = 0U; i < mDevices.size(); i++) {
         DeviceBase* device = mDevices[i];
 
@@ -129,7 +126,7 @@ int CaptureUnit::createDevices() {
         const bool hasPort = mOutputFrameInfo.find(kTargetPort) != mOutputFrameInfo.end();
         const stream_t& stream = hasPort ? mOutputFrameInfo.at(kTargetPort) : kDefaultStream;
 
-        ret = device->configure(hasPort ? kTargetPort : kDefaultPort, stream, mMaxBufferNum);
+        ret = device->configure(hasPort ? kTargetPort : INVALID_PORT, stream, mMaxBufferNum);
         CheckAndLogError(ret != OK, ret, "Configure device(%s) failed:%d", device->getName(), ret);
     }
 
@@ -248,17 +245,19 @@ int CaptureUnit::configure(const map<uuid, stream_t>& outputFrames) {
         (mState != CAPTURE_CONFIGURE) && (mState != CAPTURE_INIT) && (mState != CAPTURE_STOP),
         INVALID_OPERATION, "@%s: Configure in wrong state %d", __func__, mState);
 
-    const uuid port = findDefaultPort(outputFrames);
-    const stream_t& mainStream = outputFrames.at(port);
+    // Check if the main port is supported. MAIN_INPUT_PORT_UID is the default port for
+    // the main device.
+    bool isSupportPortId = IsSupportPort(MAIN_INPUT_PORT_UID, outputFrames);
+    CheckAndLogError(!isSupportPortId, BAD_VALUE, "No main port for output frames.");
 
+    mOutputFrameInfo = outputFrames;
     for (const auto& item : outputFrames) {
         LOG1("<id%d>%s, port:%d, w:%d, h:%d, f:%s", mCameraId, __func__, item.first,
              item.second.width, item.second.height,
              CameraUtils::format2string(item.second.format).c_str());
     }
 
-    mOutputFrameInfo = outputFrames;
-
+    const stream_t& mainStream = outputFrames.at(MAIN_INPUT_PORT_UID);
     /* media ctl setup */
     MediaCtlConf* mediaCtl = PlatformData::getMediaCtlConf(mCameraId);
     CheckAndLogError(mediaCtl == nullptr, BAD_VALUE,
@@ -284,13 +283,12 @@ int CaptureUnit::configure(const map<uuid, stream_t>& outputFrames) {
     return OK;
 }
 
-uuid CaptureUnit::findDefaultPort(const map<uuid, stream_t>& frames) const {
-    for (uint32_t i = 0U; i < MAX_STREAM_NUMBER; i++) {
-        if (frames.find(INPUT_STREAM_PORT_UID(i)) != frames.end()) {
-            return INPUT_STREAM_PORT_UID(i);
-        }
+bool CaptureUnit::IsSupportPort(uuid port, const std::map<uuid, stream_t>& frames) {
+    if (frames.find(port) != frames.end()) {
+        return true;
     }
-    return INVALID_PORT;
+
+    return false;
 }
 
 int CaptureUnit::allocateMemory(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer) {
@@ -339,6 +337,10 @@ int CaptureUnit::queueAllBuffers() {
             break;
         }
 
+        if (ret == DEV_BUSY) {
+            return DEV_BUSY;
+        }
+
         CheckAndLogError(ret != OK, ret, "queueBuffer fails, dev:%s, ret:%d", device->getName(),
                          ret);
         if (predictSequence == -1) {
@@ -357,11 +359,9 @@ int CaptureUnit::processPendingBuffers() {
     LOG2("%s: buffers in device:%d", __func__, mDevices.front()->getBufferNumInDevice());
 
     while (mDevices.front()->getBufferNumInDevice() < mMaxBuffersInDevice) {
-        bool hasPendingBuffer = true;
         for (auto device : mDevices) {
             if (!device->hasPendingBuffer()) {
                 // Do not queue buffer when one of the devices has no pending buffers.
-                hasPendingBuffer = false;
                 return OK;
             }
         }
@@ -370,6 +370,11 @@ int CaptureUnit::processPendingBuffers() {
         if (mExitPending) {
             break;
         }
+
+        if (ret == DEV_BUSY) {
+            return OK;
+        }
+
         CheckAndLogError(ret != OK, ret, "Failed to queue buffers, ret=%d", ret);
     }
 

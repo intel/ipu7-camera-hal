@@ -58,12 +58,27 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 100039:    // RgbIr_NoPdaf_WithDvs_WithTnr
                 case 100040:    // Dol2Inputs_WithDvs_WithTnr
                 case 100041:    // Dol3Inputs_WithDvs_WithTnr
+                case 100056:    // Dol2Inputs_WithDvs_WithTnr
+                case 100057:    // Dol3Inputs_WithDvs_WithTnr
                     return 5637; // gdc7_1
                 case 100005:    // Bayer_NoPdaf_WithNntm_WithTnr
+                case 100031:    // Dol2Inputs_NoDvs_NoTnr
+                case 100032:    // Dol2Inputs_NoDvs_WithTnr
+                case 100033:    // Dol3Inputs_NoDvs_NoTnr
+                case 100034:    // Dol3Inputs_NoDvs_WithTnr
                 case 100042:    // Bayer_WithPdaf3_WithNntm_WithTnr
+                case 100052:    // Dol2Inputs_NoDvs_NoTnr
+                case 100053:    // Dol2Inputs_NoDvs_WithTnr
+                case 100054:    // Dol3Inputs_NoDvs_NoTnr
+                case 100055:    // Dol3Inputs_NoDvs_WithTnr
                     return 46539; // nntm_1_0
+                case 100044:    // Bayer_NoPdaf_NoDvs_WithTnr_WithNntm_WithImv
+                case 100050:    // Bayer_NoPdaf_WithRemosaic_NoDvs_WithTnr
+                case 100051:    // Bayer_NoPdaf_WithB2b_WithNntm_WithTnr
+                    return 33331; // imv
             }
             break;
+        case HwSink::ProcessedSecondarySink:    return 19706; // sw_scaler
         case HwSink::AeOutSink:    return 55073; // aestatistics_2_1
     }
 
@@ -76,6 +91,7 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
 
     // Must take only one from each resolution history index, since in static graph they all share the same
     // resolution history instance
+
     kernelUuids.push_back(38648);  // odr_output_ps_1_3
     kernelUuids.push_back(59680);  // odr_output_me_1_3
     kernelUuids.push_back(6907);  // slim_tnr_spatial_bifd_yuvn_regs_1_3
@@ -92,7 +108,9 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
     kernelUuids.push_back(57803);  // tnr_sp_bc_bifd_yuv4n_regs_1_3
     kernelUuids.push_back(26536);  // slim_tnr_fp_blend_bifd_yuvnm1_regs_1_3
     kernelUuids.push_back(5637);  // gdc7_1
+    kernelUuids.push_back(19706);  // sw_scaler
     kernelUuids.push_back(46539);  // nntm_1_0
+    kernelUuids.push_back(33331);  // imv
     return StaticGraphStatus::SG_OK;
 }
 
@@ -100,3 +118,4 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelIoBufferSystemApiUuid()
 {
     return 47358;
 }
+

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2024 Intel Corporation
+ * Copyright (C) 2021-2025 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ namespace icamera {
 using namespace std;
 
 FaceSSD::FaceSSD(int cameraId, int width, int height)
-        : FaceDetection(cameraId, width, height, V4L2_MEMORY_DMABUF),
+        : FaceDetection(cameraId, width, height, V4L2_MEMORY_USERPTR),
           mFaceDetector(nullptr) {
     int ret = initFaceDetection();
     CheckAndLogError(ret != OK, VOID_VALUE, "failed to init face detection, ret %d", ret);
@@ -38,6 +38,7 @@ FaceSSD::FaceSSD(int cameraId, int width, int height)
 
 FaceSSD::~FaceSSD() {
     LOG1("<id%d> @%s", mCameraId, __func__);
+    mFaceDetector = nullptr;
 }
 
 int FaceSSD::initFaceDetection() {
@@ -48,7 +49,7 @@ int FaceSSD::initFaceDetection() {
         return OK;
     }
 
-    mFaceDetector = cros::FaceDetector::Create();
+    mFaceDetector = FaceDetector::Create();
     CheckAndLogError(!mFaceDetector, NO_INIT, "Failed to create Face SSD instance %s", __func__);
 
     mInitialized = true;
@@ -60,26 +61,56 @@ void FaceSSD::runFaceDetection(const shared_ptr<CameraBuffer>& camBuffer) {
     CheckAndLogError(mInitialized == false, VOID_VALUE, "@%s, mInitialized is false", __func__);
     CheckAndLogError(!camBuffer, VOID_VALUE, "@%s, ccBuf buffer is nullptr", __func__);
 
-    camera_buffer_t* ubuffer = camBuffer->getUserBuffer();
-    auto handle = reinterpret_cast<buffer_handle_t>(static_cast<uintptr_t>(ubuffer->privateHandle));
-    CheckAndLogError(!handle, VOID_VALUE, "Face SSD only supports gbm handle buffer", __func__);
+    CameraBufferMapper mapper(camBuffer);
 
     int64_t sequence = camBuffer->getSequence();
+    int input_stride = camBuffer->getStride();
+    Size input_size = Size(camBuffer->getWidth(), camBuffer->getHeight());
+    LOG2("@%s, sequence %ld, stride %d, wxh [%dx%d]", __func__, sequence, input_stride,
+         camBuffer->getWidth(), camBuffer->getHeight());
+    const uint8_t* buffer_addr = static_cast<uint8_t*>(mapper.addr());
+    std::vector<DetectedFace> faces;
     nsecs_t startTime = CameraUtils::systemTime();
-    std::vector<human_sensing::CrosFace> faces;
-    cros::FaceDetectResult ret = mFaceDetector->Detect(handle, &faces);
-    CheckAndLogError(ret != cros::FaceDetectResult::kDetectOk, VOID_VALUE,
+    auto ret = mFaceDetector->Detect(buffer_addr, input_stride, input_size, std::nullopt,
+                                     faces);
+    CheckAndLogError(ret != FaceDetectResult::kDetectOk, VOID_VALUE,
                      "%s, Failed to run face for sequence: %ld", __func__, sequence);
 
     printfFDRunRate();
     LOG2("<seq%u>%s: ret:%d, it takes need %ums", camBuffer->getSequence(), __func__, ret,
          (unsigned)((CameraUtils::systemTime() - startTime) / 1000000));
 
-    updateFaceResult(faces, sequence);
+    FaceSSDResult fdResults{};
+    faceDetectResult(faces, fdResults);
+
+    updateFaceResult(fdResults, sequence);
 }
 
-void FaceSSD::updateFaceResult(const std::vector<human_sensing::CrosFace>& result,
-                               int64_t sequence) {
+void FaceSSD::faceDetectResult(const std::vector<DetectedFace>& faces, FaceSSDResult& fdResults) {
+    std::vector<DetectedFace> sortFaces = faces;
+    std::sort(sortFaces.begin(), sortFaces.end(),
+              [](const DetectedFace& a, const DetectedFace& b) {
+                  auto area1 = (a.bounding_box.x2 - a.bounding_box.x1) *
+                               (a.bounding_box.y2 - a.bounding_box.y1);
+                  auto area2 = (b.bounding_box.x2 - b.bounding_box.x1) *
+                               (b.bounding_box.y2 - b.bounding_box.y1);
+                  return area1 > area2;
+              });
+
+    int faceCount = 0;
+    for (auto& face : sortFaces) {
+        if (faceCount >= mMaxFaceNum) break;
+        fdResults.faceSsdResults[faceCount] = face;
+        faceCount++;
+        LOG2("face result: box: %f,%f,%f,%f", face.bounding_box.x1, face.bounding_box.y1,
+             face.bounding_box.x2, face.bounding_box.y2);
+    }
+    fdResults.faceNum = faceCount;
+    fdResults.faceUpdated = true;
+    LOG2("@%s, faceNum:%d", __func__, fdResults.faceNum);
+}
+
+void FaceSSD::updateFaceResult(const FaceSSDResult& fdResults, int64_t sequence) {
     camera_coordinate_system_t sysCoord = {IA_COORDINATE_LEFT, IA_COORDINATE_TOP,
                                            IA_COORDINATE_RIGHT, IA_COORDINATE_BOTTOM};
     auto cameraContext = CameraContext::getInstance(mCameraId);
@@ -90,18 +121,18 @@ void FaceSSD::updateFaceResult(const std::vector<human_sensing::CrosFace>& resul
 
     buf->ccaFaceState.updated = true;
     buf->ccaFaceState.is_video_conf = true;
-    buf->ccaFaceState.num_faces = CLIP(result.size(), mMaxFaceNum, 0);
+    buf->ccaFaceState.num_faces = CLIP(fdResults.faceNum, mMaxFaceNum, 0);
 
     LOG2("@<seq%ld>%s, face number: %d", sequence, __func__, buf->ccaFaceState.num_faces);
     for (int i = 0; i < buf->ccaFaceState.num_faces; i++) {
         buf->ccaFaceState.faces[i].face_area.left =
-            static_cast<int>(result[i].bounding_box.x1);  // rect.left;
+            static_cast<int>(fdResults.faceSsdResults[i].bounding_box.x1);  // rect.left;
         buf->ccaFaceState.faces[i].face_area.top =
-            static_cast<int>(result[i].bounding_box.y1);  // rect.top
+            static_cast<int>(fdResults.faceSsdResults[i].bounding_box.y1);  // rect.top
         buf->ccaFaceState.faces[i].face_area.right =
-            static_cast<int>(result[i].bounding_box.x2);  // rect.right
+            static_cast<int>(fdResults.faceSsdResults[i].bounding_box.x2);  // rect.right
         buf->ccaFaceState.faces[i].face_area.bottom =
-            static_cast<int>(result[i].bounding_box.y2);  // rect.bottom
+            static_cast<int>(fdResults.faceSsdResults[i].bounding_box.y2);  // rect.bottom
         convertFaceCoordinate(sysCoord, &buf->ccaFaceState.faces[i].face_area.left,
                               &buf->ccaFaceState.faces[i].face_area.top,
                               &buf->ccaFaceState.faces[i].face_area.right,
@@ -110,7 +141,7 @@ void FaceSSD::updateFaceResult(const std::vector<human_sensing::CrosFace>& resul
         buf->ccaFaceState.faces[i].rip_angle = 0;
         buf->ccaFaceState.faces[i].rop_angle = 0;
         buf->ccaFaceState.faces[i].tracking_id = i;
-        buf->ccaFaceState.faces[i].confidence = result[i].confidence;
+        buf->ccaFaceState.faces[i].confidence = fdResults.faceSsdResults[i].confidence;
         buf->ccaFaceState.faces[i].person_id = -1;
         buf->ccaFaceState.faces[i].similarity = 0;
         buf->ccaFaceState.faces[i].best_ratio = 0;
@@ -127,11 +158,12 @@ void FaceSSD::updateFaceResult(const std::vector<human_sensing::CrosFace>& resul
              buf->ccaFaceState.faces[i].face_area.bottom);
 
         buf->faceIds[i] = i;
-        buf->faceScores[i] = static_cast<int>(result[i].confidence * 100);
-        buf->faceRect[i * 4] = static_cast<int>(result[i].bounding_box.x1);  // rect.left;
-        buf->faceRect[i * 4 + 1] = static_cast<int>(result[i].bounding_box.y1);  // rect.top
-        buf->faceRect[i * 4 + 2] = static_cast<int>(result[i].bounding_box.x2);  // rect.right
-        buf->faceRect[i * 4 + 3] = static_cast<int>(result[i].bounding_box.y2);  // rect.bottom
+        buf->faceScores[i] = static_cast<int>(fdResults.faceSsdResults[i].confidence * 100);
+        // left, top, right and bottom
+        buf->faceRect[i * 4] = static_cast<int>(fdResults.faceSsdResults[i].bounding_box.x1);
+        buf->faceRect[i * 4 + 1] = static_cast<int>(fdResults.faceSsdResults[i].bounding_box.y1);
+        buf->faceRect[i * 4 + 2] = static_cast<int>(fdResults.faceSsdResults[i].bounding_box.x2);
+        buf->faceRect[i * 4 + 3] = static_cast<int>(fdResults.faceSsdResults[i].bounding_box.y2);
         convertFaceCoordinate(mRatioInfo.sysCoord, &buf->faceRect[i * 4],
                               &buf->faceRect[i * 4 + 1], &buf->faceRect[i * 4 + 2],
                               &buf->faceRect[i * 4 + 3]);

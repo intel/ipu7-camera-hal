@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Intel Corporation
+ * Copyright (C) 2019-2025 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -306,7 +306,7 @@ void GraphConfig::chooseIpuStreams(map<int, const HalStream*>& streams, int avaS
 
     /*
      * For some special streams which aren't from IPU, and their ratio aren't same as any ipu
-     * stream, we asume to use the biggest stream for them.
+     * stream, we assume to use the biggest stream for them.
      * This stream with the biggest size will be default ipu stream for those special streams.
      */
     int bigIpuStreamIdx = streams.begin()->first;
@@ -776,7 +776,7 @@ status_t GraphConfig::fillConnectionFormat(const IpuGraphLink& ipuLink, const Ou
     bool useDest = (node == link->destNode) ? true : false;
     int32_t terminal = useDest ? link->destTerminalId : link->srcTerminalId;
     const StaticGraphRunKernel* kernel = nullptr;
-    kernel = findKernalForFrameTerminal(node, terminal);
+    kernel = findKernelForFrameTerminal(node, terminal);
     CheckAndLogError((ipuLink.stream == nullptr) && (kernel == nullptr), NO_ENTRY,
                      "%s: Can't find kernel for link", __func__);
 
@@ -813,7 +813,7 @@ status_t GraphConfig::fillConnectionFormat(const IpuGraphLink& ipuLink, const Ou
 }
 
 const StaticGraphRunKernel*
-GraphConfig::findKernalForFrameTerminal(const OuterNode* node, int32_t terminalId) {
+GraphConfig::findKernelForFrameTerminal(const OuterNode* node, int32_t terminalId) {
     int32_t kernelId = CBLayoutUtils::getKernelForDataTerminal(node->resourceId, terminalId);
     if (kernelId > 0) {
         for (uint32_t i = 0U; i < node->nodeKernels.kernelCount; i++) {
@@ -884,7 +884,7 @@ status_t GraphConfig::updateGraphSettingForPtz(const PtzInfo& cur, const PtzInfo
 }
 
 void GraphConfig::dumpLink(const GraphLink* link) {
-#define INVALID_SOURCE_ID (-1)
+#define INVALID_SOURCE_ID (0xff)
     uint8_t srcId = link->srcNode ? link->srcNode->resourceId : INVALID_SOURCE_ID;
     uint8_t destId = link->destNode ? link->destNode->resourceId : INVALID_SOURCE_ID;
     LOG3("<link active=\"%d\" src=\"%d:%d\" dest=\"%d:%d\" delay=\"%d\" type=\"%d\"/>",

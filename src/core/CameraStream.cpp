@@ -154,7 +154,7 @@ void CameraStream::setBufferProducer(BufferProducer* producer) {
     }
 }
 
-int CameraStream::onFrameAvailable(uuid port, const shared_ptr<CameraBuffer>& camBuffer) {
+int CameraStream::onBufferAvailable(uuid port, const shared_ptr<CameraBuffer>& camBuffer) {
     // Ignore if the buffer is not for this stream.
     if (mPort != port) {
         return OK;

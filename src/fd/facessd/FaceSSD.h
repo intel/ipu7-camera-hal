@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2022 Intel Corporation
+ * Copyright (C) 2025 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,18 @@
  */
 
 #pragma once
-#include <cros-camera/camera_face_detection.h>
 
 #include "FaceDetection.h"
 
+#include <src/fd/facessd/CameraFaceDetection.h>
+
 namespace icamera {
+
+struct FaceSSDResult {
+    bool faceUpdated;
+    int faceNum;
+    DetectedFace faceSsdResults[MAX_FACES_DETECTABLE];
+};
 
 class FaceSSD : public FaceDetection {
  public:
@@ -32,11 +39,11 @@ class FaceSSD : public FaceDetection {
     DISALLOW_COPY_AND_ASSIGN(FaceSSD);
 
     int initFaceDetection();
-    void updateFaceResult(const std::vector<human_sensing::CrosFace>& result, int64_t sequence);
-    void updateFaceResult(const FaceDetectionResult& result, int64_t sequence);
+    void faceDetectResult(const std::vector<DetectedFace>& faces, FaceSSDResult& fdResults);
+    void updateFaceResult(const FaceSSDResult& fdResults, int64_t sequence);
 
  private:
-    std::unique_ptr<cros::FaceDetector> mFaceDetector;
+    std::unique_ptr<FaceDetector> mFaceDetector;
 };
 
 }  // namespace icamera

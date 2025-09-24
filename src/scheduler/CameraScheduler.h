@@ -53,7 +53,7 @@ class CameraScheduler {
 
     /**
      * triggerSource:
-     *   emptry string: no designated source, will trigger executors WITHOUT trigger sources
+     *    empty string: no designated source, will trigger executors WITHOUT trigger sources
      *                  in configuration file.
      * triggerId:
      *    >= 0: will be passed to ISchedulerNode for processing sync.
@@ -93,13 +93,13 @@ class CameraScheduler {
 
         std::string mName;
 
-        std::mutex mNodeLock;
         std::vector<ISchedulerNode*> mNodes;
         std::vector<std::shared_ptr<Executor>> mListeners;
         std::condition_variable mTriggerSignal;
         bool mActive;
 
     protected:
+        std::mutex mNodeLock;
         int64_t mTriggerTick;
 
      private:
@@ -126,14 +126,14 @@ class CameraScheduler {
 
  private:
     int32_t createExecutors();
-    void destoryExecutors();
+    void destroyExecutors();
 
     std::shared_ptr<Executor> findExecutor(const char* exeName);
 
  private:
     struct ExecutorGroup {
         std::shared_ptr<Executor> executor;
-        std::string triggerSource;  //  emptry string means no designated source
+        std::string triggerSource;  //  empty string means no designated source
         std::vector<std::string> nodeList;
     };
 

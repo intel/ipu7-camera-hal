@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_DEVICE_H
-#define CAMERA_DEVICE_H
-
+#pragma once
 #include "AiqUnit.h"
 #include "CameraStream.h"
 #include "IProcessingUnitFactory.h"
@@ -62,7 +60,7 @@ class RequestThread;
  *             | -> PsysProcessor | -> CameraStream (For still YUV)
  *
  * The buffer notification between the Class is based on Interface defined
- * in BufferQueue. The upstream element use "onFrameAvailable" message to notfiy
+ * in BufferQueue. The upstream element use "onBufferAvailable" message to notfiy
  * downstream elements that the buffers are ready for further processing
  *
  * Following singleton instances are created and maintained by CameraDevice
@@ -82,7 +80,7 @@ class CameraDevice : public EventListener {
      *                         CsiMeta
      // CSI_META_E
      * 2.Register listener if enable AIQ
-     * 3.Set the defualt parameters
+     * 3.Set the default parameters
      *
      * \return OK if succeed, other value indicates failed
      */
@@ -92,7 +90,7 @@ class CameraDevice : public EventListener {
      * \brief Camera device class deinit
      *
      * 1.Change the state
-     * 2.Destory the listeners
+     * 2.Destroy the listeners
      * 3.Delete the streams
      * 4.Deinit the Related classes.
      */
@@ -117,7 +115,7 @@ class CameraDevice : public EventListener {
     int stop();
 
     /**
-     * \brief Allocate momery according to user buffer
+     * \brief Allocate memory according to user buffer
      *
      * 1. Convert user buffer to CameraBuffer and push it into UserBufferQueue
      * 2. Calling CameraStream class to allocateMemory.
@@ -186,11 +184,11 @@ class CameraDevice : public EventListener {
     StreamSource* createBufferProducer();
     std::map<uuid, stream_t> selectProducerConfig(const stream_config_t* streamList, int mcId);
     bool isProcessorNeeded(const stream_config_t* streamList, const stream_t& producerConfig) const;
-    int analyzeStream(stream_config_t* streamList, int* inputStreamId, int* preStreamIdForFace,
-                      int* inputYuvStreamId);
-    int assignPortForStreams(const stream_config_t* streamList, int inputStreamId,
+    int analyzeStream(const stream_config_t* streamList, int* inputRawStreamId,
+                      int* preStreamIdForFace, int* inputYuvStreamId);
+    int assignPortForStreams(const stream_config_t* streamList, int inputRawStreamId,
                              int inputYuvStreamId, int configuredStreamNum);
-    int createStreams(stream_config_t* streamList, int configuredStreamNum);
+    int createStreams(const stream_config_t* streamList, int configuredStreamNum);
     int bindStreams(stream_config_t* streamList);
     void deleteStreams();
 
@@ -207,7 +205,7 @@ class CameraDevice : public EventListener {
     // The second phase of qbuf(), done in RequestThread
     int handleQueueBuffer(int bufferNum, camera_buffer_t** ubuffer, int64_t sequence);
 
-    void handleEvent(EventData eventData);
+    virtual void handleEvent(EventData eventData);
 
     int startLocked();
     int stopLocked();
@@ -260,4 +258,3 @@ class CameraDevice : public EventListener {
 
 }  // namespace icamera
 
-#endif // CAMERA_DEVICE_H

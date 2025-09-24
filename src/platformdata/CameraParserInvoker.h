@@ -40,8 +40,8 @@ class CameraParserInvoker {
     void parseCommon();
     void parseSensors();
     void dumpSensorInfo(void);
-    void chooseAvaliableJsonFile(const std::vector<const char*>& avaliableJsonFiles,
-                                 std::string* jsonFile);
+    void chooseAvailableJsonFile(const std::vector<const char*>& availableJsonFiles,
+                                 std::string* jsonFile) const;
     std::string getJsonFileFullName(std::string fileName);
 
  private:

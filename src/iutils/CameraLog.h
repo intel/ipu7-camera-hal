@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_LOG_H
-#define CAMERA_LOG_H
-
+#pragma once
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -163,6 +161,11 @@ extern void doLogBody(int logTag, uint32_t level, const char* fmt, ...);
         { doLogBody(GET_FILE_SHIFT(LOG_TAG), icamera::CAMERA_DEBUG_LOG_WARNING, ##__VA_ARGS__); } \
     } while (0)
 
+#define ALOGE LOGE
+#define ALOGW LOGW
+#define ALOGI LOGI
+#define ALOGD LOGI
+
 #define HAL_TRACE_NAME(level, name) ScopedTrace ___tracer(level, name)
 #define HAL_TRACE_CALL(level) HAL_TRACE_NAME(level, __PRETTY_FUNCTION__)
 
@@ -208,4 +211,3 @@ class ScopedTrace {
 
 }  // namespace icamera
 
-#endif // CAMERA_LOG_H

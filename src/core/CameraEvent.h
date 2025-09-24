@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-#ifndef CAMERA_EVENT_H
-#define CAMERA_EVENT_H
+#pragma once
 
 #include <map>
 #include <set>
@@ -54,5 +53,3 @@ class EventSource {
 };
 
 }  // namespace icamera
-
-#endif // CAMERA_EVENT_H

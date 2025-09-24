@@ -29,7 +29,6 @@ FaceStage::FaceStage(int cameraId, int streamId, const stream_t& stream, bool is
         : CameraStream(cameraId, streamId, stream),
           ISchedulerNode("face"),
           mStreamInfo(stream),
-          mInternalBufferPool(nullptr),
           mIsPrivate(isPrivate),
           mFaceDetection(nullptr) {
     LOG1("%s, mIsPrivate: %d, width: %d, height: %d", __func__, mIsPrivate,
@@ -38,10 +37,20 @@ FaceStage::FaceStage(int cameraId, int streamId, const stream_t& stream, bool is
     mFaceDetection = std::unique_ptr<FaceDetection>(
             IFaceDetection::createFaceDetection(mCameraId, stream.width, stream.height));
 
-    if (mIsPrivate || (!mIsPrivate && !PlatformData::runFaceWithSyncMode(mCameraId))) {
-        mInternalBufferPool = std::unique_ptr<CameraBufferPool>(new CameraBufferPool());
-        mStreamInfo.memType = mFaceDetection->getMemoryType();
-        mInternalBufferPool->createBufferPool(mCameraId, MAX_BUFFER_COUNT, mStreamInfo);
+    if (mIsPrivate || !PlatformData::runFaceWithSyncMode(mCameraId)) {
+        for (int i = 0; i < MAX_BUFFER_COUNT; i++) {
+            std::shared_ptr<CameraBuffer> buffer = CameraBuffer::create(
+                mFaceDetection->getMemoryType(), stream.size, i, stream.format, stream.width,
+                stream.height);
+            if (buffer == nullptr) {
+                while (mAvailableBufferQ.empty() == false) {
+                    mAvailableBufferQ.pop();
+                }
+                LOGE("failed to alloc %d internal buffers", i);
+                break;
+            }
+            mAvailableBufferQ.push(buffer);
+        }
     }
 }
 
@@ -52,14 +61,23 @@ FaceStage::~FaceStage() {
 int FaceStage::start() {
     LOG1("<id%d>@%s, %p, mIsPrivate: %d", mCameraId, __func__, this, mIsPrivate);
 
+    if ((mIsPrivate || !PlatformData::runFaceWithSyncMode(mCameraId))) {
+        if (mAvailableBufferQ.empty()) {
+            return NO_MEMORY;
+        }
+    }
+
     return OK;
 }
 
 int FaceStage::stop() {
     CameraStream::stop();
 
-    if (mInternalBufferPool) {
-        mInternalBufferPool->destroyBufferPool();
+    while (mPendingBufferQ.empty() == false) {
+        const auto buffer = mPendingBufferQ.front();
+        mPendingBufferQ.pop();
+
+        mAvailableBufferQ.push(buffer);
     }
 
     return OK;
@@ -74,11 +92,11 @@ int FaceStage::qbuf(camera_buffer_t* ubuffer, int64_t sequence, bool addExtraBuf
     if (mIsPrivate) {
         shared_ptr<CameraBuffer> camBuffer = nullptr;
         if (addExtraBuf) {
+            AutoMutex l(mBufferPoolLock);
             // use the internal buffer pool for private stream
-            CheckAndLogError(!mInternalBufferPool, ret, "no buffer pool for private stream");
+            CheckAndLogError(mAvailableBufferQ.empty(), ret, "no buffer pool for private stream");
 
-            camBuffer = mInternalBufferPool->acquireBuffer();
-            CheckAndLogError(!camBuffer, ret, "%s, No available internal buffer", __func__);
+            camBuffer = mAvailableBufferQ.front();
             LOG2("<id%d:seq%ld>@%s, mStreamId:%d, CameraBuffer:%p for port:%d, addr:%p",
                  mCameraId, sequence, __func__, mStreamId, camBuffer.get(), mPort,
                  camBuffer->getBufferAddr());
@@ -94,6 +112,8 @@ int FaceStage::qbuf(camera_buffer_t* ubuffer, int64_t sequence, bool addExtraBuf
             ret = mBufferProducer->qbuf(mPort, camBuffer);
             if (ret == OK) {
                 AutoMutex l(mBufferPoolLock);
+                mAvailableBufferQ.pop();
+
                 mBufferInProcessing++;
                 LOG2("%s, mIsPrivate: %d, buffer in processing: %d", __func__, mIsPrivate,
                      mBufferInProcessing);
@@ -107,24 +127,6 @@ int FaceStage::qbuf(camera_buffer_t* ubuffer, int64_t sequence, bool addExtraBuf
     return ret;
 }
 
-shared_ptr<CameraBuffer> FaceStage::copyToInternalBuffer(
-        const shared_ptr<CameraBuffer>& camBuffer) {
-    CheckAndLogError(!mInternalBufferPool, nullptr,
-                     "%s, no buffer pool for face detection", __func__);
-
-    shared_ptr<CameraBuffer> faceBuffer = mInternalBufferPool->acquireBuffer();
-    CheckAndLogError(!faceBuffer, nullptr, "%s, No available internal buffer", __func__);
-
-    CameraBufferMapper mapper(camBuffer);
-    CheckAndLogError(!camBuffer->getBufferAddr(), nullptr,
-                     "%s, Failed to get addr for camBuffer", __func__);
-
-    MEMCPY_S(faceBuffer->getBufferAddr(), faceBuffer->getBufferSize(),
-             camBuffer->getBufferAddr(), camBuffer->getBufferSize());
-
-    return faceBuffer;
-}
-
 bool FaceStage::isFaceEnabled(int64_t sequence) {
     auto cameraContext = CameraContext::getInstance(mCameraId);
     auto dataContext = cameraContext->getDataContextBySeq(sequence);
@@ -135,7 +137,7 @@ bool FaceStage::isFaceEnabled(int64_t sequence) {
     return false;
 }
 
-int FaceStage::onFrameAvailable(uuid port, const shared_ptr<CameraBuffer>& camBuffer) {
+int FaceStage::onBufferAvailable(uuid port, const shared_ptr<CameraBuffer>& camBuffer) {
     // Ignore if the buffer is not for this stream.
     if (mPort != port) {
         return OK;
@@ -162,9 +164,7 @@ int FaceStage::onFrameAvailable(uuid port, const shared_ptr<CameraBuffer>& camBu
         if (this->mBufferInProcessing > 0) {
             this->mBufferInProcessing--;
         }
-        if (mInternalBufferPool != nullptr) {
-            mInternalBufferPool->returnBuffer(camBuffer);
-        }
+        mAvailableBufferQ.push(camBuffer);
     } else {
         if (isFaceEnabled(sequence) && mFaceDetection->needRunFace(sequence)) {
             if (PlatformData::runFaceWithSyncMode(mCameraId)) {
@@ -175,14 +175,28 @@ int FaceStage::onFrameAvailable(uuid port, const shared_ptr<CameraBuffer>& camBu
                 LOG2("<seq%ld>%s, run face with ASYNC mode. mIsPrivate: %d",
                      sequence, __func__, mIsPrivate);
 
-                shared_ptr<CameraBuffer> faceBuffer = copyToInternalBuffer(camBuffer);
-                CheckAndLogError(!faceBuffer, UNKNOWN_ERROR,
-                        "        %s, Failed to copy frame to internal buffer", __func__);
+                shared_ptr<CameraBuffer> faceBuffer;
+                {
+                    AutoMutex l(mBufferPoolLock);
+                    CheckAndLogError(mAvailableBufferQ.empty(), NO_MEMORY, "No detection buffer");
+                    faceBuffer = mAvailableBufferQ.front();
+                }
+
+                CameraBufferMapper mapper(camBuffer);
+                CheckAndLogError(camBuffer->getBufferAddr() == nullptr, BAD_VALUE,
+                                 "%s, Failed to get addr for camBuffer", __func__);
+
+                MEMCPY_S(faceBuffer->getBufferAddr(), faceBuffer->getBufferSize(),
+                         camBuffer->getBufferAddr(), camBuffer->getBufferSize());
+
+                faceBuffer->setSequence(camBuffer->getSequence());
+
                 AutoMutex l(mBufferPoolLock);
+                mAvailableBufferQ.pop();
                 mPendingBufferQ.push(faceBuffer);
             }
         }
-        CameraStream::onFrameAvailable(port, camBuffer);
+        CameraStream::onBufferAvailable(port, camBuffer);
     }
     return OK;
 }
@@ -199,16 +213,14 @@ bool FaceStage::process(int64_t triggerId) {
         faceBuffer = mPendingBufferQ.front();
         mPendingBufferQ.pop();
 
-        if (mPendingBufferQ.size() > PlatformData::getMaxRequestsInHAL(mCameraId)) {
+        if (mPendingBufferQ.size() > PlatformData::getMaxPipelineDepth(mCameraId)) {
             LOG2("%s, Skip this time due to many buffer in pendding: %d", __func__,
                  mPendingBufferQ.size());
 
             if (mIsPrivate && this->mBufferInProcessing > 0) {
                 this->mBufferInProcessing--;
             }
-            if (mInternalBufferPool != nullptr) {
-                mInternalBufferPool->returnBuffer(faceBuffer);
-            }
+            mAvailableBufferQ.push(faceBuffer);
             return true;
         }
     }
@@ -222,9 +234,7 @@ bool FaceStage::process(int64_t triggerId) {
     if (mIsPrivate && this->mBufferInProcessing > 0) {
         this->mBufferInProcessing--;
     }
-    if (mInternalBufferPool != nullptr) {
-        mInternalBufferPool->returnBuffer(faceBuffer);
-    }
+    mAvailableBufferQ.push(faceBuffer);
 
     return true;
 }
