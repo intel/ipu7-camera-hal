@@ -61,6 +61,7 @@ struct MediaEntity {
     unsigned int numLinks;
 
     char devname[32];
+    char acpiname[32];
 };
 
 MediaControl* MediaControl::sInstance = nullptr;
@@ -182,6 +183,25 @@ int MediaControl::getEntityIdByName(const std::string &name) {
     }
 
     return entity->info.id;
+}
+
+MediaEntity* MediaControl::getEntityByAcpiName(const std::string &name) {
+    for (auto& entity : mEntities) {
+        if (strcmp(name.c_str(), entity.acpiname) == 0) {
+            return &entity;
+        }
+    }
+
+    return nullptr;
+}
+
+int MediaControl::getEntityIdByAcpiName(const std::string &name) {
+    MediaEntity* entity = getEntityByAcpiName(name);
+
+    if (!entity)
+        return -1;
+    else
+        return entity->info.id;
 }
 
 int MediaControl::resetAllLinks() {
@@ -504,7 +524,7 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
 
     ret = readlink(sysName, target, MAX_TARGET_NAME);
     if (ret <= 0) {
-        LOGE("readlink sysName %s failed ret %d.", sysName, ret);
+        LOGE("readlink entity %s sysName %s failed ret %d.", entity->info.name, sysName, ret);
         return -EINVAL;
     }
     target[MAX_TARGET_NAME - 1] = '\0';
@@ -529,6 +549,14 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
     } else {
         snprintf(entity->devname, sizeof(entity->devname), "/dev/%s", d);
     }
+
+    strcat(sysName, "/device/firmware_node/path");
+    FILE* fp = fopen(sysName, "rb");
+    if (fp) {
+        fscanf(fp, "%[^\n]", entity->acpiname);
+        fclose(fp);
+    }
+    LOG1("name %s devname %s acpiname %s", entity->info.name, entity->devname, entity->acpiname);
 
     return 0;
 }
@@ -1017,6 +1045,16 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
     }
 
     return UNKNOWN_ERROR;
+}
+
+std::string MediaControl::acpiName2EntityName(const std::string& acpiName) {
+    for (auto& entity : mEntities) {
+        if (strcmp(entity.acpiname, acpiName.c_str()) == 0) {
+            return std::string(entity.info.name);
+        }
+    }
+
+    return "";
 }
 
 // DUMP_ENTITY_TOPOLOGY_S

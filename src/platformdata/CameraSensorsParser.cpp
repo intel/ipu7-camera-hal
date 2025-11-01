@@ -96,6 +96,12 @@ void CameraSensorsParser::parseMediaCtlRouteObject(const Json::Value& node, Medi
             if (mMediaCtl != nullptr) {
                 route.entity = mMediaCtl->getEntityIdByName(route.entityName);
             }
+            LOGI("%s, route entity name: %s, id: %d", __func__,
+                    route.entityName.c_str(),  route.entity);
+        }
+        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
+            route.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+            route.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
         }
         if (ele.isMember("srcPad")) {
             route.srcPad = ele["srcPad"].asInt();
@@ -156,6 +162,10 @@ void CameraSensorsParser::parseMediaCtlControlObject(const Json::Value& node, Me
             if (mMediaCtl)
                 ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
         }
+        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
+            ctl.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+            ctl.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+        }
         if (ele.isMember("ctrlId")) {
             const auto target = ele["ctrlId"].asString();
             if (ctlCmdMapTable.find(target) != ctlCmdMapTable.end())
@@ -184,6 +194,10 @@ void CameraSensorsParser::parseMediaCtlLinkObject(const Json::Value& node, Media
             if (mMediaCtl)
                 link.srcEntity = mMediaCtl->getEntityIdByName(link.srcEntityName);
         }
+        if (ele.isMember("srcAcpiName") && mMediaCtl != nullptr) {
+            link.srcEntity = mMediaCtl->getEntityIdByAcpiName(ele["srcAcpiName"].asString());
+            link.srcEntityName = mMediaCtl->acpiName2EntityName(ele["srcAcpiName"].asString());
+        }
         if (ele.isMember("srcPad")) {
             link.srcPad = ele["srcPad"].asInt();
         }
@@ -191,6 +205,10 @@ void CameraSensorsParser::parseMediaCtlLinkObject(const Json::Value& node, Media
             link.sinkEntityName = resolveI2CBusString(ele["sinkName"].asString());
             if (mMediaCtl)
                 link.sinkEntity = mMediaCtl->getEntityIdByName(link.sinkEntityName);
+        }
+        if (ele.isMember("sinkAcpiName") && mMediaCtl != nullptr) {
+            link.sinkEntity = mMediaCtl->getEntityIdByAcpiName(ele["sinkAcpiName"].asString());
+            link.sinkEntityName = mMediaCtl->acpiName2EntityName(ele["sinkAcpiName"].asString());
         }
         if (ele.isMember("sinkPad")) {
             link.sinkPad = ele["sinkPad"].asInt();
@@ -226,6 +244,10 @@ void CameraSensorsParser::parseMediaCtlConfigFormatsObject(const Json::Value& no
             if (mMediaCtl != nullptr) {
                 fmt.entity = mMediaCtl->getEntityIdByName(fmt.entityName);
             }
+        }
+        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
+            fmt.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+            fmt.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
         }
         if (ele.isMember("pad")) {
             fmt.pad = ele["pad"].asUInt();
@@ -314,6 +336,10 @@ void CameraSensorsParser::parseMediaCtlSelectionObject(const Json::Value& node, 
             if (mMediaCtl != nullptr) {
                 sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
             }
+        }
+        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
+            sel.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+            sel.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
         }
         if (ele.isMember("pad")) {
             sel.pad = ele["pad"].asInt();
@@ -743,6 +769,9 @@ std::string CameraSensorsParser::resolveI2CBusString(const std::string& name) {
 void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
     if (node.isMember("name")) {
         mCurCam->sensorName = node["name"].asString();
+    }
+    if (node.isMember("acpiName")) {
+        mCurCam->sensorAcpiName = node["acpiName"].asString();
     }
     if (node.isMember("description")) {
         mCurCam->sensorDescription = node["description"].asString();
