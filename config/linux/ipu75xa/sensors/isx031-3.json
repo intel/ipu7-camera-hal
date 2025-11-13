@@ -778,6 +778,84 @@
         "supportedISysFormat": ["V4L2_PIX_FMT_UYVY"],
         "enableAIQ": false,
         "usePSysProcessor": false
+      },
+      {
+        "name": "isx031acpix8-3",
+        "description": "isx031acpi cs sensor.",
+        "vcCount": 4,
+        "vcId": 2,
+        "vcGroupId": 0,
+        "MediaCtlConfig": [
+          {
+            "id":  0 ,
+            "configMode": "AUTO",
+            "output": [1920, 1536],
+            "format": "V4L2_PIX_FMT_UYVY",
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture 2", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 0", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "acpiName": "\\_SB_.PC00.CAM2", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          },
+          {
+            "id":  1 ,
+            "configMode": "AUTO",
+            "output": [1920, 1080],
+            "format": "V4L2_PIX_FMT_UYVY",
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture 2", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 0", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "acpiName": "\\_SB_.PC00.CAM2", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          },
+          {
+            "id":  2 ,
+            "configMode": "AUTO",
+            "output": [1280, 720],
+            "format": "V4L2_PIX_FMT_UYVY",
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture 2", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 0", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "acpiName": "\\_SB_.PC00.CAM2", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          }
+        ],
+        "StaticMetadata": {
+          "supportedStreamConfig": [
+            {
+              "format": "V4L2_PIX_FMT_UYVY", "size": [1920, 1536], "field": 0, "mcId": 0
+            },
+            {
+              "format": "V4L2_PIX_FMT_UYVY", "size": [1920, 1080], "field": 0, "mcId": 1
+            },
+            {
+              "format": "V4L2_PIX_FMT_UYVY", "size": [1280, 720], "field": 0, "mcId": 2
+            }
+          ]
+        },
+
+        "supportedISysSizes": [[1280, 720], [1920, 1080], [1920, 1536]],
+        "supportedISysFormat": ["V4L2_PIX_FMT_UYVY"],
+        "enableAIQ": false,
+        "usePSysProcessor": false
       }
     ]
   }
