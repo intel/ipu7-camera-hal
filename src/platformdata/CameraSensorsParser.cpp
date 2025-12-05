@@ -96,8 +96,6 @@ void CameraSensorsParser::parseMediaCtlRouteObject(const Json::Value& node, Medi
             if (mMediaCtl != nullptr) {
                 route.entity = mMediaCtl->getEntityIdByName(route.entityName);
             }
-            LOGI("%s, route entity name: %s, id: %d", __func__,
-                    route.entityName.c_str(),  route.entity);
         }
         if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
             route.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
