@@ -212,13 +212,6 @@ class MediaControl {
     int getEntityIdByName(const std::string &name);
 
     /**
-     * \brief Get the entity by ACPI name
-     *
-     * \return entity id if succeed or -1 if error
-     */
-    int getEntityIdByAcpiName(const std::string &name);
-
-    /**
      * \brief Get VCM I2C bus address
      *
      * \return 0 if succeed, other value indicates failed
@@ -296,7 +289,6 @@ class MediaControl {
     int getDevnameFromSysfs(MediaEntity* entity);
     MediaEntity* getEntityById(uint32_t id);
     MediaEntity* getEntityByName(const std::string &name);
-    MediaEntity* getEntityByAcpiName(const std::string &name);
     bool checkHasSource(const MediaEntity* sink, const std::string& source);
 
     // set up entity link.

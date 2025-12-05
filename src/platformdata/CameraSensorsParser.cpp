@@ -97,9 +97,11 @@ void CameraSensorsParser::parseMediaCtlRouteObject(const Json::Value& node, Medi
                 route.entity = mMediaCtl->getEntityIdByName(route.entityName);
             }
         }
-        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
-            route.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+        if (ele.isMember("acpiName")) {
             route.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            if (mMediaCtl != nullptr) {
+                route.entity = mMediaCtl->getEntityIdByName(route.entityName);
+            }
         }
         if (ele.isMember("srcPad")) {
             route.srcPad = ele["srcPad"].asInt();
@@ -160,9 +162,10 @@ void CameraSensorsParser::parseMediaCtlControlObject(const Json::Value& node, Me
             if (mMediaCtl)
                 ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
         }
-        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
-            ctl.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+        if (ele.isMember("acpiName")) {
             ctl.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            if (mMediaCtl)
+                ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
         }
         if (ele.isMember("ctrlId")) {
             const auto target = ele["ctrlId"].asString();
@@ -192,9 +195,10 @@ void CameraSensorsParser::parseMediaCtlLinkObject(const Json::Value& node, Media
             if (mMediaCtl)
                 link.srcEntity = mMediaCtl->getEntityIdByName(link.srcEntityName);
         }
-        if (ele.isMember("srcAcpiName") && mMediaCtl != nullptr) {
-            link.srcEntity = mMediaCtl->getEntityIdByAcpiName(ele["srcAcpiName"].asString());
+        if (ele.isMember("srcAcpiName")) {
             link.srcEntityName = mMediaCtl->acpiName2EntityName(ele["srcAcpiName"].asString());
+            if (mMediaCtl)
+                link.srcEntity = mMediaCtl->getEntityIdByName(link.srcEntityName);
         }
         if (ele.isMember("srcPad")) {
             link.srcPad = ele["srcPad"].asInt();
@@ -204,9 +208,10 @@ void CameraSensorsParser::parseMediaCtlLinkObject(const Json::Value& node, Media
             if (mMediaCtl)
                 link.sinkEntity = mMediaCtl->getEntityIdByName(link.sinkEntityName);
         }
-        if (ele.isMember("sinkAcpiName") && mMediaCtl != nullptr) {
-            link.sinkEntity = mMediaCtl->getEntityIdByAcpiName(ele["sinkAcpiName"].asString());
+        if (ele.isMember("sinkAcpiName")) {
             link.sinkEntityName = mMediaCtl->acpiName2EntityName(ele["sinkAcpiName"].asString());
+            if (mMediaCtl)
+                link.sinkEntity = mMediaCtl->getEntityIdByName(link.sinkEntityName);
         }
         if (ele.isMember("sinkPad")) {
             link.sinkPad = ele["sinkPad"].asInt();
@@ -243,9 +248,11 @@ void CameraSensorsParser::parseMediaCtlConfigFormatsObject(const Json::Value& no
                 fmt.entity = mMediaCtl->getEntityIdByName(fmt.entityName);
             }
         }
-        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
-            fmt.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+        if (ele.isMember("acpiName")) {
             fmt.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            if (mMediaCtl != nullptr) {
+                fmt.entity = mMediaCtl->getEntityIdByName(fmt.entityName);
+            }
         }
         if (ele.isMember("pad")) {
             fmt.pad = ele["pad"].asUInt();
@@ -335,9 +342,11 @@ void CameraSensorsParser::parseMediaCtlSelectionObject(const Json::Value& node, 
                 sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
             }
         }
-        if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
-            sel.entity = mMediaCtl->getEntityIdByAcpiName(ele["acpiName"].asString());
+        if (ele.isMember("acpiName")) {
             sel.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            if (mMediaCtl != nullptr) {
+                sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
+            }
         }
         if (ele.isMember("pad")) {
             sel.pad = ele["pad"].asInt();

@@ -185,25 +185,6 @@ int MediaControl::getEntityIdByName(const std::string &name) {
     return entity->info.id;
 }
 
-MediaEntity* MediaControl::getEntityByAcpiName(const std::string &name) {
-    for (auto& entity : mEntities) {
-        if (strcmp(name.c_str(), entity.acpiname) == 0) {
-            return &entity;
-        }
-    }
-
-    return nullptr;
-}
-
-int MediaControl::getEntityIdByAcpiName(const std::string &name) {
-    MediaEntity* entity = getEntityByAcpiName(name);
-
-    if (!entity)
-        return -1;
-    else
-        return entity->info.id;
-}
-
 int MediaControl::resetAllLinks() {
     LOG1("@%s", __func__);
 
