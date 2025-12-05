@@ -252,7 +252,6 @@ class PlatformData {
             std::vector<MediaCtlConf> mMediaCtlConfs;
 
             std::string sensorName;
-            std::string sensorAcpiName;
             std::string sensorDescription;
             std::string mLensName;
             // VIRTUAL_CHANNEL_S

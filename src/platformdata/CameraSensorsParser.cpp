@@ -770,9 +770,6 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
     if (node.isMember("name")) {
         mCurCam->sensorName = node["name"].asString();
     }
-    if (node.isMember("acpiName")) {
-        mCurCam->sensorAcpiName = node["acpiName"].asString();
-    }
     if (node.isMember("description")) {
         mCurCam->sensorDescription = node["description"].asString();
     }
