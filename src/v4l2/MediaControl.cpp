@@ -550,10 +550,16 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
         snprintf(entity->devname, sizeof(entity->devname), "/dev/%s", d);
     }
 
-    strcat(sysName, "/device/firmware_node/path");
+    strlcat(sysName, "/device/firmware_node/path", sizeof(sysName));
     FILE* fp = fopen(sysName, "rb");
     if (fp) {
-        fscanf(fp, "%[^\n]", entity->acpiname);
+        fgets(entity->acpiname, sizeof(entity->acpiname), fp);
+
+        size_t len = strlen(entity->acpiname);
+        if (len > 0 && entity->acpiname[len - 1] == '\n') {
+            entity->acpiname[len - 1] = '\0';
+        }
+
         fclose(fp);
     }
     LOG1("name %s devname %s acpiname %s", entity->info.name, entity->devname, entity->acpiname);
