@@ -61,6 +61,7 @@ struct MediaEntity {
     unsigned int numLinks;
 
     char devname[32];
+    char acpiname[32];
 };
 
 MediaControl* MediaControl::sInstance = nullptr;
@@ -504,7 +505,7 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
 
     ret = readlink(sysName, target, MAX_TARGET_NAME);
     if (ret <= 0) {
-        LOGE("readlink sysName %s failed ret %d.", sysName, ret);
+        LOGE("readlink entity %s sysName %s failed ret %d.", entity->info.name, sysName, ret);
         return -EINVAL;
     }
     target[MAX_TARGET_NAME - 1] = '\0';
@@ -529,6 +530,20 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
     } else {
         snprintf(entity->devname, sizeof(entity->devname), "/dev/%s", d);
     }
+
+    strlcat(sysName, "/device/firmware_node/path", sizeof(sysName));
+    FILE* fp = fopen(sysName, "rb");
+    if (fp) {
+        fgets(entity->acpiname, sizeof(entity->acpiname), fp);
+
+        size_t len = strlen(entity->acpiname);
+        if (len > 0 && entity->acpiname[len - 1] == '\n') {
+            entity->acpiname[len - 1] = '\0';
+        }
+
+        fclose(fp);
+    }
+    LOG1("name %s devname %s acpiname %s", entity->info.name, entity->devname, entity->acpiname);
 
     return 0;
 }
@@ -1017,6 +1032,16 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
     }
 
     return UNKNOWN_ERROR;
+}
+
+std::string MediaControl::acpiName2EntityName(const std::string& acpiName) {
+    for (auto& entity : mEntities) {
+        if (strcmp(entity.acpiname, acpiName.c_str()) == 0) {
+            return std::string(entity.info.name);
+        }
+    }
+
+    return "";
 }
 
 // DUMP_ENTITY_TOPOLOGY_S

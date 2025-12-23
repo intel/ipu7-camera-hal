@@ -266,6 +266,8 @@ class MediaControl {
     int getI2CBusAddress(const std::string& sensorEntityName, const std::string& sinkEntityName,
                          std::string* i2cBus);
 
+    std::string acpiName2EntityName(const std::string& acpiName);
+
  private:
     MediaControl& operator=(const MediaControl&);
     MediaControl(const char* devName);
