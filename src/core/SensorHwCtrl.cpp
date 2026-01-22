@@ -19,9 +19,6 @@
 #include <limits.h>
 #include <linux/types.h>
 #include <linux/v4l2-controls.h>
-// CRL_MODULE_S
-#include <linux/crlmodule.h>
-// CRL_MODULE_E
 
 #include "PlatformData.h"
 #include "SensorHwCtrl.h"
@@ -35,9 +32,6 @@ namespace icamera {
 SensorHwCtrl::SensorHwCtrl(int cameraId, V4L2Subdevice* pixelArraySubdev,
                            V4L2Subdevice* sensorOutputSubdev)
         : mPixelArraySubdev(pixelArraySubdev),
-          // CRL_MODULE_S
-          mSensorOutputSubdev(sensorOutputSubdev),
-          // CRL_MODULE_E
           mCameraId(cameraId),
           mHorzBlank(0),
           mVertBlank(0),
@@ -49,21 +43,6 @@ SensorHwCtrl::SensorHwCtrl(int cameraId, V4L2Subdevice* pixelArraySubdev,
           mCurFll(0),
           mCalculatingFrameDuration(true) {
     LOG1("<id%d> @%s", mCameraId, __func__);
-    // CRL_MODULE_S
-    /**
-     * Try to call V4L2_CID_LINE_LENGTH_PIXELS, if failed, it means llp can't
-     * be read directly from sensor. Then calculate it with HBlank.
-     * fll will be in the same case.
-     */
-    if (mPixelArraySubdev != nullptr) {
-        int llp = 0;
-        const int status = mPixelArraySubdev->GetControl(V4L2_CID_LINE_LENGTH_PIXELS, &llp);
-        if (status == OK) {
-            LOG1("%s, some sensors can get llp directly, don't calculate it", __func__);
-            mCalculatingFrameDuration = false;
-        }
-    }
-    // CRL_MODULE_E
 }
 
 SensorHwCtrl* SensorHwCtrl::createSensorCtrl(int cameraId) {
@@ -106,12 +85,6 @@ SensorHwCtrl* SensorHwCtrl::createSensorCtrl(int cameraId) {
     return sensorCtrl;
 }
 
-// CRL_MODULE_S
-int SensorHwCtrl::configure() {
-    return OK;
-}
-// CRL_MODULE_E
-
 int SensorHwCtrl::getActivePixelArraySize(int& width, int& height, int& pixelCode) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     CheckAndLogError(mPixelArraySubdev == nullptr, NO_INIT, "pixel array sub device is not set");
@@ -150,17 +123,6 @@ int SensorHwCtrl::setExposure(const vector<int>& coarseExposures,
     CheckAndLogError((coarseExposures.empty() || fineExposures.empty()), BAD_VALUE,
                      "No exposure data!");
 
-    // CRL_MODULE_S
-    if (coarseExposures.size() > 1) {
-        if (PlatformData::getSensorExposureType(mCameraId) == SENSOR_MULTI_EXPOSURES) {
-            return setMultiExposures(coarseExposures, fineExposures);
-        } else if (PlatformData::getSensorExposureType(mCameraId) ==
-                   SENSOR_DUAL_EXPOSURES_DCG_AND_VS) {
-            return setDualExposuresDCGAndVS(coarseExposures, fineExposures);
-        }
-    }
-    // CRL_MODULE_E
-
     LOG2("%s coarseExposure=%d fineExposure=%d", __func__, coarseExposures[0], fineExposures[0]);
     LOG2("SENSORCTRLINFO: exposure_value=%d", coarseExposures[0]);
     int status = mPixelArraySubdev->SetControl(V4L2_CID_EXPOSURE, coarseExposures[0]);
@@ -169,78 +131,10 @@ int SensorHwCtrl::setExposure(const vector<int>& coarseExposures,
     return OK;
 }
 
-// CRL_MODULE_S
-int SensorHwCtrl::setMultiExposures(const vector<int>& coarseExposures,
-                                    const vector<int>& fineExposures) {
-    int status = BAD_VALUE;
-    int shortExp = coarseExposures[0];
-    int longExp = coarseExposures[1];
-
-    if (coarseExposures.size() > 2) {
-        LOG2("coarseExposure[0]=%d fineExposure[0]=%d", coarseExposures[0], fineExposures[0]);
-        // The first exposure is very short exposure if larger than 2 exposures.
-        status = mPixelArraySubdev->SetControl(CRL_CID_EXPOSURE_SHS2, coarseExposures[0]);
-        CheckAndLogError(status != OK, status, "failed to set exposure SHS2 %d.",
-                         coarseExposures[0]);
-
-        shortExp = coarseExposures[1];
-        longExp = coarseExposures[2];
-
-        LOG2("SENSORCTRLINFO: exposure_long=%d", coarseExposures[2]);   // long
-        LOG2("SENSORCTRLINFO: exposure_med=%d", coarseExposures[1]);    // short
-        LOG2("SENSORCTRLINFO: exposure_short=%d", coarseExposures[0]);  // very short
-    }
-
-    LOG2("shortExp=%d longExp=%d", shortExp, longExp);
-    status = mPixelArraySubdev->SetControl(CRL_CID_EXPOSURE_SHS1, shortExp);
-    CheckAndLogError(status != OK, status, "failed to set exposure SHS1 %d.", shortExp);
-
-    status = mPixelArraySubdev->SetControl(V4L2_CID_EXPOSURE, longExp);
-    CheckAndLogError(status != OK, status, "failed to set long exposure %d.", longExp);
-    LOG2("SENSORCTRLINFO: exposure_value=%d", longExp);
-
-    return status;
-}
-
-int SensorHwCtrl::setDualExposuresDCGAndVS(const vector<int>& coarseExposures,
-                                           const vector<int>& fineExposures) {
-    int status = BAD_VALUE;
-    int longExp = coarseExposures[1];
-
-    if (coarseExposures.size() > 2) {
-        LOG2("coarseExposure[0]=%d fineExposure[0]=%d", coarseExposures[0], fineExposures[0]);
-        // The first exposure is very short exposure for DCG + VS case.
-        status = mPixelArraySubdev->SetControl(CRL_CID_EXPOSURE_SHS1, coarseExposures[0]);
-        CheckAndLogError(status != OK, status, "failed to set exposure SHS1 %d.",
-                         coarseExposures[0]);
-
-        longExp = coarseExposures[2];
-        LOG2("SENSORCTRLINFO: exposure_long=%d", coarseExposures[2]);  // long
-    }
-
-    status = mPixelArraySubdev->SetControl(V4L2_CID_EXPOSURE, longExp);
-    CheckAndLogError(status != OK, status, "failed to set long exposure %d.", longExp);
-    LOG2("SENSORCTRLINFO: exposure_value=%d", longExp);
-
-    return status;
-}
-// CRL_MODULE_E
-
 int SensorHwCtrl::setAnalogGains(const vector<int>& analogGains) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     CheckAndLogError(mPixelArraySubdev == nullptr, NO_INIT, "pixel array sub device is not set");
     CheckAndLogError(analogGains.empty(), BAD_VALUE, "No analog gain data!");
-
-    // CRL_MODULE_S
-    if (analogGains.size() > 1) {
-        if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_CONVERSION_AG) {
-            return setConversionGain(analogGains);
-        } else if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_DIRECT_AG) {
-            LOG2("sensor multi conversion gain");
-            return setMultiAnalogGain(analogGains);
-        }
-    }
-    // CRL_MODULE_E
 
     LOG2("%s analogGain=%d", __func__, analogGains[0]);
     int status = mPixelArraySubdev->SetControl(V4L2_CID_ANALOGUE_GAIN, analogGains[0]);
@@ -254,104 +148,12 @@ int SensorHwCtrl::setDigitalGains(const vector<int>& digitalGains) {
     CheckAndLogError(mPixelArraySubdev == nullptr, NO_INIT, "pixel array sub device is not set");
     CheckAndLogError(digitalGains.empty(), BAD_VALUE, "No digital gain data!");
 
-    // CRL_MODULE_S
-    if (digitalGains.size() > 1) {
-        if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_CONVERSION_AG) {
-            return setMultiDigitalGain(digitalGains);
-        } else if (PlatformData::getSensorGainType(mCameraId) == SENSOR_MULTI_DG_AND_DIRECT_AG) {
-            LOG2("sensor multi conversion gain");
-            return setMultiDigitalGain(digitalGains);
-        }
-    }
-
-    if ((mWdrMode != 0) &&
-        (PlatformData::getSensorGainType(mCameraId) == ISP_DG_AND_SENSOR_DIRECT_AG)) {
-        LOG2("%s: WDR mode, skip sensor DG, all digital gain is passed to ISP", __func__);
-    } else if (PlatformData::isUsingSensorDigitalGain(mCameraId)) {
-        if (mPixelArraySubdev->SetControl(V4L2_CID_GAIN, digitalGains[0]) != OK) {
-            LOGW("set digital gain failed");
-        }
-    }
-    // CRL_MODULE_E
-
     LOG2("%s digitalGain=%d", __func__, digitalGains[0]);
     int status = mPixelArraySubdev->SetControl(V4L2_CID_DIGITAL_GAIN, digitalGains[0]);
     CheckAndLogError((status != 0), status, "failed to set digitalGain gain %d.", digitalGains[0]);
 
     return OK;
 }
-
-// CRL_MODULE_S
-int SensorHwCtrl::setMultiDigitalGain(const vector<int>& digitalGains) {
-    int status = BAD_VALUE;
-    int shortDg = digitalGains[0];
-    int longDg = digitalGains[1];
-
-    if (digitalGains.size() > 2) {
-        LOG2("digitalGains[0]=%d", digitalGains[0]);
-        status = mPixelArraySubdev->SetControl(CRL_CID_DIGITAL_GAIN_VS, digitalGains[0]);
-        CheckAndLogError(status != OK, status, "failed to set very short DG %d.", digitalGains[0]);
-
-        shortDg = digitalGains[1];
-        longDg = digitalGains[2];
-    }
-
-    LOG2("shortDg=%d longDg=%d", shortDg, longDg);
-    status = mPixelArraySubdev->SetControl(CRL_CID_DIGITAL_GAIN_S, shortDg);
-    CheckAndLogError(status != OK, status, "failed to set short DG %d.", shortDg);
-
-    status = mPixelArraySubdev->SetControl(V4L2_CID_GAIN, longDg);
-    CheckAndLogError(status != OK, status, "failed to set long DG %d.", longDg);
-
-    return status;
-}
-
-int SensorHwCtrl::setMultiAnalogGain(const vector<int>& analogGains) {
-    int status = BAD_VALUE;
-    int shortAg = analogGains[0];
-    int longAg = analogGains[1];
-
-    if (analogGains.size() > 2) {
-        LOG2("VS AG %d", analogGains[0]);
-        const int status = mPixelArraySubdev->SetControl(CRL_CID_ANALOG_GAIN_VS, analogGains[0]);
-        CheckAndLogError(status != OK, status, "failed to set VS AG %d", analogGains[0]);
-
-        shortAg = analogGains[1];
-        longAg = analogGains[2];
-
-        LOG2("SENSORCTRLINFO: gain_long=%d", analogGains[2]);   // long
-        LOG2("SENSORCTRLINFO: gain_med=%d", analogGains[1]);    // short
-        LOG2("SENSORCTRLINFO: gain_short=%d", analogGains[0]);  // very short
-    }
-
-    LOG2("shortAg=%d longAg=%d", shortAg, longAg);
-    status = mPixelArraySubdev->SetControl(CRL_CID_ANALOG_GAIN_S, shortAg);
-    CheckAndLogError(status != OK, status, "failed to set short AG %d.", shortAg);
-
-    status = mPixelArraySubdev->SetControl(V4L2_CID_ANALOGUE_GAIN, longAg);
-    CheckAndLogError(status != OK, status, "failed to set long AG %d.", longAg);
-
-    return status;
-}
-
-int SensorHwCtrl::setConversionGain(const vector<int>& analogGains) {
-    CheckAndLogError(analogGains.size() < 2, BAD_VALUE, "Gain data error!");
-
-    /* [0, 1] bits are long AG, [2, 3] bits are short AG, [4, 5] bits are very short AG.
-       [6] bit is long conversion gain, [7] bit is very short conversion gain.
-       Long AG:       0x0X0000XX
-       Short AG:      0x0000XX00
-       Very Short AG: 0xX0XX0000 */
-    int value = analogGains[0] | analogGains[1] | analogGains[2];
-    LOG2("very short AG %d, short AG %d, long AG %d, conversion value %d", analogGains[0],
-         analogGains[1], analogGains[2], value);
-
-    const int status = mPixelArraySubdev->SetControl(V4L2_CID_ANALOGUE_GAIN, value);
-    CheckAndLogError(status != OK, status, "failed to set AG %d", value);
-
-    return OK;
-}
-// CRL_MODULE_E
 
 int SensorHwCtrl::setLineLengthPixels(int llp) {
     int status = OK;
@@ -362,10 +164,6 @@ int SensorHwCtrl::setLineLengthPixels(int llp) {
         if (mHorzBlank != horzBlank) {
             status = mPixelArraySubdev->SetControl(V4L2_CID_HBLANK, horzBlank);
         }
-        // CRL_MODULE_S
-    } else {
-        status = mPixelArraySubdev->SetControl(V4L2_CID_LINE_LENGTH_PIXELS, llp);
-        // CRL_MODULE_E
     }
 
     CheckAndLogError(status != OK, status, "failed to set llp. (%d)", status);
@@ -383,10 +181,6 @@ int SensorHwCtrl::setFrameLengthLines(int fll) {
         if (mVertBlank != vertBlank) {
             status = mPixelArraySubdev->SetControl(V4L2_CID_VBLANK, vertBlank);
         }
-        // CRL_MODULE_S
-    } else {
-        status = mPixelArraySubdev->SetControl(V4L2_CID_FRAME_LENGTH_LINES, fll);
-        // CRL_MODULE_E
     }
 
     mCurFll = fll;
@@ -424,13 +218,6 @@ int SensorHwCtrl::getLineLengthPixels(int& llp) {
             mHorzBlank = horzBlank;
             llp = horzBlank + mCropWidth;
         }
-        // CRL_MODULE_S
-    } else {
-        status = mPixelArraySubdev->GetControl(V4L2_CID_LINE_LENGTH_PIXELS, &llp);
-        if (status == OK) {
-            mHorzBlank = llp - mCropWidth;
-        }
-        // CRL_MODULE_E
     }
 
     LOG2("@%s, llp:%d", __func__, llp);
@@ -449,13 +236,6 @@ int SensorHwCtrl::getFrameLengthLines(int& fll) {
             mVertBlank = vertBlank;
             fll = vertBlank + mCropHeight;
         }
-        // CRL_MODULE_S
-    } else {
-        status = mPixelArraySubdev->GetControl(V4L2_CID_FRAME_LENGTH_LINES, &fll);
-        if (status == OK) {
-            mVertBlank = fll - mCropHeight;
-        }
-        // CRL_MODULE_E
     }
 
     LOG2("@%s, fll:%d", __func__, fll);
@@ -515,8 +295,6 @@ int SensorHwCtrl::getExposureRange(int& exposureMin, int& exposureMax, int& expo
 // HDR_FEATURE_S
 int SensorHwCtrl::setWdrMode(int mode) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(mSensorOutputSubdev == nullptr, NO_INIT, "sensor output sub device is not set");
-
     LOG2("%s WDR Mode=%d", __func__, mode);
     int ret = OK;
 
@@ -525,7 +303,6 @@ int SensorHwCtrl::setWdrMode(int mode) {
     if ((PlatformData::getSensorExposureType(mCameraId) != SENSOR_RELATIVE_MULTI_EXPOSURES) &&
         (PlatformData::getSensorExposureType(mCameraId) != SENSOR_DUAL_EXPOSURES_DCG_AND_VS)) {
         LOG2("%s: set WDR mode", __func__);
-        ret = mSensorOutputSubdev->SetControl(V4L2_CID_WDR_MODE, mode);
     }
 
     return ret;
@@ -543,39 +320,5 @@ int SensorHwCtrl::setAWB(float r_per_g, float b_per_g) {
     return ret;
 }
 // HDR_FEATURE_E
-
-// CRL_MODULE_S
-int SensorHwCtrl::setFrameRate(float fps) {
-    HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
-    CheckAndLogError(mSensorOutputSubdev == nullptr, NO_INIT, "sensor output sub device is not set");
-
-    struct v4l2_queryctrl query;
-    CLEAR(query);
-    query.id = V4L2_CID_LINK_FREQ;
-    int status = mSensorOutputSubdev->QueryControl(&query);
-    CheckAndLogError(status != OK, status, "Couldn't get V4L2_CID_LINK_FREQ, status:%d", status);
-
-    LOG2("@%s, query V4L2_CID_LINK_FREQ:, default_value:%d, maximum:%d, minimum:%d, step:%d",
-         __func__, query.default_value, query.maximum, query.minimum, query.step);
-
-    int mode = 0;
-    if (query.maximum == query.minimum) {
-        mode = query.default_value;
-    } else {
-        /***********************************************************************************
-         * WA: This heavily depends on sensor driver implementation, need to find a graceful
-         * solution.
-         * imx185:
-         * When fps larger than 30, should switch to high speed mode, currently only
-         * 0, 1, 2 are available. 0 means 720p 30fps, 1 means 2M 30fps, and 2 means 2M 60fps.
-         * imx290:
-         * 0 and 1 available, for 30 and higher FPS.
-         ***********************************************************************************/
-        mode = (fps > 30) ? query.maximum : (query.maximum - 1);
-    }
-    LOG2("@%s, set V4L2_CID_LINK_FREQ to %d, fps %f", __func__, mode, fps);
-    return mSensorOutputSubdev->SetControl(V4L2_CID_LINK_FREQ, mode);
-}
-// CRL_MODULE_E
 
 }  // namespace icamera

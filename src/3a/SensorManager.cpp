@@ -253,12 +253,6 @@ uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, int
          effectSeq, applyingSeq);
     return static_cast<uint32_t>(effectSeq);
 }
-// CRL_MODULE_S
-int SensorManager::setFrameRate(float fps)
-{
-    return mSensorHwCtrl->setFrameRate(fps);
-}
-// CRL_MODULE_E
 
 int SensorManager::getSensorInfo(ia_aiq_frame_params &frameParams,
                                  ia_aiq_exposure_sensor_descriptor &sensorDescriptor) {

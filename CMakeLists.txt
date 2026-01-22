@@ -43,11 +43,6 @@ set(ALGOWRAPPER_DIR     ${MODULES_DIR}/algowrapper)
 set(SANDBOXING_DIR      ${MODULES_DIR}/sandboxing)
 set(IMAGE_PROCESS_DIR   ${SRC_ROOT_DIR}/image_process)
 
-if (SUPPORT_LIVE_TUNING)
-    #LiveTuning directories
-    set(LIVE_TUNING_DIR         ${MODULES_DIR}/livetune)
-endif() #SUPPORT_LIVE_TUNING
-
 # CMake module directory
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -139,12 +134,7 @@ if (USE_PG_LITE_PIPE)
     add_definitions(-DUSE_PG_LITE_PIPE)
 endif() #USE_PG_LITE_PIPE
 
-    set(LIBCAMHAL_SRCS ${LIBCAMHAL_SRCS} ${IIO_SRCS})
-
-if (SUPPORT_LIVE_TUNING)
-    include_directories(modules/livetune)
-    set(LIBCAMHAL_SRCS ${LIBCAMHAL_SRCS} ${LIVE_TUNING_SRCS})
-endif() #SUPPORT_LIVE_TUNING
+set(LIBCAMHAL_SRCS ${LIBCAMHAL_SRCS} ${IIO_SRCS})
 
 if(FACE_DETECTION)
     add_definitions(-DFACE_DETECTION)
@@ -235,7 +225,7 @@ if (IPU_VER MATCHES "ipu6")
         set(TARGET_DEFINITIONS ${TARGET_DEFINITIONS} -DIPU_SYSVER_ipu6v6)
     endif()
     set(TARGET_INCLUDE ${TARGET_INCLUDE} src/core/psysprocessor)
-elseif (IPU_VER MATCHES "ipu7.*")
+elseif (IPU_VER MATCHES "ipu7.*" OR IPU_VER STREQUAL "ipu8")
     set(TARGET_DEFINITIONS ${TARGET_DEFINITIONS} -DSTATIC_GRAPH_USE_IA_AIC_TYPES -DPAC_ENABLE)
     set(TARGET_INCLUDE
         ${TARGET_INCLUDE}
@@ -253,6 +243,10 @@ elseif (IPU_VER MATCHES "ipu7.*")
         message(STATUS "add definition -DIPU_SYSVER_ipu75 for ipu75xa")
         set(TARGET_DEFINITIONS ${TARGET_DEFINITIONS} -DIPU_SYSVER_ipu75 -DGRC_IPU75XA)
         set(STATIC_GRAPH_IPU_PREFIXS "Ipu75xa")
+    elseif (IPU_VER STREQUAL "ipu8")
+        message(STATUS "add definition -DIPU_SYSVER_ipu8 for ipu8")
+        set(TARGET_DEFINITIONS ${TARGET_DEFINITIONS} -DIPU_SYSVER_ipu8 -DGRC_IPU8)
+        set(STATIC_GRAPH_IPU_PREFIXS "Ipu8")
     endif()
 endif()
 
@@ -304,6 +298,11 @@ if (USE_STATIC_GRAPH)
             ${MODULES_DIR}/ipu_desc/${IPU_VER}/StaticGraphReaderAutogen.cpp
             )
     endif () # STATIC_GRAPH_IPU_PREFIXS
+    if (IPU_VER STREQUAL "ipu8")
+        set(TARGET_SRCS ${TARGET_SRCS}
+            ${MODULES_DIR}/ipu_desc/${IPU_VER}/FragmentsConfigurator.cpp
+            )
+    endif ()
 endif() # USE_STATIC_GRAPH
 
 #--------------------------- Add libcamhal target  ---------------------------
@@ -349,9 +348,6 @@ endif()
 if (NOT BUILD_CAMHAL_PLUGIN)
     # Install headers
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libcamhal)
-    if (SUPPORT_LIVE_TUNING)
-        install(FILES modules/livetune/LiveTuning.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libcamhal/api)
-    endif() #SUPPORT_LIVE_TUNING
 endif()
 
 # Install configure files, by default ipu4 is used
@@ -379,7 +375,7 @@ elseif (IPU_VER STREQUAL "ipu6sepla")
         message("Install JSL penguin peak configure files")
         install(DIRECTORY config/ubuntu/jsl/ DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/camera/${IPU_VER})
     endif()
-elseif (IPU_VER MATCHES "ipu7.*")
+elseif (IPU_VER MATCHES "ipu7.*" OR IPU_VER STREQUAL "ipu8")
     message("Install ${IPU_VER} configure files")
     install(DIRECTORY config/linux/${IPU_VER}/ DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/camera/${IPU_VER} PATTERN "config/linux/*/gcss/*.xml" EXCLUDE)
 else()

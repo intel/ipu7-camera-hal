@@ -47,12 +47,6 @@ libcamera_sources += files([
 # FILE_SOURCE_S
     'core/FileSource.cpp',
 # FILE_SOURCE_E
-# PNP_DEBUG_S
-    'platformdata/PnpDebugControl.cpp',
-    'core/processingUnit/PipeManagerStub.cpp',
-    'iutils/SwImageConverter.cpp',
-    'core/MockPSysDevice.cpp',
-# PNP_DEBUG_E
     'iutils/CameraDump.cpp',
     'iutils/CameraLog.cpp',
     'iutils/PerfettoTrace.cpp',
@@ -92,26 +86,3 @@ includes += include_directories(
     '3a/intel3a',
     '3a',
 )
-# POST_PROCESS_FEATURE_S
-if get_option('android_platform').contains('cros')
-    libcamera_sources += files([
-        'core/processingUnit/PostProcessStage.cpp',
-        'core/SwPostProcessUnit.cpp',
-        'image_process/sw/ImageConverter.cpp',
-        'image_process/sw/ImageScalerCore.cpp',
-        'image_process/PostProcessorBase.cpp',
-        'image_process/PostProcessorCore.cpp',
-# GPU_GLES_PROCESSOR_S
-        'image_process/gpu/GPUPostProcessor.cpp',
-# GPU_GLES_PROCESSOR_E
-        'image_process/chrome/ImageProcessorCore.cpp',
-    ])
-
-    includes += include_directories(
-        'image_process',
-        'image_process/sw',
-        'image_process/gpu',
-        'image_process/chrome',
-    )
-endif
-# POST_PROCESS_FEATURE_E

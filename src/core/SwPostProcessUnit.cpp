@@ -164,25 +164,6 @@ status_t SwPostProcessUnit::configure(const stream_t& srcStream, const stream_t&
         processingOrder.push_back(info);
     }
 
-// JPEG_ENCODE_S
-    // Encode
-    if (dstStream.format == V4L2_PIX_FMT_JPEG &&
-        mPostProcessorCore->isPostProcessTypeSupported(POST_PROCESS_JPEG_ENCODING)) {
-        mPostProcessType |= POST_PROCESS_JPEG_ENCODING;
-        info.type = POST_PROCESS_JPEG_ENCODING;
-        info.inputInfo = inputStreamInfo;
-        info.outputInfo.width = dstStream.width;
-        info.outputInfo.height = dstStream.height;
-        info.outputInfo.stride = dstStream.width;
-        info.outputInfo.format = V4L2_PIX_FMT_NV12;  // should get the actual format
-        info.outputInfo.size =
-            CameraUtils::getFrameSize(info.outputInfo.format, info.outputInfo.width,
-                                      info.outputInfo.height, false, false, false);
-        inputStreamInfo = info.outputInfo;
-        processingOrder.push_back(info);
-    }
-// JPEG_ENCODE_E
-
     if (inputStreamInfo.width != dstStream.width ||
         inputStreamInfo.height != dstStream.height) {
         //inputStreamInfo.format !=

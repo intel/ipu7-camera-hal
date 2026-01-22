@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -539,6 +539,17 @@ StaticGraphStatus StaticGraphReader::GetStaticGraphConfig(GraphConfigurationKey&
             }
             *graph = new StaticGraph100051(
                 reinterpret_cast<GraphConfiguration100051**>(selectedConfigurationData), selectedConfigurationsCount, &_zoomKeyResolutions, &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId);
+            break;
+        case 100058:
+            if (StaticGraph100058::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                delete[] selectedConfigurationData;
+                delete[] selectedGraphConfigurationHeaders;
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph100058(
+                reinterpret_cast<GraphConfiguration100058**>(selectedConfigurationData), selectedConfigurationsCount, &_zoomKeyResolutions, &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId);
             break;
         case 100052:
             if (StaticGraph100052::hashCode != selectedGraphConfigurationHeader->graphHashCode)

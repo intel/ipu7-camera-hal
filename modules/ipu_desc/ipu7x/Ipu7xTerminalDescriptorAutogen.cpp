@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -625,6 +625,68 @@ TerminalDescriptor SW_IMVTerminalDesc[] =
     },
 };
 
+TerminalDescriptor SW_ROTATIONTerminalDesc[] =
+{
+    {
+        SW_ROTATION_TERMINAL_CONNECT_INPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_INPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_IN,
+        36947, // rotator_1_0
+    },
+    {
+        SW_ROTATION_TERMINAL_CONNECT_OUTPUT_1,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_1",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+    {
+        SW_ROTATION_TERMINAL_CONNECT_OUTPUT_2,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_2",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+};
+
+TerminalDescriptor SW_DESKVIEWTerminalDesc[] =
+{
+    {
+        SW_DESKVIEW_TERMINAL_CONNECT_INPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_INPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_IN,
+        39181, // deskview_1_0
+    },
+    {
+        SW_DESKVIEW_TERMINAL_CONNECT_OUTPUT_1,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_1",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+    {
+        SW_DESKVIEW_TERMINAL_CONNECT_OUTPUT_2,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_2",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+};
+
 int CountOfSW_ISYSTerminalDesc = sizeof(SW_ISYSTerminalDesc) / sizeof(SW_ISYSTerminalDesc[0]);
 int CountOfLBFFTerminalDesc = sizeof(LBFFTerminalDesc) / sizeof(LBFFTerminalDesc[0]);
 int CountOfBBPSTerminalDesc = sizeof(BBPSTerminalDesc) / sizeof(BBPSTerminalDesc[0]);
@@ -635,3 +697,5 @@ int CountOfSW_NNTMTerminalDesc = sizeof(SW_NNTMTerminalDesc) / sizeof(SW_NNTMTer
 int CountOfSW_SCALERTerminalDesc = sizeof(SW_SCALERTerminalDesc) / sizeof(SW_SCALERTerminalDesc[0]);
 int CountOfSW_VAITerminalDesc = sizeof(SW_VAITerminalDesc) / sizeof(SW_VAITerminalDesc[0]);
 int CountOfSW_IMVTerminalDesc = sizeof(SW_IMVTerminalDesc) / sizeof(SW_IMVTerminalDesc[0]);
+int CountOfSW_ROTATIONTerminalDesc = sizeof(SW_ROTATIONTerminalDesc) / sizeof(SW_ROTATIONTerminalDesc[0]);
+int CountOfSW_DESKVIEWTerminalDesc = sizeof(SW_DESKVIEWTerminalDesc) / sizeof(SW_DESKVIEWTerminalDesc[0]);

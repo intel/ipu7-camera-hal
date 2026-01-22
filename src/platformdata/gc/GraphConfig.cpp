@@ -858,6 +858,10 @@ void GraphConfig::fillConnectionConfig(const IpuGraphLink& ipuLink, int32_t term
 
 status_t GraphConfig::updateGraphSettingForPtz(const PtzInfo& cur, const PtzInfo& prev,
                                                bool* isKeyResChanged) {
+#ifdef IPU_SYSVER_ipu8
+    // TODO: Will implement Zoom with APP
+    return INVALID_OPERATION;
+#else
     RegionOfInterest cRoi = {cur.zoomRatio, cur.x, cur.y, false};
     RegionOfInterest rRoi = {prev.zoomRatio, prev.x, prev.y, false};
 
@@ -881,6 +885,7 @@ status_t GraphConfig::updateGraphSettingForPtz(const PtzInfo& cur, const PtzInfo
         dumpNodes(info);
     }
     return OK;
+#endif
 }
 
 void GraphConfig::dumpLink(const GraphLink* link) {

@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -96,7 +96,7 @@ typedef struct DataRange
 
 }DataRange;
 
-static int distinctGraphsCount = 28;
+static int distinctGraphsCount = 31;
 
 static GraphHashCode hashCodeLookup[] = {
        {0, 0xB38204DB},
@@ -127,7 +127,10 @@ static GraphHashCode hashCodeLookup[] = {
        {100039, 0x7B1EE4DB},
        {100040, 0xC052F97D},
        {100041, 0xF606DE19},
-       {100042, 0x6C88AC89}
+       {100042, 0x6C88AC89},
+       {100044, 0x9739AECD},
+       {100045, 0xB431D6FF},
+       {100046, 0x9739AECD}
  };
 
 static FrameFormatDesc formatsDB[] = {

@@ -24,8 +24,10 @@
 * this notice or any other notice embedded in Materials by Intel or Intels
 * suppliers or licensors in any way.
 */
+
 #include "FragmentsConfigurator.h"
 #include <math.h>
+#include <cmath>
 
 Ipu8FragmentsConfigurator::Ipu8FragmentsConfigurator(IStaticGraphConfig* staticGraph, OuterNode* node) : _staticGraph(staticGraph), _node(node)
 {
@@ -509,14 +511,24 @@ StaticGraphStatus Ipu8FragmentsConfigurator::configFragmentsUpscaler(StaticGraph
             kernelFragments[stripe].upscalerFragDesc.fragmentInputCropRight = pixelsToCrop - kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft;
         }
 
-        uint16_t outputStartX = static_cast<uint16_t>(kernelFragments[stripe].fragmentStartX > resInfo->input_crop.left ?
+        uint16_t stripeStart = static_cast<uint16_t>(kernelFragments[stripe].fragmentStartX > resInfo->input_crop.left ?
             kernelFragments[stripe].fragmentStartX - resInfo->input_crop.left : 0);
 
-        outputStartX += kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft;
+        stripeStart += kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft;
+        auto scaleFactorFixed = static_cast<float>(static_cast<int32_t>(scaleFactor * static_cast<float>(1 << 16))) / static_cast<float>(1 << 16);
 
-        outputStartX = GRA_ROUND_DOWN(static_cast<uint16_t>(floor(static_cast<double>(outputStartX) / scaleFactor)), 2);
+        float widthIn = static_cast<float>(resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right);
+        float horizontalOffset = (static_cast<float>(widthIn) - static_cast<float>(scaleFactorFixed) * (static_cast<float>(resInfo->output_width) - 1.0F)) / 2.0F;
 
-        _outputStartX[runKernel->kernel_uuid][stripe] = outputStartX;
+        auto nScaledPixelsMax = (static_cast<float>(stripeStart) + 1.0f - horizontalOffset) / scaleFactorFixed;
+        auto nScaledPixels = std::ceil((static_cast<float>(stripeStart) - horizontalOffset) / scaleFactorFixed);
+
+        if (static_cast<int32_t>(nScaledPixels) % 2 != 0)
+        {
+            nScaledPixels = 2 * std::floor(nScaledPixelsMax / 2);
+        }
+ 
+        _outputStartX[runKernel->kernel_uuid][stripe] = static_cast<uint16_t>(nScaledPixels);
     }
 
     return StaticGraphStatus::SG_OK;
