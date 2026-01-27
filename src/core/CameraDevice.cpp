@@ -465,11 +465,6 @@ int CameraDevice::configure(stream_config_t* streamList) {
     CheckAndLogError(ret != OK, ret, "@%s failed to configure CSI meta device", __func__);
     // CSI_META_E
 
-    // CRL_MODULE_S
-    ret = mSensorCtrl->configure();
-    CheckAndLogError(ret != OK, ret, "@%s failed to configure sensor HW", __func__);
-    // CRL_MODULE_E
-
     ret = mSofSource->configure();
     CheckAndLogError(ret != OK, ret, "@%s failed to configure SOF source device", __func__);
 

@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -176,6 +176,20 @@ enum SW_IMVTerminalID
     SW_IMV_TERMINAL_CONNECT_OUTPUT_2,
 };
 
+enum SW_ROTATIONTerminalID
+{
+    SW_ROTATION_TERMINAL_CONNECT_INPUT,
+    SW_ROTATION_TERMINAL_CONNECT_OUTPUT_1,
+    SW_ROTATION_TERMINAL_CONNECT_OUTPUT_2,
+};
+
+enum SW_DESKVIEWTerminalID
+{
+    SW_DESKVIEW_TERMINAL_CONNECT_INPUT,
+    SW_DESKVIEW_TERMINAL_CONNECT_OUTPUT_1,
+    SW_DESKVIEW_TERMINAL_CONNECT_OUTPUT_2,
+};
+
 extern TerminalDescriptor SW_ISYSTerminalDesc[];
 extern TerminalDescriptor LBFFTerminalDesc[];
 extern TerminalDescriptor BBPSTerminalDesc[];
@@ -186,6 +200,8 @@ extern TerminalDescriptor SW_NNTMTerminalDesc[];
 extern TerminalDescriptor SW_SCALERTerminalDesc[];
 extern TerminalDescriptor SW_VAITerminalDesc[];
 extern TerminalDescriptor SW_IMVTerminalDesc[];
+extern TerminalDescriptor SW_ROTATIONTerminalDesc[];
+extern TerminalDescriptor SW_DESKVIEWTerminalDesc[];
 
 extern int CountOfSW_ISYSTerminalDesc;
 extern int CountOfLBFFTerminalDesc;
@@ -197,3 +213,5 @@ extern int CountOfSW_NNTMTerminalDesc;
 extern int CountOfSW_SCALERTerminalDesc;
 extern int CountOfSW_VAITerminalDesc;
 extern int CountOfSW_IMVTerminalDesc;
+extern int CountOfSW_ROTATIONTerminalDesc;
+extern int CountOfSW_DESKVIEWTerminalDesc;

@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -69,6 +69,7 @@ enum class GraphConfigurationKeyAttributes : uint32_t
     WFov = 0x00000200,
     DocScan = 0x00000400,
     StillsModeCpHdr = 0x00000800,
+    B2bActive = 0x00001000,
 };
 
 struct GraphConfigurationKey {

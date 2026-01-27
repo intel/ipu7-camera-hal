@@ -69,9 +69,6 @@ target_link_libraries(hal_adaptor rt)
 
 # Install headers
 install(DIRECTORY ${ROOT_DIR}/include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libcamhal)
-if (SUPPORT_LIVE_TUNING)
-    install(FILES ${ROOT_DIR}/modules/livetune/LiveTuning.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libcamhal/api)
-endif()
 
 # Install libraries
 if (${CMAKE_VERSION} VERSION_LESS 3.11)

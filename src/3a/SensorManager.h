@@ -68,9 +68,6 @@ public:
 
     int setAWB(float r_per_g, float b_per_g);
     // HDR_FEATURE_E
-    // CRL_MODULE_S
-    int setFrameRate(float fps);
-    // CRL_MODULE_E
     int getCurrentExposureAppliedDelay();
     uint64_t getSofTimestamp(int64_t sequence);
 private:

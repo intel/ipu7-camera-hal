@@ -305,13 +305,19 @@ void CBStage::updateInfoAndSendEvents(StageTask* task) {
         bufferEvent.data.stageBufReady.uuid = item.first;
         bufferEvent.buffer = item.second;
 
+#ifdef IPU_SYSVER_ipu8
+        if (CameraDump::isDumpTypeEnable(DUMP_PSYS_OUTPUT_BUFFER) &&
+            (mResourceId == NODE_RESOURCE_ID_LBFF)) {
+            CameraDump::dumpImage(mCameraId, item.second, M_PSYS, item.first);
+        }
+#else
         if ((CameraDump::isDumpTypeEnable(DUMP_PSYS_OUTPUT_BUFFER) &&
              (mResourceId == NODE_RESOURCE_ID_BBPS)) ||
             (CameraDump::isDumpTypeEnable(DUMP_PSYS_INTERM_BUFFER) &&
              (mResourceId == NODE_RESOURCE_ID_LBFF))) {
             CameraDump::dumpImage(mCameraId, item.second, M_PSYS, item.first);
         }
-
+#endif
         notifyListeners(bufferEvent);
     }
     if (mHasStatsTerminal) {

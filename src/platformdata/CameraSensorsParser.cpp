@@ -23,10 +23,6 @@
 #include <string>
 #include <vector>
 
-// CRL_MODULE_S
-#include <linux/crlmodule.h>
-
-// CRL_MODULE_E
 #include "iutils/CameraLog.h"
 namespace icamera {
 
@@ -161,13 +157,6 @@ std::map<std::string, int> ctlCmdMapTable = {
 // HDR_FEATURE_S
     {"V4L2_CID_WDR_MODE", V4L2_CID_WDR_MODE},
 // HDR_FEATURE_E
-// CRL_MODULE_S
-    {"V4L2_CID_LINE_LENGTH_PIXELS", V4L2_CID_LINE_LENGTH_PIXELS},
-    {"V4L2_CID_FRAME_LENGTH_LINES", V4L2_CID_FRAME_LENGTH_LINES},
-    {"CRL_CID_SENSOR_MODE", CRL_CID_SENSOR_MODE},
-    {"CRL_CID_EXPOSURE_MODE", CRL_CID_EXPOSURE_MODE},
-    {"CRL_CID_EXPOSURE_HDR_RATIO", CRL_CID_EXPOSURE_HDR_RATIO},
-// CRL_MODULE_E
 };
 void CameraSensorsParser::parseMediaCtlControlObject(const Json::Value& node, MediaCtlConf* conf) {
     for (Json::Value::ArrayIndex i = 0; i < node.size(); ++i) {
