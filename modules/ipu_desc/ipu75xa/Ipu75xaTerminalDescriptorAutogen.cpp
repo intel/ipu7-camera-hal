@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -608,7 +608,7 @@ TerminalDescriptor SW_REMOSAICTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_IN,
-        19706, // sw_scaler
+        8198, // remosaic_1_0
     },
     {
         SW_REMOSAIC_TERMINAL_CONNECT_OUTPUT,
@@ -617,7 +617,7 @@ TerminalDescriptor SW_REMOSAICTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        19706, // sw_scaler
+        8198, // remosaic_1_0
     },
 };
 

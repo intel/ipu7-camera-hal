@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -67,6 +67,8 @@ enum class NodeResourceId : uint8_t {
     SwScaler = 7,
     SwVai = 8,
     SwImv = 9,
+    SwRotation = 10,
+    SwDeskview = 11,
 };
 
 enum class StaticGraphStatus : uint8_t
@@ -345,6 +347,9 @@ enum class GraphElementType : uint8_t {
     LbffIrWithGmvIrStream,
     SwVai,
     SwImv,
+    SwDeskview,
+    SwRotation,
+    SwDeskviewNoblend,
 };
 
 enum class LinkType : uint8_t {

@@ -1,6 +1,6 @@
 /*
 * INTEL CONFIDENTIAL
-* Copyright (c) 2025 Intel Corporation
+* Copyright (c) 2026 Intel Corporation
 * All Rights Reserved.
 *
 * The source code contained or described herein and all documents related to
@@ -66,6 +66,11 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 100005:    // Bayer_NoPdaf_WithNntm_WithTnr
                 case 100040:    // Bayer_WithPdaf3_WithNntm_WithTnr
                     return 46539; // nntm_1_0
+                case 100044:    // Bayer_NoPdaf_WithTnr_WithDeskView
+                case 100046:    // Bayer_NoPdaf_WithTnr_WithDeskViewNoBlend
+                    return 39181; // deskview_1_0
+                case 100045:    // Bayer_NoPdaf_WithNntm_WithTnr_WithRotation
+                    return 36947; // rotator_1_0
                 case 100031:    // Dol2Inputs_NoGmv_NoTnr
                     if (links[16]->isActive) return 37003; // tm_app
                     if (links[20]->isActive) return 46539; // nntm_1_0
@@ -110,6 +115,8 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
     kernelUuids.push_back(19706);  // sw_scaler
     kernelUuids.push_back(46539);  // nntm_1_0
     kernelUuids.push_back(37003);  // tm_app
+    kernelUuids.push_back(39181);  // deskview_1_0
+    kernelUuids.push_back(36947);  // rotator_1_0
     return StaticGraphStatus::SG_OK;
 }
 
