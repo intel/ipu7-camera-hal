@@ -47,7 +47,8 @@
             "ar0830-a-0",
             "ar0830-b-2",
             "isx031-a-0",
-            "isx031-b-2"
+            "isx031-b-2",
+            "acpi"
         ],
         "videoStreamNum" : 2
     }
