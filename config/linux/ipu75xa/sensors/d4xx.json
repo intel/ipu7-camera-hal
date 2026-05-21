@@ -20,6 +20,9 @@
       {
         "name": "d4xx-1",
         "description": "D4XX GMSL sensor on DES0 Link A",
+        "vcCount": 4,
+        "vcId": 1,
+        "vcGroupId": 0,
         "MediaCtlConfig": [
           {
             "id":  0 ,
@@ -37,7 +40,7 @@
                 "acpiName": "\\_SB_.PC00.DES0.CH00.SER0.CAM0", "subEntity": "D4XX rgb", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
-          },
+          }
         ],
         "StaticMetadata": {
           "supportedStreamConfig": [
@@ -55,6 +58,9 @@
       {
         "name": "d4xx-2",
         "description": "D4XX GMSL sensor on DES0 Link B",
+        "vcCount": 4,
+        "vcId": 3,
+        "vcGroupId": 0,
         "MediaCtlConfig": [
           {
             "id":  0 ,
@@ -72,7 +78,7 @@
                 "acpiName": "\\_SB_.PC00.DES0.CH01.SER1.CAM1", "subEntity": "D4XX rgb", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
-          },
+          }
         ],
         "StaticMetadata": {
           "supportedStreamConfig": [
@@ -90,6 +96,9 @@
       {
         "name": "d4xx-3",
         "description": "D4XX GMSL sensor on DES0 Link C",
+        "vcCount": 4,
+        "vcId": 2,
+        "vcGroupId": 0,
         "MediaCtlConfig": [
           {
             "id":  0 ,
@@ -125,6 +134,9 @@
       {
         "name": "d4xx-4",
         "description": "D4XX GMSL sensor on DES0 Link D",
+        "vcCount": 4,
+        "vcId": 3,
+        "vcGroupId": 0,
         "MediaCtlConfig": [
           {
             "id":  0 ,
@@ -152,6 +164,155 @@
           ]
         },
 
+        "supportedISysSizes": [[640, 480]],
+        "supportedISysFormat": ["V4L2_PIX_FMT_YUYV"],
+        "enableAIQ": false,
+        "usePSysProcessor": false
+      },
+      {
+        "name": "d4xx-5",
+        "description": "D4XX GMSL sensor on DES1 Link A",
+        "vcCount": 4,
+        "vcId": 1,
+        "vcGroupId": 0,
+        "MediaCtlConfig": [
+          {
+            "id":  0 ,
+            "configMode": "AUTO",
+            "output": [640, 480],
+            "format": "V4L2_PIX_FMT_YUYV",
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture 36", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "subEntity": "D4XX rgb", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          }
+        ],
+        "StaticMetadata": {
+          "supportedStreamConfig": [
+            {
+              "format": "V4L2_PIX_FMT_YUYV", "size": [640, 480], "field": 0, "mcId": 0
+            }
+          ]
+        },
+        "supportedISysSizes": [[640, 480]],
+        "supportedISysFormat": ["V4L2_PIX_FMT_YUYV"],
+        "enableAIQ": false,
+        "usePSysProcessor": false
+      },
+      {
+        "name": "d4xx-6",
+        "description": "D4XX GMSL sensor on DES1 Link B",
+        "vcCount": 4,
+        "vcId": 3,
+        "vcGroupId": 0,
+        "MediaCtlConfig": [
+          {
+            "id":  0 ,
+            "configMode": "AUTO",
+            "output": [640, 480],
+            "format": "V4L2_PIX_FMT_YUYV",
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture 37", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1.CAM1", "subEntity": "D4XX rgb", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          }
+        ],
+        "StaticMetadata": {
+          "supportedStreamConfig": [
+            {
+              "format": "V4L2_PIX_FMT_YUYV", "size": [640, 480], "field": 0, "mcId": 0
+            }
+          ]
+        },
+        "supportedISysSizes": [[640, 480]],
+        "supportedISysFormat": ["V4L2_PIX_FMT_YUYV"],
+        "enableAIQ": false,
+        "usePSysProcessor": false
+      },
+      {
+        "name": "d4xx-7",
+        "description": "D4XX GMSL sensor on DES1 Link C",
+        "vcCount": 4,
+        "vcId": 3,
+        "vcGroupId": 0,
+        "MediaCtlConfig": [
+          {
+            "id":  0 ,
+            "configMode": "AUTO",
+            "output": [640, 480],
+            "format": "V4L2_PIX_FMT_YUYV",
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture 38", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2.CAM2", "subEntity": "D4XX rgb", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          }
+        ],
+        "StaticMetadata": {
+          "supportedStreamConfig": [
+            {
+              "format": "V4L2_PIX_FMT_YUYV", "size": [640, 480], "field": 0, "mcId": 0
+            }
+          ]
+        },
+        "supportedISysSizes": [[640, 480]],
+        "supportedISysFormat": ["V4L2_PIX_FMT_YUYV"],
+        "enableAIQ": false,
+        "usePSysProcessor": false
+      }
+      ,
+      {
+        "name": "d4xx-8",
+        "description": "D4XX GMSL sensor on DES1 Link D",
+        "vcCount": 4,
+        "vcId": 3,
+        "vcGroupId": 0,
+        "MediaCtlConfig": [
+          {
+            "id":  0 ,
+            "configMode": "AUTO",
+            "output": [640, 480],
+            "format": "V4L2_PIX_FMT_YUYV",
+            "videonode": [
+              {
+                "name": "Intel IPU7 ISYS Capture 39", "videoNodeType": "VIDEO_GENERIC"
+              },
+              {
+                "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
+              },
+              {
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3.CAM3", "subEntity": "D4XX rgb", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+              }
+            ]
+          }
+        ],
+        "StaticMetadata": {
+          "supportedStreamConfig": [
+            {
+              "format": "V4L2_PIX_FMT_YUYV", "size": [640, 480], "field": 0, "mcId": 0
+            }
+          ]
+        },
         "supportedISysSizes": [[640, 480]],
         "supportedISysFormat": ["V4L2_PIX_FMT_YUYV"],
         "enableAIQ": false,
