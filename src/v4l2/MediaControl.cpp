@@ -61,6 +61,7 @@ struct MediaEntity {
     unsigned int numLinks;
 
     char devname[32];
+    char acpiname[32];
 };
 
 MediaControl* MediaControl::sInstance = nullptr;
@@ -504,7 +505,7 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
 
     ret = readlink(sysName, target, MAX_TARGET_NAME);
     if (ret <= 0) {
-        LOGE("readlink sysName %s failed ret %d.", sysName, ret);
+        LOGE("readlink entity %s sysName %s failed ret %d.", entity->info.name, sysName, ret);
         return -EINVAL;
     }
     target[MAX_TARGET_NAME - 1] = '\0';
@@ -529,6 +530,20 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
     } else {
         snprintf(entity->devname, sizeof(entity->devname), "/dev/%s", d);
     }
+
+    strlcat(sysName, "/device/firmware_node/path", sizeof(sysName));
+    FILE* fp = fopen(sysName, "rb");
+    if (fp) {
+        fgets(entity->acpiname, sizeof(entity->acpiname), fp);
+
+        size_t len = strlen(entity->acpiname);
+        if (len > 0 && entity->acpiname[len - 1] == '\n') {
+            entity->acpiname[len - 1] = '\0';
+        }
+
+        fclose(fp);
+    }
+    LOG1("name %s devname %s acpiname %s", entity->info.name, entity->devname, entity->acpiname);
 
     return 0;
 }
@@ -1113,6 +1128,53 @@ bool MediaControl::checkAvailableSensor(const std::string& sensorEntityName,
 }
 
 // This function must be called after enumEntities().
+// Recursively walk the source side of the given sink and return true if any
+// pure source entity has a non-empty acpiname (i.e. is ACPI-described).
+bool MediaControl::checkHasAcpiSource(const MediaEntity* sink) {
+    for (unsigned int i = 0U; i < sink->numLinks; ++i) {
+        if (sink->links[i].sink->entity == sink) {
+            MediaEntity* pre = sink->links[i].source->entity;
+            if (isMediaSourceEntity(pre)) {
+                if (pre->acpiname[0] != '\0') {
+                    return true;
+                }
+            } else {
+                if (checkHasAcpiSource(pre)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool MediaControl::checkAvailableAcpiSensor(const std::string& sinkEntityName) {
+    LOG1("@%s, sinkEntityName:%s", __func__, sinkEntityName.c_str());
+
+    for (auto& entity : mEntities) {
+        if (strcmp(sinkEntityName.c_str(), entity.info.name) == 0) {
+            return checkHasAcpiSource(&entity);
+        }
+    }
+
+    return false;
+}
+
+bool MediaControl::checkAvailableAcpiSensor() {
+    LOG1("@%s", __func__);
+
+    for (auto& entity : mEntities) {
+        if (isMediaSourceEntity(&entity) && entity.acpiname[0] != '\0') {
+            LOG1("@%s, found ACPI source entity %s (acpiname=%s)", __func__,
+                 entity.info.name, entity.acpiname);
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// This function must be called after enumEntities().
 int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string& sinkEntityName,
                                    string* i2cBus) {
     LOG1("@%s, sensorEntityName:%s, sinkEntityName:%s", __func__, sensorEntityName.c_str(),
@@ -1140,6 +1202,20 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
     }
 
     return UNKNOWN_ERROR;
+}
+
+std::string MediaControl::acpiName2EntityName(const std::string& acpiName,
+                                              const std::string& subEntity) {
+    for (auto& entity : mEntities) {
+        if (strcmp(entity.acpiname, acpiName.c_str()) == 0) {
+            if (subEntity.empty() ||
+                strstr(entity.info.name, subEntity.c_str()) != nullptr) {
+                return std::string(entity.info.name);
+            }
+        }
+    }
+
+    return "";
 }
 
 // DUMP_ENTITY_TOPOLOGY_S

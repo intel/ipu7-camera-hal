@@ -46,7 +46,9 @@
             "ar0830-1-mipi-0",
             "ar0830-2-mipi-2",
             "isx031-1-mipi-0",
-            "isx031-2-mipi-2"
+            "isx031-2-mipi-2",
+            "acpi",
+	        "d4xx"
         ],
         "videoStreamNum" : 2
     }

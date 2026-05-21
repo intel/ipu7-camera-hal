@@ -179,6 +179,14 @@ void CameraSensorsParser::parseMediaCtlControlObject(const Json::Value& node, Me
             if (mMediaCtl)
                 ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
         }
+        if (ele.isMember("acpiName")) {
+            const std::string subEntity =
+                ele.isMember("subEntity") ? ele["subEntity"].asString() : std::string();
+            ctl.entityName =
+                mMediaCtl->acpiName2EntityName(ele["acpiName"].asString(), subEntity);
+            if (mMediaCtl)
+                ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
+        }
         if (ele.isMember("ctrlId")) {
             const auto target = ele["ctrlId"].asString();
             if (ctlCmdMapTable.find(target) != ctlCmdMapTable.end())
@@ -231,7 +239,14 @@ void CameraSensorsParser::parseMediaCtlVideoNodeObject(const Json::Value& node,
         const auto ele = node[i];
         McVideoNode videoNode;
 
-        videoNode.name = resolveI2CBusString(ele["name"].asString());
+        if (ele.isMember("name")) {
+            videoNode.name = resolveI2CBusString(ele["name"].asString());
+        } else if (ele.isMember("acpiName") && mMediaCtl != nullptr) {
+            const std::string subEntity =
+                ele.isMember("subEntity") ? ele["subEntity"].asString() : std::string();
+            videoNode.name =
+                mMediaCtl->acpiName2EntityName(ele["acpiName"].asString(), subEntity);
+        }
         videoNode.videoNodeType = GetNodeType(ele["videoNodeType"].asString().c_str());
         conf->videoNodes.push_back(videoNode);
     }
@@ -334,6 +349,15 @@ void CameraSensorsParser::parseMediaCtlSelectionObject(const Json::Value& node, 
         if (ele.isMember("name")) {
             const auto name = ele["name"].asString();
             sel.entityName = resolveI2CBusString(name);
+            if (mMediaCtl != nullptr) {
+                sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
+            }
+        }
+        if (ele.isMember("acpiName")) {
+            const std::string subEntity =
+                ele.isMember("subEntity") ? ele["subEntity"].asString() : std::string();
+            sel.entityName =
+                mMediaCtl->acpiName2EntityName(ele["acpiName"].asString(), subEntity);
             if (mMediaCtl != nullptr) {
                 sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
             }
@@ -1003,9 +1027,12 @@ int CameraSensorsParser::getCameraModuleNameFromEEPROM(const std::string& nvmDir
 void CameraSensorsParser::updateNVMDir() {
     // OLD Code. Do not change unless you know what you are doing.
     // I2CBus is adaptor-bus, like 18-0010, and use adaptor id to select NVM path.
-    if ((mI2CBus.size() < 2) && mNVMDeviceInfo.empty()) {
+ 
+    if (mNVMDeviceInfo.empty())
         return;
-    }
+
+    if ((mI2CBus.size() < 2))
+        return;
 
     // attach i2c adaptor id, like 18-0010
     std::size_t found = mI2CBus.find("-");
