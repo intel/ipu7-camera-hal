@@ -21,6 +21,7 @@
         //  The value format of availableSensors is "sensor name"-wf/uf-"CSI port ID".
         //  wf is word facing, and uf is user facing.
         "availableSensors": [
+            "ov8856-wf-0",
             "ov13b10-wf-0",
             "ov13b10-uf-2",
             "ov08x40-uf-0",
