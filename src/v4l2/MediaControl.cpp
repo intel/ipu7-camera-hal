@@ -1022,10 +1022,12 @@ void MediaControl::mediaCtlClear(int cameraId, MediaCtlConf* mc) {
      * clearing routes here would disrupt other processes or camera instances that share the
      * same subdev and are still streaming.  Routes are left active on the hardware; the next
      * open() will skip SetRouting if the routes already match (see setRouting).
-     * Remove the receiver from the in-process tracking set so that a subsequent open() in
-     * this process re-evaluates the full setup (formats, links), even though SetRouting itself
-     * will be skipped when routes are still correctly configured.
+     * Reset mIsMediaCtlSetup so that a subsequent open() in this process re-evaluates the
+     * full setup (formats, links), even though SetRouting itself will be skipped when routes
+     * are still correctly configured.
      */
+    AutoMutex lock(sLock);
+    mIsMediaCtlSetup = false;
     // VIRTUAL_CHANNEL_E
 }
 
