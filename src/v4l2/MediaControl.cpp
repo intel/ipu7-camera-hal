@@ -1125,8 +1125,9 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
         char* entityName = nullptr;
         size_t sensorEntityNameLen = sensorEntityName.length();
         for (int i = 0; i < linksCount; i++) {
-            if (strcmp(links[i].sink->entity->info.name, sinkEntityName.c_str()) == 0) {
-                entityName = entity.info.name;
+            if (strcmp(links[i].sink->entity->info.name, sinkEntityName.c_str()) == 0 &&
+               strncmp(entity.info.name, sensorEntityName.c_str(), sensorEntityNameLen) == 0) {
+		entityName = entity.info.name;
                 break;
             }
         }
