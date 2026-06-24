@@ -280,6 +280,7 @@ int CameraHal::deviceStart(int cameraId) {
                              cameraId, mConfigTimes);
         }
     }
+    lock.unlock(); // allow concurent STREAMON for all VC Cameras
     // VIRTUAL_CHANNEL_E
 
     return device->start();
