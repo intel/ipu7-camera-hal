@@ -31,8 +31,8 @@
 /*
  * External Interfaces
  */
-IStaticGraphConfig::IStaticGraphConfig(SensorMode* selectedSensorMode, VirtualSinkMapping* sinkMappingConfiguration, int32_t graphId, int32_t settingsId, int32_t additonalFeaturesBit, ZoomKeyResolutions* zoomKeyResolutions  ) :
-_selectedSensorMode(selectedSensorMode), _graphId(graphId), _settingsId(settingsId),_additonalFeaturesBit(additonalFeaturesBit)
+IStaticGraphConfig::IStaticGraphConfig(SensorMode* selectedSensorMode, VirtualSinkMapping* sinkMappingConfiguration, int32_t graphId, int32_t settingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, ZoomKeyResolutions* zoomKeyResolutions  ) :
+_selectedSensorMode(selectedSensorMode), _graphId(graphId), _settingsId(settingsId),_additionalFeaturesBit(additionalFeaturesBit), _isIsysUnpacked(isIsysUnpacked)
 {
     memcpy(_sinkMappingConfiguration, sinkMappingConfiguration, sizeof(VirtualSinkMapping));
     // Copy zoom key resolutions
@@ -107,9 +107,19 @@ StaticGraphStatus IStaticGraphConfig::getAdditionalFeaturesBit(int32_t* features
         return StaticGraphStatus::SG_ERROR;
     }
 
-    *featuresBit = _additonalFeaturesBit;
+    *featuresBit = _additionalFeaturesBit;
     return StaticGraphStatus::SG_OK;
 };
+StaticGraphStatus IStaticGraphConfig::IsInputSystemFormatUnpacked(bool* isUnpacked)
+{
+if (isUnpacked == nullptr)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    *isUnpacked = _isIsysUnpacked;
+    return StaticGraphStatus::SG_OK;
+}
 
 StaticGraphStatus IStaticGraphConfig::getVirtualSinkConnection(VirtualSink& virtualSink, HwSink* hwSink)
 {
@@ -10218,8 +10228,8 @@ void LbffDol2InputsWithGmvBayerStatOuterNode::setInnerNode(InnerNodeOptionsFlags
 /*
  * Graph 100000
  */
-StaticGraph100000::StaticGraph100000(GraphConfiguration100000** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100000, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100000::StaticGraph100000(GraphConfiguration100000** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100000, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -10474,8 +10484,8 @@ StaticGraphStatus imageSubGraphTopology100000::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100001
  */
-StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100001, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100001, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -10887,8 +10897,8 @@ StaticGraphStatus imageSubGraphTopology100001::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100002
  */
-StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100002, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100002, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -11199,8 +11209,8 @@ StaticGraphStatus imageSubGraphTopology100002::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100003
  */
-StaticGraph100003::StaticGraph100003(GraphConfiguration100003** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100003, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100003::StaticGraph100003(GraphConfiguration100003** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100003, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -11585,8 +11595,8 @@ StaticGraphStatus imageSubGraphTopology100003::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100005
  */
-StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100005, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100005, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -11976,8 +11986,8 @@ StaticGraphStatus imageSubGraphTopology100005::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100006
  */
-StaticGraph100006::StaticGraph100006(GraphConfiguration100006** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100006, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100006::StaticGraph100006(GraphConfiguration100006** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100006, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
     ,_irSubGraph(_sinkMappingConfiguration)
     ,_image_irSubGraph(_sinkMappingConfiguration)
@@ -12842,8 +12852,8 @@ StaticGraphStatus image_irSubGraphTopology100006::configInnerNodes(SubGraphInner
 /*
  * Graph 100007
  */
-StaticGraph100007::StaticGraph100007(GraphConfiguration100007** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100007, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100007::StaticGraph100007(GraphConfiguration100007** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100007, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -13003,8 +13013,8 @@ StaticGraphStatus imageSubGraphTopology100007::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100008
  */
-StaticGraph100008::StaticGraph100008(GraphConfiguration100008** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100008, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100008::StaticGraph100008(GraphConfiguration100008** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100008, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
     ,_irSubGraph(_sinkMappingConfiguration)
     ,_image_irSubGraph(_sinkMappingConfiguration)
@@ -13713,8 +13723,8 @@ StaticGraphStatus image_irSubGraphTopology100008::configInnerNodes(SubGraphInner
 /*
  * Graph 100015
  */
-StaticGraph100015::StaticGraph100015(GraphConfiguration100015** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100015, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100015::StaticGraph100015(GraphConfiguration100015** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100015, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -13933,8 +13943,8 @@ StaticGraphStatus imageSubGraphTopology100015::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100016
  */
-StaticGraph100016::StaticGraph100016(GraphConfiguration100016** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100016, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100016::StaticGraph100016(GraphConfiguration100016** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100016, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -14085,8 +14095,8 @@ StaticGraphStatus imageSubGraphTopology100016::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100025
  */
-StaticGraph100025::StaticGraph100025(GraphConfiguration100025** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100025, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100025::StaticGraph100025(GraphConfiguration100025** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100025, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -14341,8 +14351,8 @@ StaticGraphStatus imageSubGraphTopology100025::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100026
  */
-StaticGraph100026::StaticGraph100026(GraphConfiguration100026** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100026, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100026::StaticGraph100026(GraphConfiguration100026** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100026, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _rawSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -14425,8 +14435,8 @@ StaticGraph100026::~StaticGraph100026()
 /*
  * Graph 100027
  */
-StaticGraph100027::StaticGraph100027(GraphConfiguration100027** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100027, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100027::StaticGraph100027(GraphConfiguration100027** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100027, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -14705,8 +14715,8 @@ StaticGraphStatus imageSubGraphTopology100027::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100028
  */
-StaticGraph100028::StaticGraph100028(GraphConfiguration100028** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100028, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100028::StaticGraph100028(GraphConfiguration100028** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100028, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -14969,8 +14979,8 @@ StaticGraphStatus imageSubGraphTopology100028::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100029
  */
-StaticGraph100029::StaticGraph100029(GraphConfiguration100029** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100029, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100029::StaticGraph100029(GraphConfiguration100029** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100029, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -15305,8 +15315,8 @@ StaticGraphStatus imageSubGraphTopology100029::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100030
  */
-StaticGraph100030::StaticGraph100030(GraphConfiguration100030** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100030, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100030::StaticGraph100030(GraphConfiguration100030** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100030, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -15625,8 +15635,8 @@ StaticGraphStatus imageSubGraphTopology100030::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100031
  */
-StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100031, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100031, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -15985,8 +15995,8 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100032
  */
-StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100032, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100032, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -16401,8 +16411,8 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100033
  */
-StaticGraph100033::StaticGraph100033(GraphConfiguration100033** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100033, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100033::StaticGraph100033(GraphConfiguration100033** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100033, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -16790,8 +16800,8 @@ StaticGraphStatus imageSubGraphTopology100033::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100034
  */
-StaticGraph100034::StaticGraph100034(GraphConfiguration100034** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100034, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100034::StaticGraph100034(GraphConfiguration100034** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100034, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -17235,8 +17245,8 @@ StaticGraphStatus imageSubGraphTopology100034::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100035
  */
-StaticGraph100035::StaticGraph100035(GraphConfiguration100035** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100035, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100035::StaticGraph100035(GraphConfiguration100035** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100035, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _rawSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -17333,8 +17343,8 @@ StaticGraph100035::~StaticGraph100035()
 /*
  * Graph 100036
  */
-StaticGraph100036::StaticGraph100036(GraphConfiguration100036** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100036, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100036::StaticGraph100036(GraphConfiguration100036** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100036, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _rawSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -17431,8 +17441,8 @@ StaticGraph100036::~StaticGraph100036()
 /*
  * Graph 100037
  */
-StaticGraph100037::StaticGraph100037(GraphConfiguration100037** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100037, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100037::StaticGraph100037(GraphConfiguration100037** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100037, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -17841,8 +17851,8 @@ StaticGraphStatus imageSubGraphTopology100037::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100038
  */
-StaticGraph100038::StaticGraph100038(GraphConfiguration100038** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100038, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100038::StaticGraph100038(GraphConfiguration100038** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100038, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -18235,8 +18245,8 @@ StaticGraphStatus imageSubGraphTopology100038::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100039
  */
-StaticGraph100039::StaticGraph100039(GraphConfiguration100039** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100039, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100039::StaticGraph100039(GraphConfiguration100039** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100039, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
     ,_irSubGraph(_sinkMappingConfiguration)
     ,_image_irSubGraph(_sinkMappingConfiguration)
@@ -19220,8 +19230,8 @@ StaticGraphStatus image_irSubGraphTopology100039::configInnerNodes(SubGraphInner
 /*
  * Graph 100040
  */
-StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100040, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100040, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -19631,8 +19641,8 @@ StaticGraphStatus imageSubGraphTopology100040::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100041
  */
-StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100041, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100041, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -20071,8 +20081,8 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100042
  */
-StaticGraph100042::StaticGraph100042(GraphConfiguration100042** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100042, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100042::StaticGraph100042(GraphConfiguration100042** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100042, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -20470,8 +20480,8 @@ StaticGraphStatus imageSubGraphTopology100042::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100044
  */
-StaticGraph100044::StaticGraph100044(GraphConfiguration100044** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100044, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100044::StaticGraph100044(GraphConfiguration100044** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100044, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -20890,8 +20900,8 @@ StaticGraphStatus imageSubGraphTopology100044::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100050
  */
-StaticGraph100050::StaticGraph100050(GraphConfiguration100050** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100050, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100050::StaticGraph100050(GraphConfiguration100050** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100050, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -21281,8 +21291,8 @@ StaticGraphStatus imageSubGraphTopology100050::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100051
  */
-StaticGraph100051::StaticGraph100051(GraphConfiguration100051** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100051, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100051::StaticGraph100051(GraphConfiguration100051** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100051, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -21692,8 +21702,8 @@ StaticGraphStatus imageSubGraphTopology100051::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100058
  */
-StaticGraph100058::StaticGraph100058(GraphConfiguration100058** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100058, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100058::StaticGraph100058(GraphConfiguration100058** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100058, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -22024,8 +22034,8 @@ StaticGraphStatus imageSubGraphTopology100058::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100059
  */
-StaticGraph100059::StaticGraph100059(GraphConfiguration100059** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100059, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100059::StaticGraph100059(GraphConfiguration100059** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100059, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -22435,8 +22445,8 @@ StaticGraphStatus imageSubGraphTopology100059::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100060
  */
-StaticGraph100060::StaticGraph100060(GraphConfiguration100060** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100060, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100060::StaticGraph100060(GraphConfiguration100060** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100060, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -22767,8 +22777,8 @@ StaticGraphStatus imageSubGraphTopology100060::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100061
  */
-StaticGraph100061::StaticGraph100061(GraphConfiguration100061** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100061, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100061::StaticGraph100061(GraphConfiguration100061** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100061, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -23178,8 +23188,8 @@ StaticGraphStatus imageSubGraphTopology100061::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100052
  */
-StaticGraph100052::StaticGraph100052(GraphConfiguration100052** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100052, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100052::StaticGraph100052(GraphConfiguration100052** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100052, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -23538,8 +23548,8 @@ StaticGraphStatus imageSubGraphTopology100052::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100053
  */
-StaticGraph100053::StaticGraph100053(GraphConfiguration100053** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100053, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100053::StaticGraph100053(GraphConfiguration100053** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100053, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -23954,8 +23964,8 @@ StaticGraphStatus imageSubGraphTopology100053::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100054
  */
-StaticGraph100054::StaticGraph100054(GraphConfiguration100054** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100054, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100054::StaticGraph100054(GraphConfiguration100054** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100054, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -24343,8 +24353,8 @@ StaticGraphStatus imageSubGraphTopology100054::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100055
  */
-StaticGraph100055::StaticGraph100055(GraphConfiguration100055** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100055, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100055::StaticGraph100055(GraphConfiguration100055** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100055, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -24788,8 +24798,8 @@ StaticGraphStatus imageSubGraphTopology100055::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100056
  */
-StaticGraph100056::StaticGraph100056(GraphConfiguration100056** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100056, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100056::StaticGraph100056(GraphConfiguration100056** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100056, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes
@@ -25199,8 +25209,8 @@ StaticGraphStatus imageSubGraphTopology100056::configInnerNodes(SubGraphInnerNod
 /*
  * Graph 100057
  */
-StaticGraph100057::StaticGraph100057(GraphConfiguration100057** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additonalFeaturesBit) :
-    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100057, selectedSettingsId, additonalFeaturesBit, zoomKeyResolutions),
+StaticGraph100057::StaticGraph100057(GraphConfiguration100057** selectedGraphConfiguration, uint32_t kernelConfigurationsOptionsCount, ZoomKeyResolutions* zoomKeyResolutions, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked) :
+    IStaticGraphConfig(selectedSensorMode, sinkMappingConfiguration, 100057, selectedSettingsId, additionalFeaturesBit, isIsysUnpacked, zoomKeyResolutions),
     _imageSubGraph(_sinkMappingConfiguration)
 {
     // Construct outer nodes

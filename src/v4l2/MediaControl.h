@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2026 Intel Corporation.
+ * Copyright (C) 2015-2021 Intel Corporation.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,9 +31,6 @@
 
 #include <string>
 #include <vector>
-// VIRTUAL_CHANNEL_S
-#include <unordered_set>
-// VIRTUAL_CHANNEL_E
 
 #include <v4l2_device.h>
 #include "CameraTypes.h"
@@ -270,7 +267,8 @@ class MediaControl {
                          std::string* i2cBus);
 
  private:
-    MediaControl& operator=(const MediaControl&);
+    MediaControl(const MediaControl&) = delete;
+    MediaControl& operator=(const MediaControl&) = delete;
     MediaControl(const char* devName);
     ~MediaControl();
 
@@ -304,11 +302,10 @@ class MediaControl {
     int setMediaMcLink(std::vector<McLink> links);
     int setFormat(int cameraId, const McFormat* format, int targetWidth, int targetHeight,
                   int field);
-    // VIRTUAL_CHANNEL_S
+// VIRTUAL_CHANNEL_S
     int setVideoNodeFormat(struct V4L2VideoNode *device, const stream_t* format);
     int setVideoNodesFormat(MediaCtlConf* mc, int field);
-    const std::string getVideoIsysReceiverName(const MediaCtlConf *mc);
-    // VIRTUAL_CHANNEL_E
+// VIRTUAL_CHANNEL_E
     int setSelection(int cameraId, const McFormat* format, int targetWidth, int targetHeight);
     int setRouting(int cameraId, MediaCtlConf* mc, bool enableRouting);
     /* Dump functions */
@@ -327,12 +324,13 @@ class MediaControl {
 
     std::string mDevName;
     std::vector<MediaEntity> mEntities;
-    // VIRTUAL_CHANNEL_S
-    std::unordered_set<std::string> mIsysReceiverNamesConfigured;
-    // VIRTUAL_CHANNEL_E
 
     static MediaControl* sInstance;
     static Mutex sLock;
+// VIRTUAL_CHANNEL_S
+
+    bool mIsMediaCtlSetup;
+// VIRTUAL_CHANNEL_E
 };
 
 }  // namespace icamera

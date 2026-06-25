@@ -99,6 +99,8 @@ private:
     public:
         AutoRLock(void* data) : mLock(getInternalData(data).mRwLock) { mLock.readLock(); }
         ~AutoRLock() { mLock.unlock(); }
+        AutoRLock(const AutoRLock&) = delete;
+        AutoRLock& operator=(const AutoRLock&) = delete;
     private:
         RWLock& mLock;
     };
@@ -107,6 +109,8 @@ private:
     public:
         AutoWLock(void* data) : mLock(getInternalData(data).mRwLock) { mLock.writeLock(); }
         ~AutoWLock() { mLock.unlock(); }
+        AutoWLock(const AutoWLock&) = delete;
+        AutoWLock& operator=(const AutoWLock&) = delete;
     private:
         RWLock& mLock;
     };

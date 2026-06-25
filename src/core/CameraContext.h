@@ -24,9 +24,6 @@
 #include "AiqSetting.h"
 #include "CameraTypes.h"
 #include "ParamDataType.h"
-// JPEG_ENCODE_S
-#include "EXIFMetaData.h"
-// JPEG_ENCODE_E
 
 namespace icamera {
 
@@ -51,30 +48,6 @@ struct IspParameters {
     }
 };
 
-// JPEG_ENCODE_S
-struct JpegParameters {
-    double latitude;
-    double longitude;
-    double altitude;
-    char gpsProcessingMethod[MAX_NUM_GPS_PROCESSING_METHOD + 1];
-    uint8_t gpsProcessingMethodSize;
-    int64_t gpsTimestamp;
-    int32_t rotation;
-    uint8_t jpegQuality;
-    uint8_t thumbQuality;
-    camera_resolution_t thumbSize;
-    float focalLength;
-    float aperture;
-
-    JpegParameters() {
-        memset(this, 0, sizeof(*this));
-
-        jpegQuality = DEFAULT_JPEG_QUALITY;
-        thumbQuality = DEFAULT_JPEG_QUALITY;
-    }
-};
-// JPEG_ENCODE_E
-
 class DataContext {
  public:
     int64_t mFrameNumber;
@@ -90,11 +63,9 @@ class DataContext {
 
     struct aiq_parameter_t mAiqParams;
     struct IspParameters mIspParams;
-// JPEG_ENCODE_S
-    struct JpegParameters mJpegParams;
-// JPEG_ENCODE_E
 
     DataContext(int cameraId);
+    DataContext(const DataContext&) = default;
     ~DataContext() {}
 
     void reset();
@@ -106,9 +77,6 @@ class DataContext {
         zoomRegion = other.zoomRegion;
         mAiqParams = other.mAiqParams;
         mIspParams = other.mIspParams;
-// JPEG_ENCODE_S
-        mJpegParams = other.mJpegParams;
-// JPEG_ENCODE_E
         return *this;
     }
 
@@ -121,6 +89,9 @@ class CameraContext {
  public:
     explicit CameraContext(int cameraId);
     ~CameraContext();
+
+    CameraContext(const CameraContext&) = delete;
+    CameraContext& operator=(const CameraContext&) = delete;
 
     static CameraContext* getInstance(int cameraId);
     static void releaseInstance(int cameraId);

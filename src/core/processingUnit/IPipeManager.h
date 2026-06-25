@@ -86,7 +86,7 @@ class IPipeManager : public EventListener {
 
     virtual void setControl(int64_t sequence, const PipeControl& control) {}
 
-    virtual void addTask(PipeTaskData taskParam) = 0;
+    virtual void addTask(const PipeTaskData& taskParam) = 0;
     virtual int prepareIpuParams(IspSettings* settings, int64_t sequence = 0,
                                  int streamId = VIDEO_STREAM_ID) {
         return OK;

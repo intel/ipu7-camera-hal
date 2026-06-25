@@ -168,6 +168,10 @@ class CameraBuffer {
         DeviceRender();
         explicit DeviceRender(const char* path_file);
         ~DeviceRender();
+
+        DeviceRender(const DeviceRender&) = delete;
+        DeviceRender& operator=(const DeviceRender&) = delete;
+
         void* mapDmaBufferAddr(int fd, unsigned int bufferSize);
 
      private:
@@ -185,6 +189,8 @@ class CameraBufferMapper {
  public:
     explicit CameraBufferMapper(std::shared_ptr<CameraBuffer> buffer);
     ~CameraBufferMapper();
+    CameraBufferMapper(const CameraBufferMapper&) = delete;
+    CameraBufferMapper& operator=(const CameraBufferMapper&) = delete;
 
     void* addr();
     int size();

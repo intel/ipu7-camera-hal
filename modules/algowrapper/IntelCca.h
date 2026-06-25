@@ -33,6 +33,9 @@ class IntelCca {
     IntelCca(int cameraId, TuningMode mode);
     virtual ~IntelCca();
 
+    IntelCca(const IntelCca&) = delete;
+    IntelCca& operator=(const IntelCca&) = delete;
+
     static IntelCca* getInstance(int cameraId, TuningMode mode);
     static void releaseInstance(int cameraId, TuningMode mode);
 

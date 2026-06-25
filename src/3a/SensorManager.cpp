@@ -120,7 +120,7 @@ void SensorManager::handleSensorModeSwitch(int64_t sequence) {
     if (mWdrModeSetting.sequence <= sequence) {
         const int wdrMode = convertTuningModeToWdrMode(mWdrModeSetting.tuningMode);
         LOG2("<seq%ld>@%s, tunning mode %d, set wdrMode %d sequence %ld", sequence, __func__,
-             wdrMode, mWdrModeSetting.sequence);
+             mWdrModeSetting.tuningMode, wdrMode, mWdrModeSetting.sequence);
 
         if (mSensorHwCtrl->setWdrMode(wdrMode) == OK) {
             mModeSwitched = false;
@@ -253,12 +253,6 @@ uint32_t SensorManager::updateSensorExposure(SensorExpGroup sensorExposures, int
          effectSeq, applyingSeq);
     return static_cast<uint32_t>(effectSeq);
 }
-// CRL_MODULE_S
-int SensorManager::setFrameRate(float fps)
-{
-    return mSensorHwCtrl->setFrameRate(fps);
-}
-// CRL_MODULE_E
 
 int SensorManager::getSensorInfo(ia_aiq_frame_params &frameParams,
                                  ia_aiq_exposure_sensor_descriptor &sensorDescriptor) {
@@ -276,7 +270,7 @@ int SensorManager::getSensorInfo(ia_aiq_frame_params &frameParams,
         CheckAndLogError(res.empty(), BAD_VALUE, "Supported ISYS resolutions are not configured.");
         // In none-ISYS cases, only take 30 fps into account.
         const int fps = 30;
-        float freq = res[0].width * res[0].height * fps / 1000000;
+        float freq = (res[0].width * res[0].height * fps) / 1000000.0F;
         sensorDescriptor = {freq, static_cast<unsigned short>(res[0].width),
                             static_cast<unsigned short>(res[0].height), 24, 0,
                             static_cast<unsigned short>(res[0].width), 6, 0,

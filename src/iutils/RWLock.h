@@ -48,16 +48,26 @@ public:
 
     class AutoRLock {
     public:
-        inline AutoRLock(RWLock& rwlock) : mLock(rwlock)  { mLock.readLock(); }
+        inline explicit AutoRLock(RWLock& rwlock) : mLock(rwlock) { mLock.readLock(); }
         inline ~AutoRLock() { mLock.unlock(); }
+
+        // Prevent copying (RAII lock guard should not be copied)
+        AutoRLock(const AutoRLock&) = delete;
+        AutoRLock& operator=(const AutoRLock&) = delete;
+
     private:
         RWLock& mLock;
     };
 
     class AutoWLock {
     public:
-        inline AutoWLock(RWLock& rwlock) : mLock(rwlock)  { mLock.writeLock(); }
+        inline explicit AutoWLock(RWLock& rwlock) : mLock(rwlock) { mLock.writeLock(); }
         inline ~AutoWLock() { mLock.unlock(); }
+
+        // Prevent copying (RAII lock guard should not be copied)
+        AutoWLock(const AutoWLock&) = delete;
+        AutoWLock& operator=(const AutoWLock&) = delete;
+
     private:
         RWLock& mLock;
     };
@@ -86,7 +96,7 @@ inline status_t RWLock::tryWriteLock() {
     return -pthread_rwlock_trywrlock(&mRWLock);
 }
 inline void RWLock::unlock() {
-    pthread_rwlock_unlock(&mRWLock);
+    (void)pthread_rwlock_unlock(&mRWLock);
 }
 
 #endif // HAVE_PTHREADS

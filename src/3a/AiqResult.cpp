@@ -51,6 +51,39 @@ AiqResult::~AiqResult() {
     deinit();
 }
 
+AiqResult::AiqResult(const AiqResult& other) :
+    mCameraId(other.mCameraId),
+    mTimestamp(other.mTimestamp),
+    mSequence(other.mSequence),
+    mFrameId(other.mFrameId),
+    mTuningMode(other.mTuningMode),
+    mAfDistanceDiopters(other.mAfDistanceDiopters),
+    mSkip(other.mSkip),
+    mFocusRange(other.mFocusRange),
+    mLensPosition(other.mLensPosition),
+    mSceneMode(other.mSceneMode),
+    mAeResults(other.mAeResults),
+    mAwbResults(other.mAwbResults),
+    mAfResults(other.mAfResults),
+    mGbceResults(other.mGbceResults),
+    mPaResults(other.mPaResults),
+    mOutStats(other.mOutStats),
+    mFrameDuration(other.mFrameDuration),
+    mRollingShutter(other.mRollingShutter) {
+    CLEAR(mCustomControls);
+    CLEAR(mCustomControlsParams);
+
+    mOutStats.rgbs_grid[0].blocks_ptr = mOutStats.rgbs_blocks[0];
+
+    mCustomControls.count = other.mCustomControls.count;
+    mCustomControls.parameters = mCustomControlsParams;
+    for (int i = 0; i < mCustomControls.count; i++) {
+        mCustomControlsParams[i] = other.mCustomControlsParams[i];
+    }
+    MEMCPY_S(mLensShadingMap, sizeof(mLensShadingMap),
+             other.mLensShadingMap, sizeof(other.mLensShadingMap));
+}
+
 int AiqResult::init() {
     CLEAR(mAeResults);
     CLEAR(mAfResults);

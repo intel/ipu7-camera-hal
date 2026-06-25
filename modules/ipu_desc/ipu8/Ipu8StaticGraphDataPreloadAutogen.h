@@ -85,8 +85,8 @@ typedef struct SysToolVersion {
 
 typedef struct {
 
-    uint32_t additonalFeaturesBit;
     uint32_t sapAttributes;
+    uint32_t additionalFeaturesBit;
     uint32_t binaryCommonHashCode;
     uint32_t numberOfResolutions;
     uint32_t numberOfSensorModes;
@@ -120,7 +120,7 @@ typedef struct DataRange
 static int distinctGraphsCount = 192;
 
 static GraphHashCode hashCodeLookup[] = {
-       {0, 0x80201706},
+       {0, 0x375F6AED},
        {100000, 0x5ABEA9CA},
        {100001, 0x41E9D9A9},
        {100002, 0x76C788CE},

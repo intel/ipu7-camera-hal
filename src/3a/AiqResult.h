@@ -34,6 +34,7 @@ class AiqResult {
 public:
     AiqResult(int cameraId);
     ~AiqResult();
+    AiqResult(const AiqResult& other);
 
     int init();
     int deinit() const;

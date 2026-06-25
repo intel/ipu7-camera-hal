@@ -117,7 +117,8 @@ void Intel3AParameter::initAeParameter() {
     mAeParams.flicker_reduction_mode = ia_aiq_ae_flicker_reduction_auto;
     mAeParams.ev_shift = 0.0F;
     (void)memset(mAeParams.manual_exposure_time_us, 0, sizeof(mAeParams.manual_exposure_time_us));
-    (void)memset(mAeParams.manual_analog_gain, 0, sizeof(mAeParams.manual_analog_gain));
+    (void)memset(mAeParams.manual_total_gain, 0, sizeof(mAeParams.manual_total_gain));
+    (void)memset(mAeParams.manual_separate_gains, 0, sizeof(mAeParams.manual_separate_gains));
     (void)memset(mAeParams.manual_iso, 0, sizeof(mAeParams.manual_iso));
     mAeParams.num_sensor_descriptors = 1;
 
@@ -167,7 +168,7 @@ int Intel3AParameter::setSensorInfo(ia_aiq_exposure_sensor_descriptor descriptor
     return OK;
 }
 
-int Intel3AParameter::updateParameter(aiq_parameter_t param) {
+int Intel3AParameter::updateParameter(const aiq_parameter_t& param) {
     updateAeParameter(param);
     updateAwbParameter(param);
     updateAfParameter(param);
@@ -279,9 +280,9 @@ void Intel3AParameter::setManualGain(const aiq_parameter_t& param) {
         manualGain = CLIP(manualGain, gainRange.max, gainRange.min);
     }
 
-    // Convert db to sensor analog gain.
+    // Convert db to sensor total gain.
     for (unsigned int i = 0U; i < mAeParams.num_exposures; i++) {
-        mAeParams.manual_analog_gain[i] = static_cast<float>(pow(10, (manualGain / 20)));
+        mAeParams.manual_total_gain[i] = static_cast<float>(pow(10, (manualGain / 20)));
     }
 }
 
@@ -291,7 +292,7 @@ void Intel3AParameter::setManualIso(const aiq_parameter_t& param) {
         return;
     }
 
-    // Will overwrite manual_analog_gain
+    // Will overwrite manual_total_gain
     for (unsigned int i = 0U; i < mAeParams.num_exposures; i++) {
         mAeParams.manual_iso[i] = manualIso;
     }
@@ -339,7 +340,8 @@ void Intel3AParameter::updateAeParameter(const aiq_parameter_t& param) {
     }
 
     memset(mAeParams.manual_exposure_time_us, 0, sizeof(mAeParams.manual_exposure_time_us));
-    memset(mAeParams.manual_analog_gain, 0, sizeof(mAeParams.manual_analog_gain));
+    memset(mAeParams.manual_total_gain, 0, sizeof(mAeParams.manual_total_gain));
+    (void)memset(mAeParams.manual_separate_gains, 0, sizeof(mAeParams.manual_separate_gains));
     memset(mAeParams.manual_iso, 0, sizeof(mAeParams.manual_iso));
 
     if (param.aeMode == AE_MODE_MANUAL) {
@@ -738,9 +740,9 @@ void Intel3AParameter::dumpParameter() {
          mAeParams.exposure_window.left, mAeParams.exposure_window.top,
          mAeParams.exposure_window.right, mAeParams.exposure_window.bottom,
          mAeParams.exposure_coordinate.x, mAeParams.exposure_coordinate.y);
-    LOG3("  manual et %u, ag %f, iso %d",
+    LOG3("  manual et %u, tg %f, iso %d",
          mAeParams.manual_exposure_time_us[mAeParams.num_exposures - 1],
-         mAeParams.manual_analog_gain[0], mAeParams.manual_iso[0]);
+         mAeParams.manual_total_gain[0], mAeParams.manual_iso[0]);
     LOG3("  manual total et %u", mAeParams.manual_total_target_exposure[0]);
     ia_aiq_ae_manual_limits* limit = &mAeParams.manual_limits[0];
     LOG3("  manual limited ISO-[%d--%d], expo-[%d--%d], frame time-[%d--%d]", limit->manual_iso_min,

@@ -19,7 +19,9 @@
 #include "AiqInitData.h"
 
 #include <dirent.h>
+#include <fcntl.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include <unordered_map>
 
@@ -65,30 +67,37 @@ void AiqData::loadFile(const std::string& fileName, ia_binary_data* data, int ma
     LOG1("%s, file name %s", __func__, fileName.c_str());
     CheckAndLogError(data == nullptr, VOID_VALUE, "data is nullptr");
 
-    // Get file size
-    struct stat fileStat;
-    CLEAR(fileStat);
-    const int ret = stat(fileName.c_str(), &fileStat);
-    if (ret != 0) {
-        LOG1("There is no file %s", fileName.c_str());
+    const int fd = open(fileName.c_str(), O_RDONLY | O_CLOEXEC);
+    if (fd < 0) {
+        LOG1("Failed to open file %s, error %s", fileName.c_str(), strerror(errno));
         return;
     }
 
-    int64_t usedFileSize = fileStat.st_size;
-    if ((maxSize > 0) && (maxSize < fileStat.st_size)) {
+    struct stat statBuf;
+    const int ret = fstat(fd, &statBuf);
+    if ((ret != 0) || (S_ISREG(statBuf.st_mode) == 0)) {
+        LOG1("Failed to stat file: %s!", fileName.c_str());
+        close(fd);
+        return;
+    }
+
+    int64_t usedFileSize = statBuf.st_size;
+    if ((maxSize > 0) && (maxSize < statBuf.st_size)) {
         usedFileSize = maxSize;
     }
 
-    // Open file
-    FILE* fp = fopen(fileName.c_str(), "rb");
-    CheckWarning(fp == nullptr, VOID_VALUE, "Failed to open file %s, error %s", fileName.c_str(),
-                 strerror(errno));
+    FILE* file = fdopen(fd, "rb");
+    if (file == nullptr) {
+        LOG1("Failed to fdopen file %s", fileName.c_str());
+        close(fd);
+        return;
+    }
 
     std::unique_ptr<char[]> dataPtr(new char[usedFileSize]);
 
     // Read data
-    const size_t readSize = fread(dataPtr.get(), sizeof(char), usedFileSize, fp);
-    (void)fclose(fp);
+    const size_t readSize = fread(dataPtr.get(), sizeof(char), usedFileSize, file);
+    (void)fclose(file);
 
     CheckWarning(readSize != (size_t)usedFileSize, VOID_VALUE, "Failed to read %s, error %s",
                  fileName.c_str(), strerror(errno));
@@ -262,7 +271,7 @@ ia_binary_data* AiqInitData::getNvm(int cameraId, const char* overwrittenFile, i
         if (CameraDump::isDumpTypeEnable(DUMP_NVM_DATA)) {
             ia_binary_data* nvmData = mNvm->getData();
             if (nvmData && nvmData->data && (nvmData->size > 0U)) {
-                BinParam_t bParam;
+                BinParam_t bParam{};
                 bParam.bType = BIN_TYPE_GENERAL;
                 bParam.mType = M_NVM;
                 bParam.sequence = 0;

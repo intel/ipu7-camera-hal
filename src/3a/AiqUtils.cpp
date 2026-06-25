@@ -370,11 +370,11 @@ void AiqUtils::applyTonemapSRGB(cca::cca_gbce_params* results) {
     CheckAndLogError(lutSize < MIN_TONEMAP_POINTS, VOID_VALUE,
                      "Bad gamma lut size (%d) in gbce results", lutSize);
     for (int i = 0; i < lutSize; i++) {
-        if (i / (lutSize - 1)  < 0.0031308) {
-            results->g_gamma_lut[i] = 12.92 * (i / (lutSize - 1));
+        if (i / (static_cast<float>(lutSize) - 1.0F)  < 0.0031308) {
+            results->g_gamma_lut[i] = 12.92 * (i / (static_cast<float>(lutSize) - 1.0F));
         } else {
             results->g_gamma_lut[i] =
-                    1.055 * pow(i / static_cast<float>(lutSize - 1), 1 / 2.4) - 0.055;
+                    1.055 * pow(i / (static_cast<float>(lutSize) - 1.0F), 1 / 2.4) - 0.055;
         }
     }
 
@@ -498,9 +498,9 @@ void AiqUtils::applyAwbGainForTonemapCurve(const camera_tonemap_curves_t& curves
  */
 float AiqUtils::calculateHyperfocalDistance(const cca::cca_cmc &cmc) {
     const float DEFAULT_HYPERFOCAL_DISTANCE = 5000.0F;
-
     // Pixel size is stored in CMC in hundreds of micrometers
-    const float pixelSizeMicro = cmc.optics.sensor_pix_size_h / 100;
+    const float pixelSizeMicro = static_cast<float>(cmc.optics.sensor_pix_size_h) / 100;
+
     // focal length is stored in CMC in hundreds of millimeters
     const float focalLengthMillis = static_cast<float>(cmc.optics.effect_focal_length) / 100;
 

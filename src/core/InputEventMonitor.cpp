@@ -83,8 +83,7 @@ int InputEventMonitor::configure(int eventType, int eventCode) {
                     mFd = status;
                     mEventType = eventType;
                     mEventCode = eventCode;
-                    const uint32_t modes_count = sizeof(EVENTIOCTLMODES) / sizeof(struct EventIoctlMode);
-                    for (uint32_t i = 0; i < modes_count; ++i) {
+                    for (uint32_t i = 0; i < sizeof(EVENTIOCTLMODES) / sizeof(EVENTIOCTLMODES[0]); ++i) {
                         if (mEventType == EVENTIOCTLMODES[i].type) {
                             mEventIoctlModesIndex = i;
                             break;
@@ -115,7 +114,7 @@ int InputEventMonitor::getValue() {
 int InputEventMonitor::readRawValue() {
     // Only used inside locked context so no need to get lock again
     if (mFd < 0 || mEventType < 0 || mEventCode < 0) return -1;
-    
+
     int status = -1;
     uint32_t bits = EVENTIOCTLMODES[mEventIoctlModesIndex].max;
     uint32_t req = EVENTIOCTLMODES[mEventIoctlModesIndex].rq;
@@ -124,7 +123,7 @@ int InputEventMonitor::readRawValue() {
     memset(codeBits, 0, sizeof(codeBits));
     status = ioctl(mFd, req, codeBits);
     if (status >= 0) {
-        mValue = (codeBits[mEventCode / U32_BITS] & (1UL << (mEventCode % U32_BITS)) != 0U) ? 1 : 0;
+        mValue = ((codeBits[mEventCode / U32_BITS] & (1UL << (mEventCode % U32_BITS))) != 0U) ? 1 : 0;
     }
 
     return status;

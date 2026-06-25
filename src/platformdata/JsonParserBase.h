@@ -22,6 +22,15 @@
 
 namespace icamera {
 
+/* Rule of Three: All special functions should be defined defined */
+/* Destructor: Explicitly declared as virtual ~JsonParserBase() = default */
+/* Copy constructor: Deleted by DISALLOW_COPY_AND_ASSIGN macro expansion in Utils.h */
+/* Copy assignment: Deleted by DISALLOW_COPY_AND_ASSIGN macro expansion in Utils.h */
+/* The macro expands to: TypeName(const TypeName&) = delete; */
+/*                       TypeName& operator=(const TypeName&) = delete; */
+/* All three (destructor, copy constructor, copy assignment) are defined */
+/* Waive by deviation: False Positive */
+//coverity[rule_of_three_violation : FALSE] */
 class JsonParserBase {
  public:
     JsonParserBase() = default;

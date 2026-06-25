@@ -76,6 +76,9 @@ class PipeLine {
              std::shared_ptr<CameraScheduler> scheduler);
     virtual ~PipeLine();
 
+    PipeLine(const PipeLine&) = delete;
+    PipeLine& operator=(const PipeLine&) = delete;
+
     void deinit();
     int configure(TuningMode tuningMode, IpuPacAdaptor* adaptor);
     int start();

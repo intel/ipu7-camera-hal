@@ -301,7 +301,7 @@ int MainDevice::createBufferPool(const stream_t& config) {
     LOG1("<id%d>%s, fmt:%s(%dx%d) field:%d", DeviceBase::mCameraId, __func__,
          CameraUtils::pixelCode2String(config.format), config.width, config.height, config.field);
 
-    struct v4l2_format v4l2fmt;
+    struct v4l2_format v4l2fmt = {};
     v4l2fmt.fmt.pix_mp.field = config.field;
 
     v4l2fmt.fmt.pix.width = config.width;

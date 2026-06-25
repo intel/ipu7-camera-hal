@@ -18,6 +18,10 @@
 
 #include "src/platformdata/gc/GraphConfig.h"
 
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 #include "PlatformData.h"
 #include "iutils/CameraLog.h"
 #include "GraphUtils.h"
@@ -58,7 +62,7 @@ GraphConfig::GraphConfig(int32_t camId, ConfigMode mode) : mCameraId(camId), mSe
                       "%s: failed to init graph reader", __func__);
 }
 
-GraphConfig::GraphConfig() : mCameraId(-1) { }
+GraphConfig::GraphConfig() : mCameraId(-1), mSensorRatio(0.0f) { }
 
 GraphConfig::~GraphConfig() {
     for (auto& graph : mStaticGraphs) graph.second.clear();
@@ -600,12 +604,26 @@ int32_t GraphConfig::loadPipeConfig(const string& fileName) {
 
 int32_t GraphConfig::loadStaticGraphConfig(const std::string& name) {
     const char* fileName = name.c_str();
-    struct stat statBuf;
-    int32_t ret = stat(fileName, &statBuf);
-    CheckAndLogError(ret != OK, ret, "Failed to query the size of file: %s!", fileName);
 
-    FILE* file = fopen(fileName, "rb");
-    CheckAndLogError(!file, NAME_NOT_FOUND, "%s, Failed to open file: %s", __func__, fileName);
+    const int fd = open(fileName, O_RDONLY | O_CLOEXEC);
+    CheckAndLogError(fd < 0, NAME_NOT_FOUND, "%s, Failed to open file: %s", __func__, fileName);
+
+    struct stat statBuf;
+    const int ret = fstat(fd, &statBuf);
+    if ((ret != 0) || (S_ISREG(statBuf.st_mode) == 0)) {
+        close(fd);
+        if (ret != 0) {
+            CheckAndLogError(true, ret, "%s, Failed to get file stats for: %s", __func__, fileName);
+        } else {
+            CheckAndLogError(true, BAD_VALUE, "%s, Invalid file type (directory, link, or device): %s", __func__, fileName);
+        }
+    }
+
+    FILE* file = fdopen(fd, "rb");
+    if (file == nullptr) {
+        close(fd);
+        CheckAndLogError(true, NAME_NOT_FOUND, "%s, Failed to create file stream for: %s", __func__, fileName);
+    }
 
     StaticReaderBinaryData binData;
     binData.size = static_cast<uint32_t>(statBuf.st_size);
@@ -616,7 +634,7 @@ int32_t GraphConfig::loadStaticGraphConfig(const std::string& name) {
         return NO_MEMORY;
     }
 
-    size_t len = fread(binData.data, 1, binData.size, file);
+    const size_t len = fread(binData.data, 1, binData.size, file);
     (void)fclose(file);
     if (len != binData.size) {
         LOGE("%s, read data %zu from file %s, should be %u", __func__, len, fileName, binData.size);
@@ -1011,10 +1029,13 @@ status_t GraphConfig::pipelineGetConnections(int32_t streamId,
         if (!conn.portFormatSettings.enabled) {
             continue;
         }
-        checkAndUpdatePostConnection(streamId, &conn, &postVector, mGPUStageInfos);
+        if (conn.stream != nullptr) {
+            checkAndUpdatePostConnection(streamId, &conn, &postVector, mGPUStageInfos);
+        }
         IGraphType::PipelineConnection* connPtr =
             postVector.size() > 0 ? &(postVector[postVector.size() - 1]) : &conn;
-        checkAndUpdatePostConnection(streamId, connPtr, &postVector, mPostStageInfos);
+        if (connPtr->stream)
+            checkAndUpdatePostConnection(streamId, connPtr, &postVector, mPostStageInfos);
     }
     confVector->insert(confVector->end(), postVector.begin(), postVector.end());
     LOG3("%s dump for stream %d ++", __func__, streamId);
@@ -1027,10 +1048,10 @@ void GraphConfig::checkAndUpdatePostConnection(int32_t streamId,
                                                IGraphType::PipelineConnection* conn,
                                                vector<IGraphType::PipelineConnection>* postVector,
                                                std::map<int32_t, PostStageInfo>& postStageInfos) {
-    if (!conn || !conn->stream || !postVector) {
+
+    if (conn->stream == nullptr) {
         return;
     }
-
     int32_t useStreamId = conn->stream->streamId();
 
     if (postStageInfos.find(useStreamId) == postStageInfos.end()) {

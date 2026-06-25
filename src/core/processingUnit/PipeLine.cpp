@@ -32,7 +32,8 @@ PipeLine::PipeLine(int cameraId, int streamId, std::shared_ptr<GraphConfig> gc,
           mGraphConfig(gc),
           mScheduler(scheduler),
           mPSysDevice(nullptr),
-          mPacAdaptor(nullptr) {
+          mPacAdaptor(nullptr),
+          mTuningMode(TUNING_MODE_VIDEO) {
     LOG1("<id%d>@%s stream %d", mCameraId, __func__, mStreamId);
 }
 

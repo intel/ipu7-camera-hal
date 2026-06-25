@@ -232,6 +232,13 @@ status_t IpuPacAdaptor::storeTerminalResult(int64_t sequence, int32_t streamId) 
 
         LOG2("%s, get the aic buffer for streamId: %d, contextId: %u, terminal num: %d",
              __func__, streamId, data.first.second, index);
+        /* False Positive: Lock held by caller runAIC() which owns mPacAdaptorLock */
+        /* storeTerminalResult() is only called from runAIC() */
+        /* runAIC() acquires mPacAdaptorLock before calling this function */
+        /* mIntelCca access here is protected by caller's lock */
+        /* Adding lock here would cause deadlock */
+        /* Waive by deviation: False Positive */
+        /* coverity[missing_lock : FALSE] */
         const ia_err iaErr = mIntelCca->getAicBuf(ccaTermConfig, streamId);
         CheckAndLogError(iaErr != ia_err_none, UNKNOWN_ERROR,
                          "<seq:%ld>%s, Failed to getAicBuf. streamId: %d, contextId: %d",
@@ -356,18 +363,32 @@ status_t IpuPacAdaptor::runAIC(const IspSettings* ispSettings,
     if (STILL_STREAM_ID == streamId) {
         inputParams->force_lsc_update = true;
     }
+        /* False Positive: Pipeline execution guarantees temporal separation */
+        /* ProcessingUnit writes manualSettings under mIspSettingsLock protection */
+        /* After write completes, settings become read-only for this frame */
+        /* Pipeline advances to PAC stage where runAIC() executes */
+        /* This function only reads already-finalized immutable settings */
+        /* No concurrent modifications possible, writer finished before reader starts */
+        /* Lock is owned by ProcessingUnit and intentionally not accessible here */
+        /* Waive by deviation: False Positive */
+        /* coverity[missing_lock : FALSE] */
 
     if (ispSettings != nullptr) {
         inputParams->nr_setting = ispSettings->nrSetting;
         inputParams->ee_setting = ispSettings->eeSetting;
+        //coverity[missing_lock : FALSE]
         LOG2("%s: ISP NR setting, level: %d, strength: %d", __func__,
              static_cast<int>(ispSettings->nrSetting.feature_level),
              static_cast<int>(ispSettings->nrSetting.strength));
 
         inputParams->effects = ispSettings->effects;
+        //coverity[missing_lock : FALSE]
         inputParams->manual_brightness = ispSettings->manualSettings.manualBrightness;
+        //coverity[missing_lock : FALSE]
         inputParams->manual_contrast = ispSettings->manualSettings.manualContrast;
+        //coverity[missing_lock : FALSE]
         inputParams->manual_hue = ispSettings->manualSettings.manualHue;
+        //coverity[missing_lock : FALSE]
         inputParams->manual_saturation = ispSettings->manualSettings.manualSaturation;
         LOG2("%s: ISP EE setting, level: %d, strength: %d", __func__,
              ispSettings->eeSetting.feature_level, ispSettings->eeSetting.strength);

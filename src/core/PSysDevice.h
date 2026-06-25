@@ -94,6 +94,9 @@ class PSysDevice {
     explicit PSysDevice(int cameraId);
     virtual ~PSysDevice();
 
+    PSysDevice(const PSysDevice&) = delete;
+    PSysDevice& operator=(const PSysDevice&) = delete;
+
     virtual int init();
     virtual void deinit();
     virtual void registerPSysDeviceCallback(uint8_t contextId, IPSysDeviceCallback* callback);

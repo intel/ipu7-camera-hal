@@ -465,11 +465,6 @@ int CameraDevice::configure(stream_config_t* streamList) {
     CheckAndLogError(ret != OK, ret, "@%s failed to configure CSI meta device", __func__);
     // CSI_META_E
 
-    // CRL_MODULE_S
-    ret = mSensorCtrl->configure();
-    CheckAndLogError(ret != OK, ret, "@%s failed to configure sensor HW", __func__);
-    // CRL_MODULE_E
-
     ret = mSofSource->configure();
     CheckAndLogError(ret != OK, ret, "@%s failed to configure SOF source device", __func__);
 
@@ -652,7 +647,7 @@ int CameraDevice::createStreams(const stream_config_t* streamList, int configure
     for (int streamId = 0; streamId < streamCounts; streamId++) {
         stream_t& streamConf = streamList->streams[streamId];
         LOG1("@%s, stream_number:%d, stream configure: format:%s (%dx%d)", __func__, streamCounts,
-             CameraUtils::pixelCode2String(streamConf.format), streamConf.width, streamConf.height);
+            CameraUtils::pixelCode2String(streamConf.format), streamConf.width, streamConf.height);
 
         CameraStream* stream = nullptr;
             // Create a normal CameraStream
@@ -889,8 +884,9 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t** ubuffer) {
     PERF_CAMERA_ATRACE();
     LOG2("<id%d>@%s, stream id:%d", mCameraId, __func__, streamId);
 
-    int ret;
+    int ret = OK;
     do {
+        AutoMutex m(mDeviceLock);
         ret = mRequestThread->waitFrame(streamId, ubuffer);
     } while (ret == TIMED_OUT);
 

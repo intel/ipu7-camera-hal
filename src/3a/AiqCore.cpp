@@ -547,7 +547,7 @@ int AiqCore::reFormatLensShadingMap(const LSCGrid& inputLscGrid, float* dstLscGr
     // Metadata spec request order [R, Geven, Godd, B]
     // the lensShading from ISP is 4 width * height block,
     // for ia_aiq_bayer_order_grbg, the four block is G, R, B, G
-    const size_t size = inputLscGrid.height * inputLscGrid.width;
+    const size_t size = static_cast<size_t>(inputLscGrid.height) * static_cast<size_t>(inputLscGrid.width);
     for (size_t i = 0U; i < size; i++) {
         *dstLscGridRGGB = inputLscGrid.gridR[i];
         dstLscGridRGGB++;

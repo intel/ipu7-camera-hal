@@ -40,6 +40,7 @@ class V4L2Buffer {
  public:
     V4L2Buffer();
     explicit V4L2Buffer(const V4L2Buffer& buf);
+    ~V4L2Buffer() = default;
     uint32_t Index() const { return v4l2_buf_.index; }
     void SetIndex(uint32_t index) { v4l2_buf_.index = index; }
     uint32_t Type() const { return v4l2_buf_.type; }
@@ -140,6 +141,10 @@ class V4L2Device {
     explicit V4L2Device(const std::string& name);
 
     virtual ~V4L2Device();
+
+    // Explicitly delete copy and move operations (manages file descriptor)
+    V4L2Device(const V4L2Device&) = delete;
+    V4L2Device& operator=(const V4L2Device&) = delete;
 
     // This method opens the V4L2 device.
     //

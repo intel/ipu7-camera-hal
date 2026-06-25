@@ -204,6 +204,10 @@ class ScopedTrace {
         }
     }
 
+    // Prevent copying (RAII class should not be copied)
+    ScopedTrace(const ScopedTrace&) = delete;
+    ScopedTrace& operator=(const ScopedTrace&) = delete;
+
  private:
     int mLevel;
     const char* mName;

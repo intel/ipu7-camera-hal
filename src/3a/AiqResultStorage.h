@@ -124,6 +124,8 @@ public:
 
     AiqResultStorage(int cameraId);
     ~AiqResultStorage();
+    AiqResultStorage(const AiqResultStorage&) = delete;
+    AiqResultStorage& operator=(const AiqResultStorage&) = delete;
 
 private:
     int mCameraId;

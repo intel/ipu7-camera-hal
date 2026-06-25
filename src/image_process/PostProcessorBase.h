@@ -22,11 +22,6 @@
 #include "IImageProcessor.h"
 #include "iutils/Errors.h"
 #include "iutils/Utils.h"
-// JPEG_ENCODE_S
-#include "EXIFMetaData.h"
-#include "IJpegEncoder.h"
-#include "JpegMaker.h"
-// JPEG_ENCODE_E
 
 namespace icamera {
 
@@ -88,34 +83,4 @@ class ConvertProcess : public PostProcessorBase {
                                       std::shared_ptr<CameraBuffer>& outBuf);
 };
 
-// JPEG_ENCODE_S
-class JpegProcess : public PostProcessorBase {
- public:
-    JpegProcess(int cameraId);
-    ~JpegProcess(){}
-
-    virtual status_t doPostProcessing(const std::shared_ptr<CameraBuffer>& inBuf,
-                                      std::shared_ptr<CameraBuffer>& outBuf);
-
- private:
-    void attachJpegBlob(const EncodePackage& package);
-
-    std::shared_ptr<CameraBuffer> cropAndDownscaleThumbnail(
-        int thumbWidth, int thumbHeight, const std::shared_ptr<CameraBuffer>& inBuf);
-    void fillEncodeInfo(const std::shared_ptr<CameraBuffer>& inBuf,
-                        const std::shared_ptr<CameraBuffer>& outBuf,
-                        EncodePackage& package);
-
- private:
-    int mCameraId;
-
-    std::shared_ptr<CameraBuffer> mCropBuf;
-    std::shared_ptr<CameraBuffer> mScaleBuf;
-    std::shared_ptr<CameraBuffer> mThumbOut;
-
-    std::unique_ptr<JpegMaker> mJpegMaker;
-    std::unique_ptr<IJpegEncoder> mJpegEncoder;
-    std::unique_ptr<unsigned char[]> mExifData;
-};
-// JPEG_ENCODE_E
 }  // namespace icamera

@@ -132,7 +132,7 @@ enum class SapAttributeValues {
     ShortInputAttribute = 4,
 };
 
-enum class AdditonalFeaturesBitValues {
+enum class AdditionalFeaturesBitValues {
     None = 0,
     NntmEnableBit = 1,
     GdcEnableBit = 2,

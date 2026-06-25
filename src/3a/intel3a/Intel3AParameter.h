@@ -34,7 +34,7 @@ class Intel3AParameter {
     void init();
     int getCMCInfo(TuningMode tuningMode);
     int setSensorInfo(ia_aiq_exposure_sensor_descriptor descriptor);
-    int updateParameter(aiq_parameter_t param);
+    int updateParameter(const aiq_parameter_t& param);
     void updateAeResult(cca::cca_ae_results* aeResult) const ;
     void updateAwbResult(cca::cca_awb_results* awbResult);
     void updatePaResult(cca::cca_pa_params* paResult);

@@ -399,7 +399,7 @@ void PipeManager::setControl(int64_t sequence, const PipeControl& control) {
     }
 }
 
-void PipeManager::addTask(PipeTaskData taskParam) {
+void PipeManager::addTask(const PipeTaskData& taskParam) {
     LOG2("<id%d>@%s", mCameraId, __func__);
 
     TaskInfo task = {};
@@ -437,7 +437,7 @@ void PipeManager::addTask(PipeTaskData taskParam) {
 
         TRACE_LOG_PROCESS("run PAC", __func__, MAKE_COLOR(sequence), sequence);
         for (const auto& id : activeStreamIds) {
-            (void)prepareIpuParams(&taskParam.mIspSettings, sequence, id);
+            (void)prepareIpuParams(&task.mTaskData.mIspSettings, sequence, id);
         }
         queueBuffers(taskParam, mInputMaps, mOutputMaps, mDefaultMainInputPort);
     }

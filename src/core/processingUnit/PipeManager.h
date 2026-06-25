@@ -43,11 +43,14 @@ class PipeManager : public IPipeManager {
 
     virtual void setControl(int64_t sequence, const PipeControl& control);
 
-    virtual void addTask(PipeTaskData taskParam);
+    virtual void addTask(const PipeTaskData& taskParam);
     virtual int prepareIpuParams(IspSettings* settings, int64_t sequence = 0,
                                  int streamId = VIDEO_STREAM_ID);
 
  protected:
+    PipeManager(const PipeManager&) = delete;
+    PipeManager& operator=(const PipeManager&) = delete;
+
     /**
      * @brief handle bufferDone and metadata event from pipeStage
      */

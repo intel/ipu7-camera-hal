@@ -212,6 +212,7 @@ void CaptureUnit::streamOff() {
 int CaptureUnit::stop() {
     PERF_CAMERA_ATRACE();
     LOG1("<id%d>%s", mCameraId, __func__);
+    AutoMutex l(mLock);
     CheckWarning(mState != CAPTURE_START, OK, "@%s: device not started", __func__);
 
     mExitPending = true;
@@ -225,7 +226,6 @@ int CaptureUnit::stop() {
     streamOff();
     mPollThread->wait();
 
-    AutoMutex l(mLock);
     mState = CAPTURE_STOP;
 
     for (auto device : mDevices) {

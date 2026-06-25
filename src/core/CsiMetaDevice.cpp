@@ -318,7 +318,7 @@ void CsiMetaDevice::handleCsiMetaBuffer() {
     mCsiMetaBufferDQIndex = (mCsiMetaBufferDQIndex + 1) % mCsiMetaCameraBuffers.size();
 
     if (CameraDump::isDumpTypeEnable(DUMP_EMBEDDED_METADATA)) {
-        BinParam_t bParam;
+        BinParam_t bParam{};
         bParam.bType = BIN_TYPE_SENSOR_METADATA;
         bParam.mType = M_ISYS;
         bParam.sequence = camBuffer->getSequence();
@@ -345,9 +345,7 @@ void CsiMetaDevice::handleCsiMetaBuffer() {
 }
 
 int CsiMetaDevice::setFormat() {
-    struct v4l2_format v4l2fmt;
-    CLEAR(v4l2fmt);
-
+    struct v4l2_format v4l2fmt = {};
     v4l2fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     v4l2fmt.fmt.pix_mp.width = mEmbeddedMetaData.width;
     v4l2fmt.fmt.pix_mp.height = mEmbeddedMetaData.height;

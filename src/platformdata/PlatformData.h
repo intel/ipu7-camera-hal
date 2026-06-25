@@ -155,6 +155,10 @@ class StaticMetadata {
 
 class PlatformData {
  private:
+
+    PlatformData(const PlatformData&) = delete;
+    PlatformData& operator=(const PlatformData&) = delete;
+
     // Prevent to create multiple instances
     PlatformData();
     ~PlatformData();

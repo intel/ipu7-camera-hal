@@ -39,6 +39,10 @@ class ScopedAtrace {
                  long value = -1, const char* note2 = NULL, int value2 = -1,
                  const char* note3 = NULL, int value3 = -1);
     ~ScopedAtrace();
+
+    ScopedAtrace(const ScopedAtrace&) = delete;
+    ScopedAtrace& operator=(const ScopedAtrace&) = delete;
+
     static void setTraceLevel(uint32_t);
 
  private:

@@ -92,9 +92,9 @@ void CameraSharedMemory::acquireSharedMemory() {
 
     CheckAndLogError(lock() != OK, VOID_VALUE, "Fail to lock shared memory!");
     // get the shared memory ID, create shared memory if not exist
-    mSharedMemId = shmget(CAMERA_IPCKEY, CAMERA_SM_SIZE, 0640);
+    mSharedMemId = shmget(CAMERA_IPCKEY, CAMERA_SM_SIZE, S_IRUSR | S_IWUSR | S_IRGRP);
     if (mSharedMemId == -1) {
-        mSharedMemId = shmget(CAMERA_IPCKEY, CAMERA_SM_SIZE, IPC_CREAT | 0640);
+        mSharedMemId = shmget(CAMERA_IPCKEY, CAMERA_SM_SIZE, IPC_CREAT | S_IRUSR | S_IWUSR | S_IRGRP);
         if (mSharedMemId < 0) {
             LOGE("Fail to allocate shared memory by shmget.");
             unlock();
@@ -213,7 +213,7 @@ bool CameraSharedMemory::processExist(pid_t pid, const char* storedName) {
 }
 
 void CameraSharedMemory::openSemLock() {
-    mSemLock = sem_open(SEM_NAME, O_CREAT | O_EXCL, 0644, 1);
+    mSemLock = sem_open(SEM_NAME, O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, 1);
     if (mSemLock == SEM_FAILED) {
         mSemLock = sem_open(SEM_NAME, O_RDWR);
         if (mSemLock == SEM_FAILED) {
@@ -223,7 +223,9 @@ void CameraSharedMemory::openSemLock() {
             LOG1("Open the sem lock");
         }
     } else {
-        chmod(SEM_FD_NAME, 0666);
+        if(chmod(SEM_FD_NAME, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) != 0){
+            LOGW("Failed to chmod, errno: %s", strerror(errno));
+        }
         LOG1("Create the sem lock");
         return;
     }
@@ -246,11 +248,13 @@ void CameraSharedMemory::openSemLock() {
         LOG1("Lock timed out, process holding it may have crashed. Re-create the semaphore.");
         sem_close(mSemLock);
         sem_unlink(SEM_NAME);
-        mSemLock = sem_open(SEM_NAME, O_CREAT | O_EXCL, 0644, 1);
+        mSemLock = sem_open(SEM_NAME, O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH, 1);
         if (mSemLock == SEM_FAILED) {
             LOGE("failed to re-create sem lock, errno: %s\n", strerror(errno));
         } else {
-            chmod(SEM_FD_NAME, 0666);
+            if(chmod(SEM_FD_NAME, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH) != 0){
+                LOGW("Failed to chmod, errno: %s", strerror(errno));
+            }
         }
     }
 }

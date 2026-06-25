@@ -114,6 +114,13 @@ FileLogSink::FileLogSink() {
     mFp = fopen(filePath, "w");
 }
 
+FileLogSink::~FileLogSink() {
+    if (mFp != nullptr) {
+        (void)fclose(mFp);
+        mFp = nullptr;
+    }
+}
+
 void FileLogSink::sendOffLog(LogItem logItem) {
     char timeInfo[TIME_BUF_SIZE];
     LogOutputSink::setLogTime(timeInfo);

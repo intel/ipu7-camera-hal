@@ -27,6 +27,8 @@ namespace icamera {
 class IProcessingUnit : public BufferQueue {
  public:
     IProcessingUnit() : mProcessThread(nullptr), mThreadRunning(false) {}
+    virtual ~IProcessingUnit() = default;
+
     virtual int configure(const std::map<uuid, stream_t>& inputInfo,
                           const std::map<uuid, stream_t>& outputInfo,
                           const ConfigMode configModes) {

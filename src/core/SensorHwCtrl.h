@@ -32,9 +32,6 @@ class SensorHwCtrl {
     SensorHwCtrl(int cameraId, V4L2Subdevice* pixelArraySubdev, V4L2Subdevice* sensorOutputSubdev);
     virtual ~SensorHwCtrl() {}
 
-    // CRL_MODULE_S
-    virtual int configure();
-    // CRL_MODULE_E
     virtual int setTestPatternMode(int32_t testPatternMode);
     virtual int getPixelRate(int& pixelRate);
     virtual int setExposure(const std::vector<int>& coarseExposures,
@@ -69,29 +66,13 @@ class SensorHwCtrl {
     virtual int setAWB(float r_per_g, float b_per_g);
     // HDR_FEATURE_E
 
-    // CRL_MODULE_S
-    virtual int setFrameRate(float fps);
-    // CRL_MODULE_E
  private:
     int setLineLengthPixels(int llp);
     int getLineLengthPixels(int& llp);
     int setFrameLengthLines(int fll);
     int getFrameLengthLines(int& fll);
 
-    // CRL_MODULE_S
-    int setMultiExposures(const std::vector<int>& coarseExposures,
-                          const std::vector<int>& fineExposures);
-    int setDualExposuresDCGAndVS(const std::vector<int>& coarseExposures,
-                                 const std::vector<int>& fineExposures);
-    int setConversionGain(const std::vector<int>& analogGains);
-    int setMultiDigitalGain(const std::vector<int>& digitalGains);
-    int setMultiAnalogGain(const std::vector<int>& analogGains);
-    // CRL_MODULE_E
-
     V4L2Subdevice* mPixelArraySubdev;
-    // CRL_MODULE_S
-    V4L2Subdevice* mSensorOutputSubdev;
-    // CRL_MODULE_E
     int mCameraId;
     int mHorzBlank;
     int mVertBlank;
@@ -137,9 +118,6 @@ class DummySensor : public SensorHwCtrl {
     // HDR_FEATURE_S
     virtual int setWdrMode(int mode) { return OK; }
     // HDR_FEATURE_E
-    // CRL_MODULE_S
-    virtual int setFrameRate(float fps) { return OK; }
-    // CRL_MODULE_E
 };
 
 }  // namespace icamera

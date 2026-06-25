@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 The Android Open Source Project
- * Copyright (C) 2015-2026 Intel Corporation
+ * Copyright (C) 2015-2022 Intel Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -128,6 +128,10 @@ void MediaControl::releaseInstance() {
 
 MediaControl::MediaControl(const char* devName) : mDevName(devName) {
     LOG1("@%s device: %s", __func__, devName);
+// VIRTUAL_CHANNEL_S
+
+    mIsMediaCtlSetup = false;
+// VIRTUAL_CHANNEL_E
 
     int ret = initEntities();
     CheckAndLogError(ret, VOID_VALUE, "Failed to init entities");
@@ -360,8 +364,8 @@ void MediaControl::closeDevice(int fd) {
 }
 
 void MediaControl::dumpInfo(media_device_info& devInfo) {
-    LOGI("Media controller API version %u.%u.%u\n\n", (devInfo.media_version << 16) & 0xff,
-         (devInfo.media_version << 8) & 0xff, (devInfo.media_version << 0) & 0xff);
+    LOGI("Media controller API version %u.%u.%u\n\n", (devInfo.media_version >> 16) & 0xffU,
+         (devInfo.media_version >> 8) & 0xffU, (devInfo.media_version >> 0) & 0xffU);
 
     LOGI("Media device information\n"
          "------------------------\n"
@@ -372,11 +376,12 @@ void MediaControl::dumpInfo(media_device_info& devInfo) {
          "hw revision     0x%x\n"
          "driver version  %u.%u.%u\n\n",
          devInfo.driver, devInfo.model, devInfo.serial, devInfo.bus_info, devInfo.hw_revision,
-         (devInfo.driver_version << 16) & 0xff, (devInfo.driver_version << 8) & 0xff,
-         (devInfo.driver_version << 0) & 0xff);
+         (devInfo.driver_version >> 16) & 0xffU, (devInfo.driver_version >> 8) & 0xffU,
+         (devInfo.driver_version >> 0) & 0xffU);
 
-    for (uint32_t i = 0U; i < sizeof(devInfo.reserved) / sizeof(uint32_t); i++)
+    for (uint32_t i = 0U; i < sizeof(devInfo.reserved) / sizeof(uint32_t); i++) {
         LOGI("reserved[%u] %d", i, devInfo.reserved[i]);
+    }
 }
 
 int MediaControl::enumInfo() {
@@ -601,22 +606,32 @@ int MediaControl::enumLinks(int fd) {
             source = getEntityById(link->source.entity);
             sink = getEntityById(link->sink.entity);
 
-            if ((source == nullptr) || (sink == nullptr)) {
+           if ((source == nullptr) || (sink == nullptr)) {
                 LOG1("WARNING entity %u link %u src %u/%u to %u/%u is invalid!", entity.info.id, i,
-                     link->source.entity, link->source.index, link->sink.entity, link->sink.index);
+                    link->source.entity, link->source.index, link->sink.entity, link->sink.index);
                 ret = -EINVAL;
             } else {
+                const uint16_t sourceIndex = link->source.index;
+                const uint16_t sinkIndex = link->sink.index;
+                const uint16_t sourcePads = source->info.pads;
+                const uint16_t sinkPads = sink->info.pads;
+
+                if ((sourceIndex >= sourcePads) || (sinkIndex >= sinkPads)) {
+                    LOG1("WARNING entity %u link %u pad index out of bounds (src %u/%u, sink %u/%u)!",
+                        entity.info.id, i, sourceIndex, sourcePads, sinkIndex, sinkPads);
+                    ret = -EINVAL;
+                } else {
                 fwdlink = entityAddLink(source);
                 if (fwdlink != nullptr) {
-                    fwdlink->source = &source->pads[link->source.index];
-                    fwdlink->sink = &sink->pads[link->sink.index];
+                    fwdlink->source = &source->pads[sourceIndex];
+                    fwdlink->sink = &sink->pads[sinkIndex];
                     fwdlink->flags = link->flags;
                 }
 
                 backlink = entityAddLink(sink);
                 if (backlink != nullptr) {
-                    backlink->source = &source->pads[link->source.index];
-                    backlink->sink = &sink->pads[link->sink.index];
+                    backlink->source = &source->pads[sourceIndex];
+                    backlink->sink = &sink->pads[sinkIndex];
                     backlink->flags = link->flags;
                 }
 
@@ -628,6 +643,7 @@ int MediaControl::enumLinks(int fd) {
                 }
             }
         }
+    }
 
         delete[] links.pads;
         delete[] links.links;
@@ -849,39 +865,6 @@ int MediaControl::setRouting(int cameraId, MediaCtlConf* mc, bool enableRouting)
 
             routes[i] = r;
         }
-
-        // When enabling routes, compare current hardware state with the desired configuration.
-        // VIDIOC_SUBDEV_S_ROUTING resets all stream states on the subdev, which can disrupt
-        // other processes or camera instances sharing the same subdev.  Skip SetRouting when
-        // the hardware already reflects the exact routes we need.
-        if (enableRouting) {
-            uint32_t numCurrentRoutes = static_cast<uint32_t>(num);
-            v4l2_subdev_route* currentRoutes = new v4l2_subdev_route[numCurrentRoutes]();
-            int gret = subDev->GetRouting(currentRoutes, &numCurrentRoutes);
-            bool skip = (gret == 0 && numCurrentRoutes == static_cast<uint32_t>(num));
-            for (int i = 0; i < num && skip; i++) {
-                bool found = false;
-                for (uint32_t j = 0; j < numCurrentRoutes; j++) {
-                    if (routes[i].sink_pad == currentRoutes[j].sink_pad &&
-                        routes[i].sink_stream == currentRoutes[j].sink_stream &&
-                        routes[i].source_pad == currentRoutes[j].source_pad &&
-                        routes[i].source_stream == currentRoutes[j].source_stream &&
-                        routes[i].flags == currentRoutes[j].flags) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) skip = false;
-            }
-            delete[] currentRoutes;
-            if (skip) {
-                LOG1("<id%d> Routes already match for entity:%s, skipping SetRouting",
-                     cameraId, routing.first.c_str());
-                delete[] routes;
-                continue;
-            }
-        }
-
         int ret = subDev->SetRouting(routes, num);
         delete[] routes;
         CheckAndLogError(ret != 0, ret, "setRouting fail, ret:%d", ret);
@@ -894,7 +877,7 @@ int MediaControl::setRouting(int cameraId, MediaCtlConf* mc, bool enableRouting)
 int MediaControl::setVideoNodeFormat(struct V4L2VideoNode* device, const stream_t* config) {
     PERF_CAMERA_ATRACE();
 
-    struct v4l2_format v4l2fmt;
+    struct v4l2_format v4l2fmt = {};
     v4l2fmt.fmt.pix_mp.field = config->field;
 
     v4l2fmt.fmt.pix.width = config->width;
@@ -941,15 +924,6 @@ int MediaControl::setVideoNodesFormat(MediaCtlConf* mc, int field) {
     return ret;
 }
 
-const std::string MediaControl::getVideoIsysReceiverName(const MediaCtlConf* mc) {
-    for (const auto& videoNode : mc->videoNodes) {
-        if (videoNode.videoNodeType == VIDEO_ISYS_RECEIVER) {
-            return videoNode.name;
-        }
-    }
-    return std::string();
-}
-
 // VIRTUAL_CHANNEL_E
 int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int height, int field) {
     LOG1("<id%d> %s", cameraId, __func__);
@@ -960,11 +934,11 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
     AutoMutex lock(sLock);
 
     if (!mc->routings.empty()) {
-        if (mIsysReceiverNamesConfigured.find(getVideoIsysReceiverName(mc)) !=
-            mIsysReceiverNamesConfigured.end())
+        if (mIsMediaCtlSetup) {
             return OK;
-        else
-            mIsysReceiverNamesConfigured.insert(getVideoIsysReceiverName(mc));
+        } else {
+            mIsMediaCtlSetup = true;
+        }
     }
 
 // VIRTUAL_CHANNEL_E
@@ -1018,14 +992,7 @@ void MediaControl::mediaCtlClear(int cameraId, MediaCtlConf* mc) {
     LOG1("<id%d> %s", cameraId, __func__);
 
     // VIRTUAL_CHANNEL_S
-    /* Do not disable routes on close.  VIDIOC_SUBDEV_S_ROUTING resets stream states, so
-     * clearing routes here would disrupt other processes or camera instances that share the
-     * same subdev and are still streaming.  Routes are left active on the hardware; the next
-     * open() will skip SetRouting if the routes already match (see setRouting).
-     * Remove the receiver from the in-process tracking set so that a subsequent open() in
-     * this process re-evaluates the full setup (formats, links), even though SetRouting itself
-     * will be skipped when routes are still correctly configured.
-     */
+    (void)setRouting(cameraId, mc, false);
     // VIRTUAL_CHANNEL_E
 }
 
@@ -1361,7 +1328,11 @@ void MediaControl::setSensorOrientation(int cameraId) {
     }
 
     std::string subDevName;
-    PlatformData::getDevNameByType(cameraId, VIDEO_PIXEL_ARRAY, subDevName);
+    const int ret = PlatformData::getDevNameByType(cameraId, VIDEO_PIXEL_ARRAY, subDevName);
+    if (ret != OK) {
+        LOGE("@%s, failed to get device name for VIDEO_PIXEL_ARRAY, cameraId: %d", __func__, cameraId);
+        return;
+    }
     LOG1("@%s, sub-dev name is %s", __func__, subDevName.c_str());
     V4L2Subdevice* subDev = V4l2DeviceFactory::getSubDev(cameraId, subDevName);
     if ((subDev->SetControl(V4L2_CID_HFLIP, 1) == OK) &&

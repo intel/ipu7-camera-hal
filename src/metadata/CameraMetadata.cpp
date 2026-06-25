@@ -19,6 +19,8 @@
 
 #include "CameraMetadata.h"
 
+#include <climits>
+
 #include "iutils/CameraLog.h"
 #include "iutils/Utils.h"
 
@@ -39,7 +41,10 @@ CameraMetadata::CameraMetadata(icamera_metadata_t* buffer) : mBuffer(nullptr), m
 }
 
 CameraMetadata& CameraMetadata::operator=(const CameraMetadata& other) {
-    return operator=(other.mBuffer);
+    if(this != &other) {
+        acquire(other.mBuffer);
+    }
+    return *this;
 }
 
 CameraMetadata& CameraMetadata::operator=(const icamera_metadata_t* buffer) {
@@ -228,9 +233,10 @@ status_t CameraMetadata::updateImpl(uint32_t tag, const void* data, size_t data_
     }
 
     if (res != OK) {
+        const int errCode = (res == INT_MIN) ? INT_MAX : -res;
         LOGE("%s: Unable to update metadata entry %s.%s (%x): %s (%d)", __func__,
              get_icamera_metadata_section_name(tag), get_icamera_metadata_tag_name(tag), tag,
-             strerror(-res), res);
+             strerror(errCode), res);
     }
 
     if (validate_icamera_metadata_structure(mBuffer, /*size*/ nullptr) != OK) {
@@ -281,15 +287,19 @@ status_t CameraMetadata::erase(uint32_t tag) {
     if (res == NAME_NOT_FOUND) {
         return OK;
     } else if (res != OK) {
+        const int errCode = (res == INT_MIN) ? INT_MAX : -res;
         LOGE("%s: Error looking for entry %s.%s (%x): %s %d", __func__,
              get_icamera_metadata_section_name(tag), get_icamera_metadata_tag_name(tag), tag,
-             strerror(-res), res);
+             strerror(errCode), res);
         return res;
     }
     res = delete_icamera_metadata_entry(mBuffer, entry.index);
-    CheckAndLogError(res != OK, res, "%s: Error deleting entry %s.%s (%x): %s %d", __func__,
-                     get_icamera_metadata_section_name(tag), get_icamera_metadata_tag_name(tag),
-                     tag, strerror(-res), res);
+    if (res != OK) {
+        const int errCode = (res == INT_MIN) ? INT_MAX : -res;
+        LOGE("%s: Error deleting entry %s.%s (%x): %s %d", __func__,
+             get_icamera_metadata_section_name(tag), get_icamera_metadata_tag_name(tag),
+             tag, strerror(errCode), res);
+    }
     return res;
 }
 

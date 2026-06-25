@@ -29,12 +29,12 @@ set(PLATFORMDATA_SRCS ${PLATFORMDATA_SRCS}
 )
 # IPU7_SOURCE_FILE_E
 
-    set(PLATFORMDATA_SRCS
-        ${PLATFORMDATA_SRCS}
-        ${PLATFORMDATA_DIR}/AiqInitData.cpp
-        ${PLATFORMDATA_DIR}/gc/GraphUtils.cpp
-        ${PLATFORMDATA_DIR}/gc/GraphConfigManager.cpp
-        ${PLATFORMDATA_DIR}/gc/GraphConfig.cpp
-        CACHE INTERNAL "platformdata sources"
-        )
+set(PLATFORMDATA_SRCS
+    ${PLATFORMDATA_SRCS}
+    ${PLATFORMDATA_DIR}/AiqInitData.cpp
+    ${PLATFORMDATA_DIR}/gc/GraphUtils.cpp
+    ${PLATFORMDATA_DIR}/gc/GraphConfigManager.cpp
+    ${PLATFORMDATA_DIR}/gc/GraphConfig.cpp
+    CACHE INTERNAL "platformdata sources"
+    )
 

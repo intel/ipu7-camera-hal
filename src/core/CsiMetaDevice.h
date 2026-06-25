@@ -62,8 +62,10 @@ class CsiMetaDevice : public EventSource {
     int configure();
     int start();
     int stop();
-    bool isEnabled() { return mIsCsiMetaEnabled; }
-
+    bool isEnabled() {
+        AutoMutex l(mCsiMetaDeviceLock);
+        return mIsCsiMetaEnabled;
+    }
     void deinitLocked();
     int resetState();
     int initDev();

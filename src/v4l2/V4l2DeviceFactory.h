@@ -41,6 +41,10 @@ class V4l2DeviceFactory {
     static void releaseSubDev(int cameraId, const std::string& devName);
 
  private:
+
+    V4l2DeviceFactory(const V4l2DeviceFactory&) = delete;
+    V4l2DeviceFactory& operator=(const V4l2DeviceFactory&) = delete;
+
     V4l2DeviceFactory(int cameraId);
     ~V4l2DeviceFactory();
 

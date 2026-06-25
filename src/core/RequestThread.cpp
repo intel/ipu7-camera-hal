@@ -118,8 +118,6 @@ void RequestThread::clearRequests() {
 
 int RequestThread::configure(const stream_config_t *streamList) {
     int previewIndex = -1, videoIndex = -1, stillIndex = -1;
-    bool block_request = false;
-
     for (int i = 0; i < streamList->num_streams; i++) {
         if (streamList->streams[i].usage == CAMERA_STREAM_PREVIEW) {
             previewIndex = i;
@@ -131,17 +129,15 @@ int RequestThread::configure(const stream_config_t *streamList) {
     }
 
     // Don't block request handling if no 3A stats (from video pipe)
-    block_request = PlatformData::isEnableAIQ(mCameraId) &&
-                    ((previewIndex >= 0) || (videoIndex >= 0));
+    AutoMutex l(mPendingReqLock);
+    mBlockRequest = PlatformData::isEnableAIQ(mCameraId) && ((previewIndex >= 0) ||
+                                                              (videoIndex >= 0));
     LOG1("%s: user specified Configmode: %d, blockRequest: %d", __func__,
-         static_cast<ConfigMode>(streamList->operation_mode), block_request);
-    {
-        AutoMutex l(mPendingReqLock);
-        mBlockRequest = block_request;
-    }
+        static_cast<ConfigMode>(streamList->operation_mode), mBlockRequest);
 
     mGet3AStatWithFakeRequest =
         mPerframeControlSupport ? PlatformData::isPsysContinueStats(mCameraId) : false;
+
     if (mGet3AStatWithFakeRequest) {
         const int fakeStreamIndex = (previewIndex >= 0) ? previewIndex :
                               ((videoIndex >= 0) ? videoIndex : stillIndex);
@@ -245,7 +241,7 @@ int RequestThread::waitFrame(int streamId, camera_buffer_t **ubuffer) {
 int RequestThread::wait1stRequestDone() {
     int ret = OK;
     std::unique_lock<std::mutex> lock(mFirstRequestLock);
-    if (mFirstRequest) {
+    while (mFirstRequest) {
         LOG2("%s, waiting the first request done", __func__);
         std::cv_status status = mFirstRequestSignal.wait_for(
                   lock,
@@ -253,6 +249,7 @@ int RequestThread::wait1stRequestDone() {
         if (status == std::cv_status::timeout) {
             LOGE("@%s: Wait 1st request timed out", __func__);
             ret = TIMED_OUT;
+            break;
         }
     }
 
@@ -306,6 +303,7 @@ void RequestThread::handleEvent(EventData eventData) {
             break;
         case EVENT_FRAME_AVAILABLE:
             {
+                AutoMutex l(mPendingReqLock);
                 if (eventData.buffer->getUserBuffer() != &mFakeReqBuf) {
                     const int streamId = eventData.data.frameDone.streamId;
                     FrameQueue& frameQueue = mOutputFrames[streamId];
@@ -320,7 +318,6 @@ void RequestThread::handleEvent(EventData eventData) {
                     LOG2("%s: fake request return %u", __func__, eventData.buffer->getSequence());
                 }
 
-                AutoMutex l(mPendingReqLock);
                 // Insert fake request if no any request in the HAL to keep 3A running
                 if (mGet3AStatWithFakeRequest &&
                     (eventData.buffer->getSequence() >= mLastEffectSeq) &&
@@ -371,7 +368,7 @@ bool RequestThread::threadLoop() {
     {
          std::unique_lock<std::mutex> lock(mPendingReqLock);
 
-         if (blockRequest()) {
+         while (blockRequest()) {
             std::cv_status ret = mRequestSignal.wait_for(lock,
                 std::chrono::nanoseconds(kWaitDuration * SLOWLY_MULTIPLIER));
             CheckWarning(ret == std::cv_status::timeout, true,

@@ -187,9 +187,13 @@ icamera_metadata_t *allocate_icamera_metadata(size_t entry_capacity,
     const size_t memory_needed = calculate_icamera_metadata_size(entry_capacity,
                                                                  data_capacity);
     void *buffer = malloc(memory_needed);
-    return place_icamera_metadata(buffer, memory_needed,
+    icamera_metadata_t *metadata = place_icamera_metadata(buffer, memory_needed,
                                  entry_capacity,
                                  data_capacity);
+    if(metadata == nullptr) {
+        free(buffer);
+    }
+    return metadata;
 }
 
 icamera_metadata_t *place_icamera_metadata(void *dst,

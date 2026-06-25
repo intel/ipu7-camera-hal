@@ -264,6 +264,7 @@ bool FileSource::produce() {
 
     notifyFrame(qBuffer);
 
+    AutoMutex l(mLock);
     return !mExitPending;
 }
 

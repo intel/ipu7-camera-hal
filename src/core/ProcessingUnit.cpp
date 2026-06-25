@@ -178,8 +178,11 @@ void ProcessingUnit::stop() {
 
     mProcessThread->wait();
 
-    mRawBufferMap.clear();
-    // Thread is not running. It is safe to clear the Queue
+    {
+        AutoMutex l(mBufferMapLock);
+        mRawBufferMap.clear();
+        // Thread is not running. It is safe to clear the Queue
+    }
     BufferQueue::clearBufferQueues();
 }
 
@@ -755,8 +758,7 @@ status_t ProcessingUnit::prepareTask(CameraBufferPortMap* srcBuffers,
             sendPsysRequestEvent(dstBuffers, settingSequence, timestamp,
                                  EVENT_REQUEST_METADATA_READY);
         }
-    } else if ((!holdOnInput) && (!isBufferHoldForRawReprocess(inputSequence))
-               && mBufferProducer != nullptr) {
+    } else if ((!holdOnInput) && (!isBufferHoldForRawReprocess(inputSequence)) && (mBufferProducer != nullptr)) {
         for (const auto& src : *srcBuffers) {
             mBufferProducer->qbuf(src.first, src.second);
         }
