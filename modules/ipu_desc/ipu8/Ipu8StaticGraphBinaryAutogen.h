@@ -97,7 +97,8 @@ struct GraphConfigurationKey {
 };
 
 struct GraphConfigurationHeader {
-    uint32_t additonalFeaturesBit = 0;
+    uint32_t additionalFeaturesBit = 0;
+    uint8_t isIsysUnpacked = 0;
     GraphConfigurationKey settingsKey;
     uint16_t settingId = 0;
     int32_t graphId = 0;
@@ -125,8 +126,8 @@ struct SysToolVersion
 };
 
 struct BinaryHeader {
-    uint32_t additonalFeaturesBit = 0;
     uint32_t sapAttributes = 0;
+    uint32_t additionalFeaturesBit = 0;
     uint32_t binaryCommonHashCode = 0;
     uint32_t numberOfResolutions = 0;
     uint32_t numberOfSensorModes = 0;

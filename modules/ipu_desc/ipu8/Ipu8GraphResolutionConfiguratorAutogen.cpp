@@ -1111,7 +1111,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
 
     return 0;
 }
-StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHistoryUpdate(std::vector<uint32_t>& kernelUuids, uint32_t startUuid, uint32_t additonalFeaturesBit)
+StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHistoryUpdate(std::vector<uint32_t>& kernelUuids, uint32_t startUuid, uint32_t additionalFeaturesBit)
 {
     kernelUuids.clear();
 
@@ -1121,7 +1121,7 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
     {
         return StaticGraphStatus::SG_ERROR;
     }
-    (void)additonalFeaturesBit;
+    (void)additionalFeaturesBit;
 
     if (startUuid == 65466) // ESPA Crop
     {
@@ -1192,9 +1192,9 @@ GraphResolutionConfiguratorKernelRole GraphResolutionConfiguratorHelper::getKern
     }
 }
 
-uint32_t GraphResolutionConfiguratorHelper::getReferenceKernel(uint32_t kernelUuid, uint32_t additonalFeaturesBit)
+uint32_t GraphResolutionConfiguratorHelper::getReferenceKernel(uint32_t kernelUuid, uint32_t additionalFeaturesBit)
 {
-    additonalFeaturesBit = 0; // Not supported, ignore
+    additionalFeaturesBit = 0; // Not supported, ignore
     switch (kernelUuid)
     {
         case 29996 :     return 65466; // tnr_scaler_lb_1_1 from lbff_crop_espa_1_4

@@ -720,7 +720,7 @@ StaticGraphStatus GraphResolutionConfigurator::updateRunKernelUpScaler(StaticGra
     upscalerActualInputWidth = GRA_ROUND_DOWN(upscalerActualInputWidth, stepW);
     upscalerActualInputHeight = (upscalerActualInputWidth / stepW) * stepH;
 
-    if ((upscalerActualOutputWidth / upscalerActualInputWidth) > max_upscaling)
+    if ((static_cast<double>(upscalerActualOutputWidth) / upscalerActualInputWidth) > max_upscaling)
     {
         // Perform the max possible up scaling, downscaler will adjust itself
         upscalerActualInputWidth = upscalerActualOutputWidth / max_upscaling;
@@ -1703,8 +1703,8 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::updateRunKernelCropper(Static
         totalHorizontalCrop -= (_originalCropOfCropper.left + _originalCropOfCropper.right);
 
         // Calculate the crop after downscale, relatively to the desired crop before the downscale
-        cropLeft = (cropLeft + cropRight) == 0 ? 0 :
-            GRA_ROUND_DOWN(static_cast<int32_t>(GRA_ROUND(static_cast<double>(cropLeft) / (cropLeft + cropRight) * (totalHorizontalCrop))), 2);
+        cropLeft = (cropLeft + cropRight - paddingToRemove) == 0 ? 0 :
+            GRA_ROUND_DOWN(static_cast<int32_t>(GRA_ROUND(static_cast<double>(cropLeft) / (cropLeft + cropRight - paddingToRemove) * (totalHorizontalCrop))), 2);
 
         runKernel->resolution_info->input_crop.left = _originalCropOfCropper.left + cropLeft;
         runKernel->resolution_info->input_crop.right = _originalCropOfCropper.right + (totalHorizontalCrop - cropLeft) + paddingToRemove;
@@ -1761,8 +1761,8 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::updateRunKernelCropper(Static
         totalVerticalCrop -= (_originalCropOfCropper.top + _originalCropOfCropper.bottom);
 
         // Calculate the crop after downscale, relatively to the desired crop before the downscale
-        cropTop = (cropTop + cropBottom) == 0 ? 0 :
-            GRA_ROUND_DOWN(static_cast<int32_t>(GRA_ROUND(static_cast<double>(cropTop) / (cropTop + cropBottom) * (totalVerticalCrop))), 2);
+        cropTop = (cropTop + cropBottom - paddingToRemove) == 0 ? 0 :
+            GRA_ROUND_DOWN(static_cast<int32_t>(GRA_ROUND(static_cast<double>(cropTop) / (cropTop + cropBottom - paddingToRemove) * (totalVerticalCrop))), 2);
 
         runKernel->resolution_info->input_crop.top = _originalCropOfCropper.top + cropTop;
         runKernel->resolution_info->input_crop.bottom = _originalCropOfCropper.bottom + (totalVerticalCrop - cropTop) + paddingToRemove;

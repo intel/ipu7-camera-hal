@@ -205,6 +205,13 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsDownscaler(StaticGra
 
     for (int32_t stripe = leftNonVanishedStripe; stripe <= rightNonVanishedStripe; stripe++)
     {
+        if (scaleFactor == 1.0)
+        {
+            kernelFragments[stripe].fragmentOutputWidth = kernelFragments[stripe].fragmentInputWidth;
+            _outputStartX[runKernel->kernel_uuid][stripe] = kernelFragments[stripe].fragmentStartX;
+            continue;
+        }
+
         int rightCrop = stripe == static_cast<int32_t>(_numberOfFragments - 1) ? resInfo->input_crop.right : 0;
 
         double value = (static_cast<double>(kernelFragments[stripe].fragmentInputWidth - rightCrop) * scaleFactor) / 4;
