@@ -117,6 +117,10 @@ enum class HwSink : uint8_t
     RawIsysPdafSink,
 };
 
+enum class AdditionalFeaturesBitValues {
+    None = 0
+};
+
 #pragma pack(push, 4)
 
 #ifndef STATIC_GRAPH_USE_IA_LEGACY_TYPES
