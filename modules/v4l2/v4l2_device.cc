@@ -443,8 +443,20 @@ int V4L2DevicePoller::Poll(int timeout_ms, int events, std::vector<V4L2Device*>*
     }
     int ret = ::poll(poll_fds_.data(), poll_fds_.size(), timeout_ms);
     if (ret <= 0) {
-        for (size_t i = 0; i < devices_.size(); i++) {
-            LOGE("%s: Device node fd %d poll timeout.", __func__, devices_[i]->fd_);
+        if (ret < 0) {
+            LOGE("%s: poll error: %s", __func__, strerror(errno));
+        } else {
+            /* ret == 0: normal 1-second timeout — not an error, just no frames yet.
+             * Log at debug level to avoid flooding the error log every second. */
+            for (size_t i = 0; i < devices_.size(); i++) {
+                LOG2("%s: Device node fd %d poll timeout.", __func__, devices_[i]->fd_);
+            }
+            /* Defensive: if flush_fd fired in the same tick as timeout (race),
+             * treat it as a flush so the caller exits promptly. */
+            if (flush_fd_ != -1 && (poll_fds_.back().revents & (POLLIN | POLLPRI))) {
+                LOG1("%s: flush detected on timeout path, fd %d.", __func__, poll_fds_.back().fd);
+                return 1;
+            }
         }
         return ret;
     }

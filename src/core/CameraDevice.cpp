@@ -850,7 +850,12 @@ int CameraDevice::stop() {
     LOG1("<id%d>@%s, mState:%d", mCameraId, __func__, mState);
     AutoMutex m(mDeviceLock);
 
-    mRequestThread->clearRequests();
+    /* Stop the RequestThread first (sets mState=EXIT + notifies mFrameAvailableSignal).
+     * This unblocks any icamerasrc streaming thread blocked inside camera_stream_dqbuf →
+     * waitFrame() immediately, instead of waiting for the 30-second dead-camera timeout.
+     * requestStop() includes clearRequests() so no separate call needed.
+     * The second requestStop() call in deinit() is safe — it is a no-op when already stopped. */
+    mRequestThread->requestStop();
 
     m3AControl->stop();
     mLensCtrl->stop();

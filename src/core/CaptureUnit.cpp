@@ -419,10 +419,25 @@ int CaptureUnit::poll() {
         // Exiting, no error
         return -1;
     }
-    CheckAndLogError(ret < 0, UNKNOWN_ERROR, "%s: Poll error, ret:%d", __func__, ret);
+    if (ret < 0) {
+        LOGE("<id%d>%s: Unexpected poll error (POLLERR) while streaming — "
+             "camera may have been disrupted by another camera's STREAMOFF. "
+             "Poll thread will exit; other cameras should continue normally.",
+             mCameraId, __func__);
+        return ret;
+    }
     if (ret == 0) {
-        LOG1("<id%d>%s, timeout happens, wait recovery", mCameraId, __func__);
+        LOG2("<id%d>%s, timeout happens, wait recovery", mCameraId, __func__);
         return OK;
+    }
+
+    /* ret > 0: one or more fds are ready.  If the flush pipe triggered this
+     * wake-up (stop() wrote to mFlushFd[1]) there will be no camera device in
+     * readyDevices, so the dequeue loop below is a no-op.  Check mExitPending
+     * first to avoid a spurious dequeue attempt after stop(). */
+    if (mExitPending) {
+        LOG2("%s: mExitPending true after poll wakeup, exit", __func__);
+        return -1;
     }
 
     for (const auto& readyDevice : readyDevices) {

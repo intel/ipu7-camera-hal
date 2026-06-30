@@ -86,9 +86,16 @@ void Thread::wait() {
         return;
     }
 
+    const int64_t kWaitTimeout = 5000000000LL;  // 5 seconds
     while (mState != EXITED) {
         mState = EXITING;
-        mExitedCondition.wait(lock);
+        int waitRet = mExitedCondition.waitRelative(lock, kWaitTimeout);
+        if (waitRet == TIMED_OUT) {
+            LOGE("Thread::wait() timed out after 5s waiting for thread '%s' to exit — "
+                 "poll thread may be stuck in kernel; forcing exit",
+                 mName.empty() ? "NO_NAME" : mName.c_str());
+            break;
+        }
     }
 
     return;

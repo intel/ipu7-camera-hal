@@ -221,6 +221,8 @@ int RequestThread::waitFrame(int streamId, camera_buffer_t **ubuffer) {
     if (mState == EXIT) {
         return NO_INIT;
     }
+    static const int kMaxTimeouts = 2;  // ~10s before declaring camera dead and setting EXIT
+    int timeoutCount = 0;
     while (frameQueue.mFrameQueue.empty()) {
         std::cv_status ret = frameQueue.mFrameAvailableSignal.wait_for(
                       lock,
@@ -229,8 +231,28 @@ int RequestThread::waitFrame(int streamId, camera_buffer_t **ubuffer) {
             return NO_INIT;
         }
 
-        CheckWarning(ret == std::cv_status::timeout, TIMED_OUT,
-                     "<id%d>@%s, time out happens, wait recovery", mCameraId, __func__);
+        if (ret == std::cv_status::timeout) {
+            ++timeoutCount;
+            if (timeoutCount < kMaxTimeouts) {
+                LOGW("<id%d>@%s, no frame for ~%ds — waiting (attempt %d/%d)",
+                     mCameraId, __func__,
+                     (int)(kWaitFrameDuration * SLOWLY_MULTIPLIER / 1000000000LL) * timeoutCount,
+                     timeoutCount, kMaxTimeouts);
+            } else {
+                LOGE("<id%d>@%s, camera appears dead (no frame in ~%ds). "
+                     "Poll thread may have exited due to POLLERR from another camera's STREAMOFF. "
+                     "Marking EXIT so dqbuf() loop breaks and pipeline can shut down.",
+                     mCameraId, __func__,
+                     (int)(kWaitFrameDuration * SLOWLY_MULTIPLIER / 1000000000LL) * timeoutCount);
+                /* Set EXIT before releasing the lock so the next waitFrame() call (or a
+                 * concurrent one on another stream) returns NO_INIT immediately instead of
+                 * blocking for another kMaxTimeouts × kWaitFrameDuration seconds.
+                 * CameraDevice::dqbuf() loops while ret==TIMED_OUT — returning NO_INIT here
+                 * breaks that loop and lets icamerasrc post GST_FLOW_ERROR to start teardown. */
+                mState = EXIT;
+                return NO_INIT;
+            }
+        }
     }
 
     shared_ptr<CameraBuffer> camBuffer = frameQueue.mFrameQueue.front();
