@@ -183,7 +183,7 @@
             "format": "V4L2_PIX_FMT_YUYV",
             "videonode": [
               {
-                "name": "Intel IPU7 ISYS Capture 36", "videoNodeType": "VIDEO_GENERIC"
+                "name": "Intel IPU7 ISYS Capture 20", "videoNodeType": "VIDEO_GENERIC"
               },
               {
                 "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
@@ -220,7 +220,7 @@
             "format": "V4L2_PIX_FMT_YUYV",
             "videonode": [
               {
-                "name": "Intel IPU7 ISYS Capture 37", "videoNodeType": "VIDEO_GENERIC"
+                "name": "Intel IPU7 ISYS Capture 21", "videoNodeType": "VIDEO_GENERIC"
               },
               {
                 "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
@@ -257,7 +257,7 @@
             "format": "V4L2_PIX_FMT_YUYV",
             "videonode": [
               {
-                "name": "Intel IPU7 ISYS Capture 38", "videoNodeType": "VIDEO_GENERIC"
+                "name": "Intel IPU7 ISYS Capture 22", "videoNodeType": "VIDEO_GENERIC"
               },
               {
                 "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
@@ -295,7 +295,7 @@
             "format": "V4L2_PIX_FMT_YUYV",
             "videonode": [
               {
-                "name": "Intel IPU7 ISYS Capture 39", "videoNodeType": "VIDEO_GENERIC"
+                "name": "Intel IPU7 ISYS Capture 23", "videoNodeType": "VIDEO_GENERIC"
               },
               {
                 "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
