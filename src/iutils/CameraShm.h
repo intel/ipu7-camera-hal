@@ -72,6 +72,11 @@ class CameraSharedMemory {
      */
     int cameraDeviceOpenNum();
 
+    /**
+     * \brief Read opened camera count without taking ownership of any camera slot.
+     */
+    static int readCameraDeviceOpenNum();
+
  private:
     CameraSharedMemory(const CameraSharedMemory& copyClass);
     CameraSharedMemory& operator=(const CameraSharedMemory& rightClass);
@@ -79,8 +84,8 @@ class CameraSharedMemory {
     void acquireSharedMemory();
     void releaseSharedMemory();
 
-    int getNameByPid(pid_t pid, char* name);
-    bool processExist(pid_t pid, const char* storedName);
+    static int getNameByPid(pid_t pid, char* name);
+    static bool processExist(pid_t pid, const char* storedName);
     void openSemLock();
     void closeSemLock();
     int lock();

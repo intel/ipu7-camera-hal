@@ -189,6 +189,33 @@ int CameraSharedMemory::cameraDeviceOpenNum() {
     return camOpenNum;
 }
 
+int CameraSharedMemory::readCameraDeviceOpenNum() {
+    const size_t CAMERA_SM_SIZE = (sizeof(camera_shared_info) / getpagesize() + 1) * getpagesize();
+    int sharedMemId = shmget(CAMERA_IPCKEY, CAMERA_SM_SIZE, 0640);
+    CheckAndLogError(sharedMemId < 0, 0, "No camera shared memory to read!");
+
+    camera_shared_info* cameraSharedInfo =
+            reinterpret_cast<camera_shared_info*>(shmat(sharedMemId, nullptr, SHM_RDONLY));
+    CheckAndLogError(cameraSharedInfo == reinterpret_cast<void*>(-1), 0,
+                     "Fail to attach shared memory read-only");
+
+    int camOpenNum = 0;
+    for (int i = 0; i < MAX_CAMERA_NUMBER; i++) {
+        const pid_t pid = cameraSharedInfo->camDevStatus[i].pid;
+        char* name = cameraSharedInfo->camDevStatus[i].name;
+        if ((pid != CAMERA_DEVICE_IDLE) && processExist(pid, name)) {
+            LOG1("The camera device: %d is opened by pid: %d", i, pid);
+            camOpenNum++;
+        }
+    }
+
+    int ret = shmdt(cameraSharedInfo);
+    CheckAndLogError(ret != 0, camOpenNum, "Fail to detach read-only shared memory");
+
+    LOG1("Camera device is opened number: %d", camOpenNum);
+    return camOpenNum;
+}
+
 int CameraSharedMemory::getNameByPid(pid_t pid, char* name) {
     const int BUF_SIZE = 1024;
     char procPidPath[BUF_SIZE] = {'\0'};

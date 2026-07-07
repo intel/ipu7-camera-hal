@@ -22,6 +22,7 @@
 #include <linux/v4l2-mediabus.h>
 #include <linux/videodev2.h>
 
+#include <set>
 #include <stack>
 #include <string>
 
@@ -65,6 +66,162 @@ struct MediaEntity {
 
 MediaControl* MediaControl::sInstance = nullptr;
 Mutex MediaControl::sLock;
+
+namespace {
+
+bool isSameLink(const McLink& lhs, const McLink& rhs) {
+    return lhs.srcEntityName == rhs.srcEntityName && lhs.srcPad == rhs.srcPad &&
+           lhs.sinkEntityName == rhs.sinkEntityName && lhs.sinkPad == rhs.sinkPad &&
+           lhs.enable == rhs.enable;
+}
+
+void addUniqueLink(std::vector<McLink>* links, const McLink& link) {
+    for (const auto& existing : *links) {
+        if (isSameLink(existing, link)) return;
+    }
+    links->push_back(link);
+}
+
+struct ActivePath {
+    std::vector<McLink> links;
+    std::map<std::string, std::set<uint32_t>> pads;
+    std::map<std::string, std::set<std::pair<uint32_t, uint32_t>>> padStreams;
+    std::map<std::string, std::vector<McRoute>> routings;
+};
+
+void addEndpoint(ActivePath* activePath, const std::string& entityName, uint32_t pad,
+                 uint32_t stream) {
+    activePath->pads[entityName].insert(pad);
+    activePath->padStreams[entityName].insert({pad, stream});
+}
+
+void addUniqueRoute(ActivePath* activePath, const McRoute& route) {
+    auto& routes = activePath->routings[route.entityName];
+    for (const auto& existing : routes) {
+        if (existing.entity == route.entity && existing.sinkPad == route.sinkPad &&
+            existing.sinkStream == route.sinkStream && existing.srcPad == route.srcPad &&
+            existing.srcStream == route.srcStream && existing.flag == route.flag) {
+            return;
+        }
+    }
+    routes.push_back(route);
+}
+
+bool findRouteBySource(const MediaCtlConf* mc, int entity, uint32_t srcPad, uint32_t srcStream,
+                       McRoute* matchedRoute) {
+    for (const auto& routing : mc->routings) {
+        for (const auto& route : routing.second) {
+            if (route.entity == entity && route.srcPad == srcPad && route.srcStream == srcStream) {
+                *matchedRoute = route;
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool findIncomingLink(const MediaCtlConf* mc, int sinkEntity, uint32_t sinkPad, McLink* matchedLink) {
+    for (const auto& link : mc->links) {
+        if (link.enable && link.sinkEntity == sinkEntity && link.sinkPad == static_cast<int>(sinkPad)) {
+            *matchedLink = link;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void addActivePathFromCaptureLink(const MediaCtlConf* mc, const McLink& captureLink,
+                                  ActivePath* activePath) {
+    addUniqueLink(&activePath->links, captureLink);
+    addEndpoint(activePath, captureLink.srcEntityName, captureLink.srcPad, 0);
+    addEndpoint(activePath, captureLink.sinkEntityName, captureLink.sinkPad, 0);
+
+    int currentEntity = captureLink.srcEntity;
+    uint32_t currentPad = captureLink.srcPad;
+    uint32_t currentStream = 0;
+    std::set<std::pair<int, uint32_t>> visited;
+
+    while (visited.insert({currentEntity, currentPad}).second) {
+        McRoute route;
+        if (!findRouteBySource(mc, currentEntity, currentPad, currentStream, &route)) break;
+
+        addUniqueRoute(activePath, route);
+        addEndpoint(activePath, route.entityName, route.srcPad, route.srcStream);
+        addEndpoint(activePath, route.entityName, route.sinkPad, route.sinkStream);
+
+        McLink incomingLink;
+        if (!findIncomingLink(mc, currentEntity, route.sinkPad, &incomingLink)) break;
+
+        addUniqueLink(&activePath->links, incomingLink);
+        addEndpoint(activePath, incomingLink.sinkEntityName, incomingLink.sinkPad,
+                    route.sinkStream);
+        addEndpoint(activePath, incomingLink.srcEntityName, incomingLink.srcPad,
+                    route.sinkStream);
+
+        currentEntity = incomingLink.srcEntity;
+        currentPad = incomingLink.srcPad;
+        currentStream = route.sinkStream;
+    }
+}
+
+ActivePath getActivePath(const MediaCtlConf* mc) {
+    ActivePath activePath;
+
+    for (const auto& node : mc->videoNodes) {
+        if (node.videoNodeType != VIDEO_GENERIC) continue;
+        for (const auto& link : mc->links) {
+            if (link.enable && link.sinkEntityName == node.name) {
+                addActivePathFromCaptureLink(mc, link, &activePath);
+                break;
+            }
+        }
+    }
+
+    std::vector<McLink> orderedLinks;
+    for (const auto& link : mc->links) {
+        for (const auto& activeLink : activePath.links) {
+            if (isSameLink(link, activeLink)) {
+                addUniqueLink(&orderedLinks, link);
+                break;
+            }
+        }
+    }
+    activePath.links = orderedLinks;
+
+    return activePath;
+}
+
+}  // namespace
+
+MediaCtlConf MediaControl::getActiveMediaCtlConf(const MediaCtlConf* mc) {
+    MediaCtlConf activeMc = *mc;
+    const auto activePath = getActivePath(mc);
+    activeMc.links = activePath.links;
+    if (activeMc.links.empty()) return activeMc;
+
+    activeMc.routings = activePath.routings;
+
+    std::vector<McFormat> activeFormats;
+    for (const auto& format : mc->formats) {
+        auto activePadIt = activePath.pads.find(format.entityName);
+        if (activePadIt == activePath.pads.end() || activePadIt->second.count(format.pad) == 0) {
+            continue;
+        }
+
+        auto activePadStreamIt = activePath.padStreams.find(format.entityName);
+        if (activePadStreamIt != activePath.padStreams.end() &&
+            activePadStreamIt->second.count({format.pad, static_cast<uint32_t>(format.stream)}) == 0) {
+            continue;
+        }
+
+        activeFormats.push_back(format);
+    }
+    activeMc.formats = activeFormats;
+
+    return activeMc;
+}
 
 MediaControl* MediaControl::getMediaControlInstance() {
     MediaControl* mediaControlInstance = nullptr;
@@ -951,31 +1108,27 @@ const std::string MediaControl::getVideoIsysReceiverName(const MediaCtlConf* mc)
 }
 
 // VIRTUAL_CHANNEL_E
-int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int height, int field) {
+int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int height, int field,
+                                bool fullMediaSetup) {
     LOG1("<id%d> %s", cameraId, __func__);
+    MediaCtlConf activeMc = getActiveMediaCtlConf(mc);
+    MediaCtlConf* setupMc = fullMediaSetup ? mc : &activeMc;
+    LOG1("<id%d> %s media setup: %s", cameraId, __func__,
+         fullMediaSetup ? "full" : "active path");
+
     /* Setup controls in format Configuration */
-    setMediaMcCtl(cameraId, mc->ctls);
+    setMediaMcCtl(cameraId, setupMc->ctls);
 
 // VIRTUAL_CHANNEL_S
     AutoMutex lock(sLock);
-
-    if (!mc->routings.empty()) {
-        if (mIsysReceiverNamesConfigured.find(getVideoIsysReceiverName(mc)) !=
-            mIsysReceiverNamesConfigured.end())
-            return OK;
-        else
-            mIsysReceiverNamesConfigured.insert(getVideoIsysReceiverName(mc));
-    }
-
-// VIRTUAL_CHANNEL_E
     int ret = OK;
-    // VIRTUAL_CHANNEL_S
+
     ret = setRouting(cameraId, mc, true);
     CheckAndLogError(ret != OK, ret, "set media routings failed: ret = %d", ret);
     // VIRTUAL_CHANNEL_E
 
     /* Set format & selection in format Configuration */
-    for (auto& fmt : mc->formats) {
+    for (auto& fmt : setupMc->formats) {
         if (fmt.formatType == FC_FORMAT) {
             (void)setFormat(cameraId, &fmt, width, height, field);
         } else if (fmt.formatType == FC_SELECTION) {
@@ -984,11 +1137,11 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
     }
 
     /* Set link in format Configuration */
-    ret = setMediaMcLink(mc->links);
+    ret = setMediaMcLink(setupMc->links);
     CheckAndLogError(ret != OK, ret, "set MediaCtlConf McLink failed: ret = %d", ret);
 
 // VIRTUAL_CHANNEL_S
-    ret = setVideoNodesFormat(mc, field);
+    ret = setVideoNodesFormat(setupMc, field);
     CheckAndLogError(ret != OK, ret, "set video nodes format failed: ret = %d", ret);
 
 // VIRTUAL_CHANNEL_E
