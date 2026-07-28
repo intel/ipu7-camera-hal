@@ -22,17 +22,9 @@
         //  wf is word facing, and uf is user facing.
         "availableSensors": [
             "ov13b10-wf-0",
+            "ov13b10-wf-1",
             "ov13b10-uf-2",
-            "lt6911gxd-1-0",
-            "lt6911gxd-2-2",
-            "isx031-1-0",
-            "isx031-2-0",
-            "isx031-3-0",
-            "isx031-4-0",
-            "isx031-5-2",
-            "isx031-6-2",
-            "isx031-7-2",
-            "isx031-8-2"
+            "ov13b10-wf-0"
 
         ],
         "videoStreamNum" : 2
