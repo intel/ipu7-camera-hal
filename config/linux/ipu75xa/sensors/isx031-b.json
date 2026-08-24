@@ -40,16 +40,58 @@
               { "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER" },
               { "name": "isx031 2-001a", "videoNodeType": "VIDEO_PIXEL_ARRAY" }
             ]
+          },
+          {
+            "id": 1,
+            "configMode": "AUTO",
+            "output": [1920, 1536],
+            "format": "V4L2_PIX_FMT_UYVY",
+            "formats": [
+              { "name": "isx031 2-001a", "pad": 0, "width": 1920, "height": 1536, "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0 },
+              { "name": "Intel IPU7 CSI2 2", "pad": 0, "width": 1920, "height": 1536, "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0 },
+              { "name": "Intel IPU7 ISYS Capture 16", "pad": 0, "width": 1920, "height": 1536, "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0 }
+            ],
+            "link": [
+              { "srcName": "isx031 2-001a", "srcPad": 0, "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true },
+              { "srcName": "Intel IPU7 CSI2 2", "srcPad": 1, "sinkName": "Intel IPU7 ISYS Capture 16", "sinkPad": 0, "enable": true }
+            ],
+            "videonode": [
+              { "name": "Intel IPU7 ISYS Capture 16", "videoNodeType": "VIDEO_GENERIC" },
+              { "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER" },
+              { "name": "isx031 2-001a", "videoNodeType": "VIDEO_PIXEL_ARRAY" }
+            ]
+          },
+          {
+            "id": 2,
+            "configMode": "AUTO",
+            "output": [1280, 720],
+            "format": "V4L2_PIX_FMT_UYVY",
+            "formats": [
+              { "name": "isx031 2-001a", "pad": 0, "width": 1280, "height": 720, "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0 },
+              { "name": "Intel IPU7 CSI2 2", "pad": 0, "width": 1280, "height": 720, "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0 },
+              { "name": "Intel IPU7 ISYS Capture 16", "pad": 0, "width": 1280, "height": 720, "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0 }
+            ],
+            "link": [
+              { "srcName": "isx031 2-001a", "srcPad": 0, "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true },
+              { "srcName": "Intel IPU7 CSI2 2", "srcPad": 1, "sinkName": "Intel IPU7 ISYS Capture 16", "sinkPad": 0, "enable": true }
+            ],
+            "videonode": [
+              { "name": "Intel IPU7 ISYS Capture 16", "videoNodeType": "VIDEO_GENERIC" },
+              { "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER" },
+              { "name": "isx031 2-001a", "videoNodeType": "VIDEO_PIXEL_ARRAY" }
+            ]
           }
         ],
 
         "StaticMetadata": {
           "supportedStreamConfig": [
-            { "format": "V4L2_PIX_FMT_UYVY", "size": [1920, 1080], "field": 0, "mcId": 0 }
+            { "format": "V4L2_PIX_FMT_UYVY", "size": [1920, 1080], "field": 0, "mcId": 0 },
+            { "format": "V4L2_PIX_FMT_UYVY", "size": [1920, 1536], "field": 0, "mcId": 1 },
+            { "format": "V4L2_PIX_FMT_UYVY", "size": [1280, 720], "field": 0, "mcId": 2 }
           ]
         },
 
-        "supportedISysSizes": [[1920, 1080]],
+        "supportedISysSizes": [[1280, 720], [1920, 1080], [1920, 1536]],
         "supportedISysFormat": ["V4L2_PIX_FMT_UYVY"],
         "enableAIQ": false,
         "usePSysProcessor": false
