@@ -234,7 +234,8 @@ class MediaControl {
      *
      * \return OK if succeed, other value indicates failed
      */
-    int mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int height, int field);
+    int mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int height, int field,
+                      bool fullMediaSetup);
 
     /**
      * \brief Clear media controller pipe
@@ -311,6 +312,7 @@ class MediaControl {
     // VIRTUAL_CHANNEL_E
     int setSelection(int cameraId, const McFormat* format, int targetWidth, int targetHeight);
     int setRouting(int cameraId, MediaCtlConf* mc, bool enableRouting);
+    MediaCtlConf getActiveMediaCtlConf(const MediaCtlConf* mc);
     /* Dump functions */
     void dumpInfo(media_device_info& devInfo);
     void dumpEntityDesc(media_entity_desc& desc, media_device_info& devInfo);

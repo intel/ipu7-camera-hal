@@ -23,6 +23,7 @@
 
 #include "MediaControl.h"
 #include "PlatformData.h"
+#include "iutils/CameraShm.h"
 #include "iutils/CameraDump.h"
 #include "iutils/CameraLog.h"
 #include "iutils/Utils.h"
@@ -268,8 +269,9 @@ int CaptureUnit::configure(const map<uuid, stream_t>& outputFrames) {
     MediaControl* mc = MediaControl::getInstance();
     CheckAndLogError(mc == nullptr, UNKNOWN_ERROR, "%s, MediaControl init failed", __func__);
 
+    const bool fullMediaSetup = CameraSharedMemory::readCameraDeviceOpenNum() <= 1;
     int status = mc->mediaCtlSetup(mCameraId, mediaCtl, mainStream.width, mainStream.height,
-                                   mainStream.field);
+                                   mainStream.field, fullMediaSetup);
     CheckAndLogError(status != OK, status, "set up mediaCtl failed");
 
     // Create, open, and configure all of needed devices.
