@@ -676,6 +676,9 @@ void GraphConfig::getStaticGraphConfigData(const std::map<VirtualSink, const Hal
 }
 
 void GraphConfig::saveOuterNode(const GraphLink* link, StaticGraphInfo* graph) {
+    if (!link || !graph) {
+        return;
+    }
     // Save nodes, except ISYS
     if ((!link->isActive) || (link->destNode == nullptr) ||
         (link->destNode->type == NodeTypes::Isys)) {
@@ -713,11 +716,11 @@ void GraphConfig::saveOuterNode(const GraphLink* link, StaticGraphInfo* graph) {
 
 void GraphConfig::saveLink(int32_t streamId, const GraphLink* link,
                            std::map<HwSink, const HalStream*>* streams, StaticGraphInfo* graph) {
-    if (!link->isActive) {
+    if (!link || !graph || !link->isActive) {
         return;
     }
     // Ignore link: src="-1:Sensor:0" dest="2:Isys:0" type="Source2Node"
-    if ((link->type == LinkType::Source2Node) && (link->destNode->type == NodeTypes::Isys)) {
+    if ((link->type == LinkType::Source2Node) && (link->destNode && link->destNode->type == NodeTypes::Isys)) {
         return;
     }
 
@@ -727,7 +730,7 @@ void GraphConfig::saveLink(int32_t streamId, const GraphLink* link,
         // src="-1:LscBuffer:0" dest="0:LbffBayer:4" type="Source2Node"
         ipuLink.isEdge = true;
         hasNecessaryNode = link->destNode;
-    } else if ((link->type == LinkType::Node2Node) && (link->srcNode->type == NodeTypes::Isys)) {
+    } else if ((link->type == LinkType::Node2Node) && (link->srcNode && link->srcNode->type == NodeTypes::Isys)) {
         // src="2:Isys:1" dest="0:LbffBayer:3" type="Node2Node"
         ipuLink.isEdge = true;
         hasNecessaryNode = link->destNode;
@@ -737,12 +740,14 @@ void GraphConfig::saveLink(int32_t streamId, const GraphLink* link,
         ipuLink.isEdge = true;
         hasNecessaryNode = link->srcNode;
         // Find output stream
-        for (auto& s : *streams) {
-            if (((link->dest == GraphElementType::ImageMp) && (s.first == HwSink::ImageMpSink)) ||
-                ((link->dest == GraphElementType::ImageDp) && (s.first == HwSink::ImageDpSink))) {
-                ipuLink.stream = s.second;
-                streams->erase(s.first);
-                break;
+        if (streams) {
+            for (auto& s : *streams) {
+                if (((link->dest == GraphElementType::ImageMp) && (s.first == HwSink::ImageMpSink)) ||
+                    ((link->dest == GraphElementType::ImageDp) && (s.first == HwSink::ImageDpSink))) {
+                    ipuLink.stream = s.second;
+                    streams->erase(s.first);
+                    break;
+                }
             }
         }
     }
