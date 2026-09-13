@@ -1106,7 +1106,7 @@ void CameraSensorsParser::updateNVMDir() {
 void CameraSensorsParser::parseGenericStaticMetaData(const Json::Value& node) {
     auto keyNames = node.getMemberNames();
     for (const auto& key : keyNames) {
-        int tagType;
+        int tagType = -1;
         auto name = key;
 
         if (mCurCam->mStaticMetadata.mStaticMetadataToType.count(name))
