@@ -31,6 +31,7 @@ using namespace icamera::Log;
 using namespace icamera;
 
 #include <sys/ioctl.h>
+#include <vector>
 
 namespace icamera {
 
@@ -118,6 +119,27 @@ int V4L2Subdevice::GetPadFormat(int pad_index, int* width, int* height, int* cod
 
     format.pad = pad_index;
     format.which = V4L2_SUBDEV_FORMAT_ACTIVE;
+
+    struct v4l2_subdev_routing routing = {};
+    routing.which = V4L2_SUBDEV_FORMAT_ACTIVE;
+    int routingStatus = ::ioctl(fd_, VIDIOC_SUBDEV_G_ROUTING, &routing);
+    if ((routingStatus == 0 || errno == ENOSPC) && routing.num_routes > 0) {
+        std::vector<v4l2_subdev_route> routes(routing.num_routes);
+        routing.len_routes = routes.size();
+        routing.routes = reinterpret_cast<uint64_t>(routes.data());
+
+        routingStatus = ::ioctl(fd_, VIDIOC_SUBDEV_G_ROUTING, &routing);
+        if (routingStatus == 0) {
+            for (const auto& route : routes) {
+                if ((route.flags & V4L2_SUBDEV_ROUTE_FL_ACTIVE) &&
+                    route.source_pad == static_cast<uint32_t>(pad_index)) {
+                    format.stream = route.source_stream;
+                    break;
+                }
+            }
+        }
+    }
+
     int ret = GetFormat(&format);
     if (ret == 0) {
         *width = format.format.width;
