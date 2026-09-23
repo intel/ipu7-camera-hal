@@ -560,7 +560,7 @@ TerminalDescriptor SW_NNTMTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_IN,
-        8034, // nntm_1_2
+        27456, // nntm_1_2
     },
     {
         SW_NNTM_TERMINAL_CONNECT_OUTPUT_1,
@@ -591,7 +591,7 @@ TerminalDescriptor SW_B2BTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_IN,
-        17306, // b2b
+        23614, // b2b
     },
     {
         SW_B2B_TERMINAL_CONNECT_OUTPUT,
@@ -600,7 +600,7 @@ TerminalDescriptor SW_B2BTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        17306, // b2b
+        23614, // b2b
     },
 };
 
@@ -666,7 +666,7 @@ TerminalDescriptor SW_AINRTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_IN,
-        0, // ainr
+        57271, // ainr
     },
     {
         SW_AINR_TERMINAL_CONNECT_OUTPUT,
@@ -675,7 +675,7 @@ TerminalDescriptor SW_AINRTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        0, // ainr
+        57271, // ainr
     },
 };
 

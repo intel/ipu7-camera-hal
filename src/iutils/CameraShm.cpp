@@ -223,7 +223,9 @@ void CameraSharedMemory::openSemLock() {
             LOG1("Open the sem lock");
         }
     } else {
-        chmod(SEM_FD_NAME, 0666);
+        if (chmod(SEM_FD_NAME, 0666) != 0) {
+            LOGW("Failed to chmod %s: %s", SEM_FD_NAME, strerror(errno));
+        }
         LOG1("Create the sem lock");
         return;
     }
@@ -250,7 +252,9 @@ void CameraSharedMemory::openSemLock() {
         if (mSemLock == SEM_FAILED) {
             LOGE("failed to re-create sem lock, errno: %s\n", strerror(errno));
         } else {
-            chmod(SEM_FD_NAME, 0666);
+            if (chmod(SEM_FD_NAME, 0666) != 0) {
+                LOGW("Failed to chmod %s: %s", SEM_FD_NAME, strerror(errno));
+            }
         }
     }
 }

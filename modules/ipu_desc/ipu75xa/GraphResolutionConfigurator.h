@@ -77,6 +77,7 @@ enum class GraphResolutionConfiguratorKernelRole : uint8_t
     UpScaler,
     DownScaler,
     DownScalerSmall,
+    DownScalerOutput,
     EspaCropper,
     CasEspaCropper,
     EspaCropperSmall,
@@ -86,6 +87,10 @@ enum class GraphResolutionConfiguratorKernelRole : uint8_t
     TnrScaler,
     TnrFeederFull,
     TnrFeederSmall,
+    McFeederFull,
+    McFeederSmall,
+    McFull,
+    McSmall,
     Smurf,
     SmurfFeeder,
     None
@@ -221,6 +226,23 @@ protected:
     StaticGraphStatus getDownscalerInputRoi(const RegionOfInterest& userRoi, ResolutionRoi& pipeInputRoi);
 
     StaticGraphStatus updateRunKernelOfScalers(ResolutionRoi& roi, bool& isFragmentsChanged);
+
+    void updateAfterRecalculation(StaticGraphStatus& ret, bool& isFragmentsChanged);
+
+    // Applies userRoi (downscaler ROI + scaler/fragment update). Returns SG_ERROR when
+    // configuration fails (e.g. illegal b2i_ds stripe width).
+    StaticGraphStatus applyUserRoi(const RegionOfInterest& userRoi, ResolutionRoi& downscalerInputRoi, bool& isFragmentsChanged);
+
+    // On an illegal b2i_ds stripe width, selects the nearest legal Pan while preserving Zoom
+    // and Tilt in PTZ mode, or nudges Zoom while keeping Pan and Tilt centered in centered-zoom mode.
+    StaticGraphStatus findNearestLegalRoi(const RegionOfInterest& originalUserRoi, bool isCenteredZoom,
+        RegionOfInterest& correctedUserRoi, ResolutionRoi& downscalerInputRoi, bool& isFragmentsChanged);
+
+    // Maps the "danger zone" between Espa stripe vanish (128px input) and the first legal
+    // b2i_ds_output stripe width (64px output) into ROI pan/zoom factor units. That width is
+    // the step findNearestLegalRoi() uses when nudging PTZ off an illegal stripe boundary.
+    // Returns SG_OK with outMinPanStep == 0 when no DownScalerOutput or the zone is empty.
+    StaticGraphStatus computeMinimumSafePanStep(double zoomFactor, double& outMinPanStep);
 
     StaticGraphStatus updateRunKernelDownScaler(StaticGraphRunKernel* runKernel, ResolutionRoi& roi, uint32_t& outputWidth, uint32_t& outputHeight);
     virtual StaticGraphStatus updateRunKernelUpScaler(StaticGraphRunKernel* runKernel, ResolutionRoi& roi, StaticGraphKernelResCrop& cropperKernelCrop,

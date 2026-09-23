@@ -61,9 +61,9 @@ struct MediaEntity {
     unsigned int numLinks;
 
     char devname[32];
+    char acpiname[64];
 };
 
-static const string icvsName = "Intel CVS";
 MediaControl* MediaControl::sInstance = nullptr;
 Mutex MediaControl::sLock;
 
@@ -361,8 +361,8 @@ void MediaControl::closeDevice(int fd) {
 }
 
 void MediaControl::dumpInfo(media_device_info& devInfo) {
-    LOGI("Media controller API version %u.%u.%u\n\n", (devInfo.media_version << 16) & 0xff,
-         (devInfo.media_version << 8) & 0xff, (devInfo.media_version << 0) & 0xff);
+    LOGI("Media controller API version %u.%u.%u\n\n", (devInfo.media_version >> 16) & 0xff,
+         (devInfo.media_version >> 8) & 0xff, (devInfo.media_version >> 0) & 0xff);
 
     LOGI("Media device information\n"
          "------------------------\n"
@@ -373,8 +373,8 @@ void MediaControl::dumpInfo(media_device_info& devInfo) {
          "hw revision     0x%x\n"
          "driver version  %u.%u.%u\n\n",
          devInfo.driver, devInfo.model, devInfo.serial, devInfo.bus_info, devInfo.hw_revision,
-         (devInfo.driver_version << 16) & 0xff, (devInfo.driver_version << 8) & 0xff,
-         (devInfo.driver_version << 0) & 0xff);
+         (devInfo.driver_version >> 16) & 0xff, (devInfo.driver_version >> 8) & 0xff,
+         (devInfo.driver_version >> 0) & 0xff);
 
     for (uint32_t i = 0U; i < sizeof(devInfo.reserved) / sizeof(uint32_t); i++)
         LOGI("reserved[%u] %d", i, devInfo.reserved[i]);
@@ -468,7 +468,7 @@ int MediaControl::enumEntities(int fd, media_device_info& devInfo) {
 
         entity.pads = new MediaPad[entity.info.pads];
         entity.links = new MediaLink[entity.maxLinks];
-        (void)getDevnameFromSysfs(&entity);
+        (void)populateEntityNamesFromSysfs(&entity);
         mEntities.push_back(entity);
 
         /* Note: carefully to move the follow setting. It must be behind of
@@ -486,7 +486,7 @@ int MediaControl::enumEntities(int fd, media_device_info& devInfo) {
     return ret;
 }
 
-int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
+int MediaControl::populateEntityNamesFromSysfs(MediaEntity* entity) {
     char sysName[MAX_SYS_NAME] = {'\0'};
     char target[MAX_TARGET_NAME] = {'\0'};
     int ret;
@@ -505,7 +505,7 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
 
     ret = readlink(sysName, target, MAX_TARGET_NAME);
     if (ret <= 0) {
-        LOGE("readlink sysName %s failed ret %d.", sysName, ret);
+        LOGE("readlink entity %s sysName %s failed ret %d.", entity->info.name, sysName, ret);
         return -EINVAL;
     }
     target[MAX_TARGET_NAME - 1] = '\0';
@@ -530,6 +530,20 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
     } else {
         snprintf(entity->devname, sizeof(entity->devname), "/dev/%s", d);
     }
+
+    strlcat(sysName, "/device/firmware_node/path", sizeof(sysName));
+    FILE* fp = fopen(sysName, "rb");
+    if (fp) {
+        fgets(entity->acpiname, sizeof(entity->acpiname), fp);
+
+        size_t len = strlen(entity->acpiname);
+        if (len > 0 && entity->acpiname[len - 1] == '\n') {
+            entity->acpiname[len - 1] = '\0';
+        }
+
+        fclose(fp);
+    }
+    LOG1("name %s devname %s acpiname %s", entity->info.name, entity->devname, entity->acpiname);
 
     return 0;
 }
@@ -895,7 +909,7 @@ int MediaControl::setRouting(int cameraId, MediaCtlConf* mc, bool enableRouting)
 int MediaControl::setVideoNodeFormat(struct V4L2VideoNode* device, const stream_t* config) {
     PERF_CAMERA_ATRACE();
 
-    struct v4l2_format v4l2fmt;
+    struct v4l2_format v4l2fmt = {};
     v4l2fmt.fmt.pix_mp.field = config->field;
 
     v4l2fmt.fmt.pix.width = config->width;
@@ -981,33 +995,6 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
             (void)setFormat(cameraId, &fmt, width, height, field);
         } else if (fmt.formatType == FC_SELECTION) {
             (void)setSelection(cameraId, &fmt, width, height);
-        }
-    }
-
-    MediaEntity* icvs = getEntityByName(icvsName.c_str());
-    if (icvs) {
-        for (uint32_t i = 0; i < icvs->numLinks; ++i) {
-            if (icvs->links[i].sink->entity == icvs) {
-                MediaEntity* sensor = icvs->links[i].source->entity;
-                int sensor_entity_id = sensor->info.id;
-                LOG1("@%s, found %s -> %s", __func__, sensor->info.name, icvsName.c_str());
-                for (McLink& link : mc->links) {
-                    if (link.srcEntity == sensor_entity_id && link.sinkEntity != static_cast<int>(icvs->info.id)) {
-                        LOG1("@%s, skip %s, link %s -> %s", __func__, link.srcEntityName.c_str(),
-                             icvsName.c_str(), link.sinkEntityName.c_str());
-                        link.srcEntity = icvs->info.id;
-                        link.srcEntityName = icvsName;
-                        for (uint32_t j = 0; j < icvs->info.pads; ++j) {
-                            if (icvs->pads[j].flags & MEDIA_PAD_FL_SOURCE) {
-                                link.srcPad = j;
-                                break;
-                            }
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
         }
     }
 
@@ -1147,30 +1134,49 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
          sinkEntityName.c_str());
     CheckAndLogError(!i2cBus, UNKNOWN_ERROR, "i2cBus is nullptr");
 
+    MediaEntity* sinkEntity = getEntityByName(sinkEntityName);
+    if (!sinkEntity) {
+        return UNKNOWN_ERROR;
+    }
+
+    MediaEntity* sensorEntity = getEntityByName(sensorEntityName);
+    if (sensorEntity && isMediaSourceEntity(sensorEntity) &&
+        checkHasSource(sinkEntity, sensorEntityName)) {
+        const char* separator = strchr(sensorEntity->info.name, ' ');
+        if (separator != nullptr) {
+            *i2cBus = separator + 1;
+            LOG1("i2cBus is %s", i2cBus->c_str());
+            return OK;
+        }
+    }
+
+    const string sensorEntityPrefix = sensorEntityName + " ";
     for (auto& entity : mEntities) {
-        int linksCount = entity.info.links;
-        MediaLink* links = entity.links;
-        char* entityName = nullptr;
-        size_t sensorEntityNameLen = sensorEntityName.length();
-        for (int i = 0; i < linksCount; i++) {
-            if (strcmp(links[i].sink->entity->info.name, sinkEntityName.c_str()) == 0) {
-                entityName = entity.info.name;
-		 if (strcmp(entityName, icvsName.c_str()) == 0) {
-                    return getI2CBusAddress(sensorEntityName, icvsName, i2cBus);
-                }
-                break;
-            }
+        if (!isMediaSourceEntity(&entity) || strncmp(entity.info.name, sensorEntityPrefix.c_str(),
+                                                     sensorEntityPrefix.length()) != 0) {
+            continue;
         }
 
-        // entityName example: "imx319 10-0010", sensorEntityName example: "imx319"
-        if (entityName && (strlen(entityName) > (sensorEntityNameLen + 1U))) {
-            *i2cBus = entityName + sensorEntityNameLen + 1;
+        // VIDEO_PIXEL_ARRAY is the sensor entity. Find it through
+        // the topology instead of taking the first entity linked to CSI.
+        if (checkHasSource(sinkEntity, sensorEntityPrefix)) {
+            *i2cBus = entity.info.name + sensorEntityPrefix.length();
             LOG1("i2cBus is %s", i2cBus->c_str());
             return OK;
         }
     }
 
     return UNKNOWN_ERROR;
+}
+
+std::string MediaControl::acpiName2EntityName(const std::string& acpiName) {
+    for (auto& entity : mEntities) {
+        if (strcmp(entity.acpiname, acpiName.c_str()) == 0) {
+            return std::string(entity.info.name);
+        }
+    }
+
+    return "";
 }
 
 // DUMP_ENTITY_TOPOLOGY_S

@@ -32,7 +32,8 @@ PipeLine::PipeLine(int cameraId, int streamId, std::shared_ptr<GraphConfig> gc,
           mGraphConfig(gc),
           mScheduler(scheduler),
           mPSysDevice(nullptr),
-          mPacAdaptor(nullptr) {
+          mPacAdaptor(nullptr),
+          mTuningMode(static_cast<TuningMode>(0)) {
     LOG1("<id%d>@%s stream %d", mCameraId, __func__, mStreamId);
 }
 
@@ -374,7 +375,10 @@ status_t PipeLine::createPSysGraph(int32_t numLinks, GraphLink** links) {
         if (link->type != LinkType::Node2Node && link->type != LinkType::Node2Self) {
             continue;
         }
-        if (link->srcNode->type == NodeTypes::Isys) {
+        if (link->srcNode != nullptr && link->srcNode->type == NodeTypes::Isys) {
+            continue;
+        }
+        if (link->srcNode == nullptr || link->destNode == nullptr) {
             continue;
         }
 

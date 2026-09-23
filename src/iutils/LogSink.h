@@ -60,6 +60,7 @@ class StdconLogSink : public LogOutputSink {
 class FileLogSink : public LogOutputSink {
  public:
     FileLogSink();
+    ~FileLogSink();
     void sendOffLog(LogItem logItem) override;
 
  private:

@@ -14,4 +14,8 @@
 #  limitations under the License.
 #
 
-add_subdirectory(algowrapper)
+    add_subdirectory(algowrapper)
+
+if (SUPPORT_LIVE_TUNING)
+    add_subdirectory(livetune)
+endif() #SUPPORT_LIVE_TUNING

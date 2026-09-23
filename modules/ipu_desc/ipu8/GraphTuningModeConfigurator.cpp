@@ -11,7 +11,7 @@ bool GraphTuningModeConfigurator::SwitchTuningModeBasedOnKey(uint8_t tuningModeK
     for (int i = 0; i < graphTopology->numOfLinks; i++)
     {
         auto& link = graphTopology->links[i];
-        for (int j = 0; j < 2; ++j)
+        for (int j = 0; j < 4; ++j)
         {
             if (link->srcNode != nullptr && link->srcNode->nodeTuningModes[j].key == tuningModeKey && link->srcNode->nodeKernels.operationMode != link->srcNode->nodeTuningModes[j].id)
             {

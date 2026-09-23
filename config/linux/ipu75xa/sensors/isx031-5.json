@@ -30,11 +30,11 @@
             "output": [1920, 1536],
             "route" : [
               {
-                "name": "max9x a-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 4, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 0, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 0, "flag": 1
               },
               {
@@ -42,11 +42,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x b-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 5, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 1, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 1, "flag": 1
               },
               {
@@ -54,11 +54,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 6, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 2, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 2, "flag": 1
               },
               {
@@ -66,11 +66,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x d-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 7, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 3, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 3, "flag": 1
               },
               {
@@ -81,23 +81,23 @@
             "format": "V4L2_PIX_FMT_UYVY",
             "formats": [
               {
-                "name": "isx031 a-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x a-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x a-2", "pad": 2, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "pad": 1, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 4, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
@@ -109,23 +109,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 b-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1.CAM1", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x b-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x b-2", "pad": 2, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "pad": 1, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 5, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 1, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 1
               },
               {
@@ -137,23 +137,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 c-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2.CAM2", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c-2", "pad": 2, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "pad": 1, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 6, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 2, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 2
               },
               {
@@ -165,23 +165,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 d-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3.CAM3", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x d-2", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "pad": 0, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x d-2", "pad": 2, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "pad": 1, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 7, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 3, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1536,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1536,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 3
               },
               {
@@ -195,15 +195,15 @@
             ],
             "link": [
               {
-                "srcName": "isx031 a-2", "srcPad": 0, "sinkName": "max9x a-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH00.SER0",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x a-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 4, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH00.SER0", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -211,15 +211,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 16", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 b-2", "srcPad": 0, "sinkName": "max9x b-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH01.SER1.CAM1", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH01.SER1",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x b-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 5, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH01.SER1", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 1, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -227,15 +227,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 17", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 c-2", "srcPad": 0, "sinkName": "max9x c-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH02.SER2.CAM2", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH02.SER2",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x c-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 6, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH02.SER2", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 2, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -243,15 +243,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 18", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 d-2", "srcPad": 0, "sinkName": "max9x d-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH03.SER3.CAM3", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH03.SER3",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x d-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 7, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH03.SER3", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 3, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -267,7 +267,7 @@
                 "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
               },
               {
-                "name": "isx031 a-2", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
           },
@@ -277,11 +277,11 @@
             "output": [1920, 1080],
             "route" : [
               {
-                "name": "max9x a-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 4, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 0, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 0, "flag": 1
               },
               {
@@ -289,11 +289,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x b-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 5, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 1, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 1, "flag": 1
               },
               {
@@ -301,11 +301,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 6, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 2, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 2, "flag": 1
               },
               {
@@ -313,11 +313,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x d-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 7, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 3, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 3, "flag": 1
               },
               {
@@ -328,23 +328,23 @@
             "format": "V4L2_PIX_FMT_UYVY",
             "formats": [
               {
-                "name": "isx031 a-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x a-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x a-2", "pad": 2, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "pad": 1, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 4, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
@@ -356,23 +356,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 b-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1.CAM1", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x b-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x b-2", "pad": 2, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "pad": 1, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 5, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 1, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 1
               },
               {
@@ -384,23 +384,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 c-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2.CAM2", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c-2", "pad": 2, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "pad": 1, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 6, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 2, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 2
               },
               {
@@ -412,23 +412,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 d-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3.CAM3", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x d-2", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "pad": 0, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x d-2", "pad": 2, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "pad": 1, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 7, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 3, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1920, "height": 1080,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1920, "height": 1080,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 3
               },
               {
@@ -442,15 +442,15 @@
             ],
             "link": [
               {
-                "srcName": "isx031 a-2", "srcPad": 0, "sinkName": "max9x a-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH00.SER0",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x a-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 4, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH00.SER0", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -458,15 +458,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 16", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 b-2", "srcPad": 0, "sinkName": "max9x b-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH01.SER1.CAM1", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH01.SER1",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x b-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 5, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH01.SER1", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 1, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -474,15 +474,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 17", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 c-2", "srcPad": 0, "sinkName": "max9x c-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH02.SER2.CAM2", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH02.SER2",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x c-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 6, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH02.SER2", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 2, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -490,15 +490,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 18", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 d-2", "srcPad": 0, "sinkName": "max9x d-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH03.SER3.CAM3", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH03.SER3",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x d-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 7, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH03.SER3", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 3, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -514,7 +514,7 @@
                 "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
               },
               {
-                "name": "isx031 a", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
           },
@@ -524,11 +524,11 @@
             "output": [1280, 720],
             "route" : [
               {
-                "name": "max9x a-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 4, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 0, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 0, "flag": 1
               },
               {
@@ -536,11 +536,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x b-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 5, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 1, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 1, "flag": 1
               },
               {
@@ -548,11 +548,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 6, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 2, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 2, "flag": 1
               },
               {
@@ -560,11 +560,11 @@
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x d-2", "sinkPad": 0, "sinkStream": 0, "srcPad": 2,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "sinkPad": 0, "sinkStream": 0, "srcPad": 1,
                 "srcStream": 0, "flag": 1
               },
               {
-                "name": "max9x c", "sinkPad": 7, "sinkStream": 0, "srcPad": 0,
+                "acpiName": "\\_SB_.PC00.DES1", "sinkPad": 3, "sinkStream": 0, "srcPad": 4,
                 "srcStream": 3, "flag": 1
               },
               {
@@ -575,23 +575,23 @@
             "format": "V4L2_PIX_FMT_UYVY",
             "formats": [
               {
-                "name": "isx031 a-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x a-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x a-2", "pad": 2, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0", "pad": 1, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 4, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
@@ -603,23 +603,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 b-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1.CAM1", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x b-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x b-2", "pad": 2, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH01.SER1", "pad": 1, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 5, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 1, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 1
               },
               {
@@ -631,23 +631,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 c-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2.CAM2", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c-2", "pad": 2, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH02.SER2", "pad": 1, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 6, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 2, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 2
               },
               {
@@ -659,23 +659,23 @@
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "isx031 d-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3.CAM3", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x d-2", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "pad": 0, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x d-2", "pad": 2, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1.CH03.SER3", "pad": 1, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 7, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 3, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 0
               },
               {
-                "name": "max9x c", "pad": 0, "width": 1280, "height": 720,
+                "acpiName": "\\_SB_.PC00.DES1", "pad": 4, "width": 1280, "height": 720,
                 "format": "V4L2_MBUS_FMT_UYVY8_1X16", "stream": 3
               },
               {
@@ -689,15 +689,15 @@
             ],
             "link": [
               {
-                "srcName": "isx031 a-2", "srcPad": 0, "sinkName": "max9x a-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH00.SER0",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x a-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 4, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH00.SER0", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -705,15 +705,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 16", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 b-2", "srcPad": 0, "sinkName": "max9x b-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH01.SER1.CAM1", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH01.SER1",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x b-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 5, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH01.SER1", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 1, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -721,15 +721,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 17", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 c-2", "srcPad": 0, "sinkName": "max9x c-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH02.SER2.CAM2", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH02.SER2",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x c-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 6, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH02.SER2", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 2, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -737,15 +737,15 @@
                 "sinkName": "Intel IPU7 ISYS Capture 18", "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "isx031 d-2", "srcPad": 0, "sinkName": "max9x d-2",
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH03.SER3.CAM3", "srcPad": 0, "sinkAcpiName": "\\_SB_.PC00.DES1.CH03.SER3",
                 "sinkPad": 0, "enable": true
               },
               {
-                "srcName": "max9x d-2", "srcPad": 2, "sinkName": "max9x c",
-                "sinkPad": 7, "enable": true
+                "srcAcpiName": "\\_SB_.PC00.DES1.CH03.SER3", "srcPad": 1, "sinkAcpiName": "\\_SB_.PC00.DES1",
+                "sinkPad": 3, "enable": true
               },
               {
-                "srcName": "max9x c", "srcPad": 0,
+                "srcAcpiName": "\\_SB_.PC00.DES1", "srcPad": 4,
                 "sinkName": "Intel IPU7 CSI2 2", "sinkPad": 0, "enable": true
               },
               {
@@ -761,7 +761,7 @@
                 "name": "Intel IPU7 CSI2 2", "videoNodeType": "VIDEO_ISYS_RECEIVER"
               },
               {
-                "name": "isx031 a", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+                "acpiName": "\\_SB_.PC00.DES1.CH00.SER0.CAM0", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
           }

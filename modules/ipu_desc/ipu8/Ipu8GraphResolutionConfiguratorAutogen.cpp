@@ -34,6 +34,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuid(GraphResolutionConf
         case GraphResolutionConfiguratorKernelRole::UpScaler:    return 28787; // image_upscaler_1_1
         case GraphResolutionConfiguratorKernelRole::DownScaler:  return 40299; // b2i_ds_1_1
         case GraphResolutionConfiguratorKernelRole::EspaCropper:  return 65466; // lbff_crop_espa_1_4
+        case GraphResolutionConfiguratorKernelRole::DownScalerOutput:  return 50136; // b2i_ds_output_1_1
     }
 
     return 0;
@@ -119,8 +120,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 100234:    // Bayer_WithPdaf3asPdaf2_WithDvs_WithTnr
                     return 5637; // gdc7_1
                 case 100079:    // Bayer_NoPdaf_WithNntm_WithTnr
+                case 100162:    // Bayer_WithPdaf2_WithGdc_WithTnr_WithSap_WithNntm
                 case 100066:    // Bayer_WithPdaf2_NoGmv_WithTnr_WithNntm
                 case 100067:    // Bayer_WithPdaf2_WithDvs_WithTnr_WithNntm
+                case 100169:    // Bayer_WithPdaf2_WithDvs_WithTnr_WithSap_WithGdc_WithNntm
                 case 100045:    // Bayer_WithPdaf3_WithNntm_WithTnr
                 case 100012:    // Dol2Inputs_NoGmv_NoTnr
                 case 100014:    // Dol2Inputs_NoGmv_WithTnr
@@ -142,7 +145,167 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 100214:    // Dol2Inputs_NoGmv_WithTnr
                 case 100216:    // Dol3Inputs_NoBurst_NoGmv_NoTnr
                 case 100218:    // Dol3Inputs_NoBurst_NoGmv_WithTnr
-                    return 8034; // nntm_1_2
+                    return 27456; // nntm_1_2
+                case 200048:    // FourCell_NoPdaf_NoGmv_NoTnr
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
+                case 200049:    // FourCell_NoPdaf_WithDvs_NoTnr
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
+                case 200050:    // FourCell_NoPdaf_NoGmv_WithTnr
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
+                case 200051:    // FourCell_NoPdaf_WithDvs_WithTnr
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
+                case 200052:    // FourCell_NoPdaf_NoGmv_NoTnr_WithSap
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
+                case 200053:    // FourCell_NoPdaf_WithDvs_NoTnr_WithSap
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
+                case 200054:    // FourCell_NoPdaf_NoGmv_WithTnr_WithSap
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
+                case 200055:    // FourCell_NoPdaf_WithDvs_WithTnr_WithSap
+                    for (int i = 0; i < numberOfLinks; ++i)
+                    {
+                        if (links[i]->src == GraphElementType::SwImv &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwNntm &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 27456; // nntm_1_2;
+                        }
+                        if (links[i]->src == GraphElementType::SwGdc &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 5637; // gdc7_1;
+                        }
+                    }
+                    break;
                 case 200000:    // Bayer_NoPdaf_NoGmv_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
@@ -154,7 +317,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -174,7 +337,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -194,7 +357,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -214,7 +377,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -234,7 +397,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -254,7 +417,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -274,7 +437,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -294,7 +457,7 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -306,15 +469,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200008:    // Bayer_WithPdaf2_NoGmv_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -326,15 +484,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200009:    // Bayer_WithPdaf2_WithDvs_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -346,15 +499,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200010:    // Bayer_WithPdaf2_NoGmv_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -366,15 +514,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200011:    // Bayer_WithPdaf2_WithDvs_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -386,15 +529,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200012:    // Bayer_WithPdaf2_NoGmv_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -406,15 +544,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200013:    // Bayer_WithPdaf2_WithDvs_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -426,15 +559,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200014:    // Bayer_WithPdaf2_NoGmv_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -446,15 +574,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200015:    // Bayer_WithPdaf2_WithDvs_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -466,15 +589,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200016:    // Bayer_WithPdaf3_NoGmv_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -486,15 +604,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200017:    // Bayer_WithPdaf3_WithDvs_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -506,15 +619,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200018:    // Bayer_WithPdaf3_NoGmv_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -526,15 +634,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200019:    // Bayer_WithPdaf3_WithDvs_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -546,15 +649,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200020:    // Bayer_WithPdaf3_NoGmv_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -566,15 +664,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200021:    // Bayer_WithPdaf3_WithDvs_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -586,15 +679,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200022:    // Bayer_WithPdaf3_NoGmv_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -606,15 +694,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200023:    // Bayer_WithPdaf3_WithDvs_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -626,15 +709,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200024:    // Dol2Inputs_NoGmv_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -646,15 +724,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200025:    // Dol2Inputs_WithDvs_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -666,15 +739,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200026:    // Dol2Inputs_NoGmv_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -686,15 +754,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200027:    // Dol2Inputs_WithDvs_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -706,15 +769,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200028:    // Dol2Inputs_NoGmv_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -726,15 +784,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200029:    // Dol2Inputs_WithDvs_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -746,15 +799,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200030:    // Dol2Inputs_NoGmv_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -766,15 +814,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200031:    // Dol2Inputs_WithDvs_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -786,15 +829,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200032:    // Bayer_WithPdaf3asPdaf2_NoGmv_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -806,15 +844,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200033:    // Bayer_WithPdaf3asPdaf2_WithDvs_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -826,15 +859,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200034:    // Bayer_WithPdaf3asPdaf2_NoGmv_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -846,15 +874,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200035:    // Bayer_WithPdaf3asPdaf2_WithDvs_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -866,15 +889,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200036:    // Bayer_WithPdaf3asPdaf2_NoGmv_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -886,15 +904,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200037:    // Bayer_WithPdaf3asPdaf2_WithDvs_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -906,15 +919,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200038:    // Bayer_WithPdaf3asPdaf2_NoGmv_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -926,15 +934,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200039:    // Bayer_WithPdaf3asPdaf2_WithDvs_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -946,15 +949,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200040:    // Dol3Inputs_NoGmv_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -966,15 +964,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200041:    // Dol3Inputs_WithDvs_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -986,15 +979,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200042:    // Dol3Inputs_NoGmv_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -1006,15 +994,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200043:    // Dol3Inputs_WithDvs_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -1026,15 +1009,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200044:    // Dol3Inputs_NoGmv_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -1046,15 +1024,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200045:    // Dol3Inputs_WithDvs_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -1066,15 +1039,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200046:    // Dol3Inputs_NoGmv_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -1086,15 +1054,10 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200047:    // Dol3Inputs_WithDvs_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
-                        if (links[i]->src == GraphElementType::SwImv &&
-                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
-                        {
-                            return 23692; // imv;
-                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
-                            return 8034; // nntm_1_2;
+                            return 27456; // nntm_1_2;
                         }
                         if (links[i]->src == GraphElementType::SwGdc &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -1139,8 +1102,9 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
         kernelUuids.push_back(9385);  // cas_1_1
         kernelUuids.push_back(37951);  // odr_ofs_dp_1_4
         kernelUuids.push_back(5637);  // gdc7_1
+        kernelUuids.push_back(27456);  // nntm_1_2
+        kernelUuids.push_back(23692);  // imv
         kernelUuids.push_back(19706);  // sw_scaler
-        kernelUuids.push_back(8034);  // nntm_1_2
     }
     return StaticGraphStatus::SG_OK;
 }
@@ -1161,7 +1125,7 @@ GraphResolutionConfiguratorKernelRole GraphResolutionConfiguratorHelper::getKern
     {
         case 28787 : return GraphResolutionConfiguratorKernelRole::UpScaler; // image_upscaler_1_1
         case 40299 : return GraphResolutionConfiguratorKernelRole::DownScaler; // b2i_ds_1_1
-        case 50136 : return GraphResolutionConfiguratorKernelRole::DownScaler; // b2i_ds_output_1_1
+        case 50136 : return GraphResolutionConfiguratorKernelRole::DownScalerOutput; // b2i_ds_output_1_1
         case 65466 : return GraphResolutionConfiguratorKernelRole::EspaCropper; // lbff_crop_espa_1_4
         case 9385 : return GraphResolutionConfiguratorKernelRole::NonRcb; // cas_1_1
         case 16460 : return GraphResolutionConfiguratorKernelRole::Output; // odr_ofs_mp_1_4
@@ -1197,16 +1161,18 @@ uint32_t GraphResolutionConfiguratorHelper::getReferenceKernel(uint32_t kernelUu
     additionalFeaturesBit = 0; // Not supported, ignore
     switch (kernelUuid)
     {
-        case 29996 :     return 65466; // tnr_scaler_lb_1_1 from lbff_crop_espa_1_4
-        case 20623 :     return 65466; // tnr_scaler_fp_1_1 from lbff_crop_espa_1_4
+        case 40299 :     return 62703; // b2i_ds_1_1 from csc_1_1
         case 28787 :     return 65466; // image_upscaler_1_1 from lbff_crop_espa_1_4
-        case 50136 :     return 9385; // b2i_ds_output_1_1 from cas_1_1
         case 9385 :     return 28787; // cas_1_1 from image_upscaler_1_1
-        case 65437 :     return 20623; // odr_tnr_scale_fp_yuv4n_1_4 from tnr_scaler_fp_1_1
-        case 30019 :     return 54721; // xnr_5_4 from gltm_2_0
-        case 17531 :     return 36029; // acm_1_2 from glim_2_0
+        case 50136 :     return 9385; // b2i_ds_output_1_1 from cas_1_1
+        case 40280 :     return 51073; // gmv_statistics_1_1 from ifd_gmv_1_4
+        case 41148 :     return 40280; // odr_gmv_match_1_4 from gmv_statistics_1_1
+        case 29996 :     return 65466; // tnr_scaler_lb_1_1 from lbff_crop_espa_1_4
+        case 23639 :     return 29996; // tnr7_ims_1_2 from tnr_scaler_lb_1_1
         case 1502 :     return 23639; // tnr7_bc_1_2 from tnr7_ims_1_2
-        case 20119 :     return 16295; // tnr7_blend_1_1 from ifd_tnr_fp_blend_yuvnm1_1_4
+        case 20119 :     return 2495; // tnr7_blend_1_1 from tnr7_spatial_1_1
+        case 20623 :     return 20119; // tnr_scaler_fp_1_1 from tnr7_blend_1_1
+        case 65437 :     return 20623; // odr_tnr_scale_fp_yuv4n_1_4 from tnr_scaler_fp_1_1
     }
     return 0;
 }

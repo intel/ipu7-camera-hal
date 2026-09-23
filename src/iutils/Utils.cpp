@@ -620,8 +620,8 @@ void CameraUtils::getDeviceName(const char* entityName, string& deviceNodeName, 
             subDeviceName += dirp->d_name;
             subDeviceName += "/name";
             const int fd = open(subDeviceName.c_str(), O_RDONLY);
-            CheckAndLogError((fd < 0), VOID_VALUE, "@%s, open file %s failed. err: %s", __func__,
-                             subDeviceName.c_str(), strerror(errno));
+            CheckAndClean((fd < 0), VOID_VALUE, closedir(dp), "@%s, open file %s failed. err: %s",
+                          __func__, subDeviceName.c_str(), strerror(errno));
 
             char buf[128] = {'\0'};
             int len = read(fd, buf, sizeof(buf));

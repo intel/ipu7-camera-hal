@@ -73,8 +73,9 @@ enum class GraphConfigurationKeyAttributes : uint32_t
     WFov = 0x00001000,
     NFov = 0x00002000,
     DocScan = 0x00004000,
-    HighRes = 0x00008000,
+    HighRes90 = 0x00008000,
     AinrActive = 0x00010000,
+    HighRes110 = 0x00020000,
 };
 
 enum class TuningModeKeyAttributes : uint32_t
@@ -82,6 +83,8 @@ enum class TuningModeKeyAttributes : uint32_t
     None = 0x00000000,
     NormalLight = 0x00000001,
     LowLight = 0x00000002,
+    StrongLight = 0x00000003,
+    PowerSaving = 0x00000004,
 };
 
 struct GraphConfigurationKey {
