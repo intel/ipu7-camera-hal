@@ -975,8 +975,15 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
     CheckAndLogError(ret != OK, ret, "set media routings failed: ret = %d", ret);
     // VIRTUAL_CHANNEL_E
 
+    MediaEntity* icvs = getEntityByName(icvsName.c_str());
+
     /* Set format & selection in format Configuration */
     for (auto& fmt : mc->formats) {
+        if (fmt.entityName == icvsName) {
+            if (!icvs) continue;
+            fmt.entity = icvs->info.id;
+            fmt.entityName = icvs->info.name;
+        }
         if (fmt.formatType == FC_FORMAT) {
             (void)setFormat(cameraId, &fmt, width, height, field);
         } else if (fmt.formatType == FC_SELECTION) {
@@ -984,7 +991,6 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
         }
     }
 
-    MediaEntity* icvs = getEntityByName(icvsName.c_str());
     if (icvs) {
         for (uint32_t i = 0; i < icvs->numLinks; ++i) {
             if (icvs->links[i].sink->entity == icvs) {
