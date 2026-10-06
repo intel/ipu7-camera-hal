@@ -1157,9 +1157,10 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
             continue;
         }
 
-        // VIDEO_PIXEL_ARRAY is the sensor entity. Find it through
-        // the topology instead of taking the first entity linked to CSI.
-        if (checkHasSource(sinkEntity, sensorEntityPrefix)) {
+        // VIDEO_PIXEL_ARRAY is the sensor entity. Find it through the topology,
+        // matching this specific candidate's exact name instead of the shared
+        // name prefix, since multiple sensor instances (e.g. wf/uf) can share it.
+        if (checkHasSource(sinkEntity, std::string(entity.info.name))) {
             *i2cBus = entity.info.name + sensorEntityPrefix.length();
             LOG1("i2cBus is %s", i2cBus->c_str());
             return OK;
