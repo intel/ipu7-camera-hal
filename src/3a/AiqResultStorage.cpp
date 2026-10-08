@@ -64,6 +64,19 @@ void AiqResultStorage::resetAiqStatistics() {
     mCurrentAiqStatsIndex = -1;
 }
 
+#ifdef LINUX_PRIVACY_MODE
+void AiqResultStorage::resetAiqResults() {
+    AutoWMutex wlock(mDataLock);
+    LOG1("<id%d>@%s", mCameraId, __func__);
+
+    mCurrentIndex = -1;
+    for (int i = 0; i < kStorageSize; i++) {
+        mAiqResults[i]->mSequence = -1;
+        mAiqResults[i]->mFrameId = 0;
+    }
+}
+#endif
+
 const AiqStatistics* AiqResultStorage::getAndLockAiqStatistics() {
     AutoRMutex rlock(mDataLock);
 

@@ -43,6 +43,9 @@ RequestThread::RequestThread(int cameraId, AiqUnitBase *a3AControl) :
     mBlockRequest(true),
     mSofEnabled(false) {
     CLEAR(mFakeReqBuf);
+#ifdef LINUX_PRIVACY_MODE
+    mBackupModeActive = false;
+#endif
 
     mPerframeControlSupport = PlatformData::isFeatureSupported(mCameraId, PER_FRAME_CONTROL);
 
@@ -81,12 +84,16 @@ void RequestThread::resetSequence() {
     mLastAppliedSeq = -1;
     mLastSofSeq = -1;
     mBlockRequest = false;
-    for (size_t i = 0; i < mPendingRequests.size(); ++i) {
-        auto &req = mPendingRequests[i];
-        req.mBuffer[0]->sequence = i;
-        req.mBuffer[0]->frameNumber = i;
-    }
+    // A transition can leave increments without a matching completion event, which
+    // would block every later request.
+    mRequestsInProcessing = 0;
     LOG2("%s: reset processing state", __func__);
+}
+
+void RequestThread::reserveEffectSeqRange(int count) {
+    // mLastEffectSeq must stay lock-protected like every other write to it (see resetSequence()).
+    AutoMutex l(mPendingReqLock);
+    mLastEffectSeq = (count > 0) ? (count - 1) : -1;
 }
 #endif
 
@@ -178,6 +185,12 @@ bool RequestThread::blockRequest() {
      * 3. if no trigger event is available.
      */
     const int maxRequest = PlatformData::getMaxRequestsInflight(mCameraId);
+
+#ifdef LINUX_PRIVACY_MODE
+    if (mBackupModeActive.load()) {
+        return (mRequestsInProcessing >= maxRequest);
+    }
+#endif
 
     return ((mBlockRequest && (mLastCcaId >= 0)) ||
         (mRequestsInProcessing >= maxRequest) ||
@@ -441,7 +454,20 @@ void RequestThread::handleRequest(CameraRequest& request, int64_t applyingSeq) {
         effectSeq = mLastEffectSeq + 1;
     }
     // Reprocessing case, don't run 3A.
-    if (IS_INPUT_BUFFER(request.mBuffer[0]->timestamp, request.mBuffer[0]->sequence)) {
+    bool isReprocess = IS_INPUT_BUFFER(request.mBuffer[0]->timestamp, request.mBuffer[0]->sequence);
+#ifdef LINUX_PRIVACY_MODE
+    // Dummy frames carry no statistics, so skip 3A/CCA entirely and just hand out a
+    // monotonic effectSeq. Their leftover timestamp/sequence must also not be mistaken
+    // for a reprocessing request, which would replay the same frame forever.
+    if (mBackupModeActive.load()) {
+        std::lock_guard<std::mutex> l(mPendingReqLock);
+        effectSeq = ++mLastEffectSeq;
+        LOG2("%s: Backup-mode request: seq %ld, out buffer %d", __func__,
+             effectSeq, request.mBufferNum);
+    } else if (isReprocess) {
+#else
+    if (isReprocess) {
+#endif
         effectSeq = request.mBuffer[0]->sequence;
         LOG2("%s: Reprocess request: seq %ld, out buffer %d", __func__,
              effectSeq, request.mBufferNum);
@@ -469,6 +495,11 @@ void RequestThread::handleRequest(CameraRequest& request, int64_t applyingSeq) {
             // Check the final prediction value from 3A
             if (effectSeq <= mLastEffectSeq) {
                 LOG2("predict effectSeq %ld, last effect %ld", effectSeq, mLastEffectSeq);
+#ifdef LINUX_PRIVACY_MODE
+                // 3A does not know about the range reserved by reserveEffectSeqRange();
+                // reusing a settingSeq would pin the output to an already delivered buffer.
+                effectSeq = mLastEffectSeq + 1;
+#endif
             }
 
             mLastEffectSeq = effectSeq;

@@ -76,7 +76,10 @@ class CameraStream : public BufferConsumer, public EventSource {
      */
     virtual int onBufferAvailable(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer);
 #ifdef LINUX_PRIVACY_MODE
-    virtual void setBufferProducer(BufferProducer* producer);
+    // Swap to a new producer and move the in-flight buffers over. Not an override of
+    // BufferConsumer::setBufferProducer(), which only attaches and is used at start.
+    // Returns how many buffers were handed to the new producer.
+    int redirectBufferProducer(BufferProducer* producer);
 #endif
 
  private:
@@ -91,9 +94,10 @@ class CameraStream : public BufferConsumer, public EventSource {
     CameraBufVector mInputBuffersPool;
 
 #ifdef LINUX_PRIVACY_MODE
-    // Container to track buffers currently being processed by this CameraStream
-    // These buffers are queued via qbuf and removed when onFrameAvailable is called
+    // Buffers queued to the producer, removed again when they are delivered back.
+    // Tracked individually so they can be moved to another producer on a shutter switch.
     CameraBufVector mBufferInProcessing;
+    int64_t mLastUserSequence;
 #else
     // How many user buffers are currently processing underhood.
     int mBufferInProcessing;

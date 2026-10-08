@@ -247,6 +247,13 @@ void BufferQueue::returnBuffers(std::map<uuid, std::shared_ptr<CameraBuffer> >& 
 int BufferQueue::allocProducerBuffers(int camId, int bufNum) {
     LOG1("%s: buffer queue size %d", __func__, bufNum);
 
+    for (auto& item : mInternalBuffers) {
+        for (auto& buf : item.second) {
+            if (buf != nullptr) {
+                buf->freeMemory();
+            }
+        }
+    }
     mInternalBuffers.clear();
 
     CheckAndLogError(mBufferProducer == nullptr, BAD_VALUE, "@%s: Buffer Producer is nullptr",

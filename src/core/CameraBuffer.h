@@ -129,6 +129,7 @@ class CameraBuffer {
 
     // Buffers are allocated the buffers by Camera
     int allocateMemory(V4L2VideoNode* vDevice = nullptr);
+    void freeMemory();
 
     static void* mapDmaBufferAddr(int fd, unsigned int bufferSize);
     static void unmapDmaBufferAddr(void* addr, unsigned int bufferSize);
@@ -139,7 +140,6 @@ class CameraBuffer {
 
     void setUserBufferInfo(int format, int width, int height, void* usrPtr);
 
-    void freeMemory();
     int exportMmapDmabuf(V4L2VideoNode* vDevice);
     int allocateMmap(V4L2VideoNode* dev);
     void freeMmap();

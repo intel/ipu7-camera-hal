@@ -35,10 +35,10 @@ class SofSource : public EventSource {
     int stop();
 
     int poll();
+    int deinitDev();
 
  private:
     int initDev();
-    int deinitDev();
 
     PollThread<SofSource>* mPollThread;
     int32_t mFlushFd[2];  // Flush file descriptor

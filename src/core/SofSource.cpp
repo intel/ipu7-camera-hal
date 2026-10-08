@@ -127,6 +127,7 @@ int SofSource::deinitDev() {
     } else {
         LOGE("Failed to unsubscribe SOF event %d", vcId);
     }
+    mIsysReceiverSubDev = nullptr;
 
     return status;
 }

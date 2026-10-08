@@ -83,6 +83,21 @@ void DeviceBase::closeDevice() {
     mDevice->Close();
 }
 
+#ifdef LINUX_PRIVACY_MODE
+void DeviceBase::releaseBuffers() {
+    LOG1("<id%d>%s, device:%s", mCameraId, __func__, mName);
+
+    // STREAMOFF + REQBUFS(0) on the still-open fd before closing device.
+    mDevice->Stop(true);
+    {
+        AutoMutex l(mBufferLock);
+        mPendingBuffers.clear();
+        mBuffersInDevice.clear();
+        mAllocatedBuffers.clear();
+    }
+}
+#endif
+
 int DeviceBase::configure(uuid port, const stream_t& config, uint32_t bufferNum) {
     LOG1("<id%d>%s, device:%s, port:%d", mCameraId, __func__, mName, port);
 
@@ -168,6 +183,9 @@ int DeviceBase::queueBuffer(int64_t sequence) {
 
     int ret = onQueueBuffer(sequence, buffer);
     if (ret == OK) {
+        if (buffer->getMemory() == V4L2_MEMORY_MMAP) {
+            buffer->getV4L2Buffer().SetBytesUsed(0, 0);
+        }
         ret = mDevice->PutFrame(&buffer->getV4L2Buffer());
 
         if (ret >= 0) {
@@ -177,6 +195,8 @@ int DeviceBase::queueBuffer(int64_t sequence) {
         } else {
             LOGE("%s, index:%u size:%u, memory:%u, used:%u", __func__, buffer->getIndex(),
                  buffer->getBufferSize(), buffer->getMemory(), buffer->getBytesused());
+            AutoMutex l(mBufferLock);
+            mPendingBuffers.pop_front();
         }
     } else {
         LOGE("Device:%s failed to preprocess the buffer with ret=%d", mName, ret);
@@ -193,23 +213,43 @@ int DeviceBase::queueBuffer(int64_t sequence) {
 int DeviceBase::dequeueBuffer() {
     LOG2("<id%d>%s, device:%s", mCameraId, __func__, mName);
 
-    shared_ptr<CameraBuffer> camBuffer = getFirstDeviceBuffer();
-    CheckAndLogError(camBuffer == nullptr, UNKNOWN_ERROR, "No buffer in device:%s.", mName);
+    shared_ptr<CameraBuffer> firstBuffer = getFirstDeviceBuffer();
+    CheckAndLogError(firstBuffer == nullptr, UNKNOWN_ERROR, "No buffer in device:%s.", mName);
 
-    int ret = OK;
-    const int targetIndex = camBuffer->getIndex();
+    const int targetIndex = firstBuffer->getIndex();
 
-    V4L2Buffer& vbuf = camBuffer->getV4L2Buffer();
+    V4L2Buffer vbuf(firstBuffer->getV4L2Buffer());
     int actualIndex = mDevice->GrabFrame(&vbuf);
 
     CheckAndLogError(actualIndex < 0, BAD_VALUE, "Device grabFrame failed:%d", actualIndex);
+
+    shared_ptr<CameraBuffer> camBuffer = nullptr;
+    {
+        AutoMutex l(mBufferLock);
+        for (auto it = mBuffersInDevice.begin(); it != mBuffersInDevice.end(); ++it) {
+            if ((*it)->getIndex() == static_cast<uint32_t>(actualIndex)) {
+                camBuffer = *it;
+                mBuffersInDevice.erase(it);
+                break;
+            }
+        }
+    }
+
+    if (camBuffer == nullptr) {
+        LOGE("<id%d>%s, Dequeued buffer index %d not found in mBuffersInDevice",
+             mCameraId, __func__, actualIndex);
+        return BAD_VALUE;
+    }
+
+    camBuffer->getV4L2Buffer() = vbuf;
+    mLatestSequence = camBuffer->getSequence();
+
     if (actualIndex != targetIndex) {
-        LOGE("%s, CamBuf index isn't same with index used by kernel", __func__);
-        ret = BAD_VALUE;
+        LOGW("<id%d>%s, CamBuf index (%d) out of order with expected target (%d)",
+             mCameraId, __func__, actualIndex, targetIndex);
     }
 
     mNeedSkipFrame = needQueueBack(camBuffer);
-    popBufferFromDevice();
 
     PERF_CAMERA_ATRACE_PARAM3("grabFrame SeqID", camBuffer->getSequence(), "csi2_port",
                               camBuffer->getCsi2Port(), "virtual_channel",
@@ -220,7 +260,7 @@ int DeviceBase::dequeueBuffer() {
     if (mFrameSkipNum > 0) {
         mFrameSkipNum--;
     }
-    return ret;
+    return OK;
 }
 
 int DeviceBase::getBufferNumInDevice() {
@@ -247,6 +287,21 @@ bool DeviceBase::hasPendingBuffer() {
 
 void DeviceBase::addPendingBuffer(const shared_ptr<CameraBuffer>& buffer) {
     AutoMutex l(mBufferLock);
+
+    for (const auto& buf : mPendingBuffers) {
+        if (buf->getIndex() == buffer->getIndex()) {
+            LOG2("<id%d>%s: buffer index %u already in pending queue", mCameraId, __func__,
+                 buffer->getIndex());
+            return;
+        }
+    }
+    for (const auto& buf : mBuffersInDevice) {
+        if (buf->getIndex() == buffer->getIndex()) {
+            LOG2("<id%d>%s: buffer index %u already in device", mCameraId, __func__,
+                 buffer->getIndex());
+            return;
+        }
+    }
 
     mPendingBuffers.push_back(buffer);
 }
@@ -347,7 +402,13 @@ int MainDevice::onDequeueBuffer(shared_ptr<CameraBuffer> buffer) {
 
     DeviceBase::dumpFrame(buffer);
 
-    for (auto& consumer : DeviceBase::mConsumers) {
+    std::set<BufferConsumer*> consumers;
+    {
+        AutoMutex l(DeviceBase::mConsumerLock);
+        consumers = DeviceBase::mConsumers;
+    }
+
+    for (auto& consumer : consumers) {
         consumer->onBufferAvailable(DeviceBase::mPort, buffer);
     }
 
@@ -366,6 +427,19 @@ int MainDevice::onDequeueBuffer(shared_ptr<CameraBuffer> buffer) {
 
 bool MainDevice::needQueueBack(shared_ptr<CameraBuffer> buffer) {
     bool needSkipFrame = (DeviceBase::mFrameSkipNum > 0);
+
+#ifdef LINUX_PRIVACY_MODE
+    // ISYS can return a late frame after the Normal->Backup handoff detached all
+    // consumers; requeue it instead of delivering it into a dead path.
+    {
+        AutoMutex l(DeviceBase::mConsumerLock);
+        if (DeviceBase::mConsumers.empty()) {
+            LOG2("<seq%u>%s: drop orphan ISYS frame, no consumer left", buffer->getSequence(),
+                 __func__);
+            return true;
+        }
+    }
+#endif
 
     const V4L2Buffer& vbuf = buffer->getV4L2Buffer();
     // Check for STR2MMIO Error from kernel space

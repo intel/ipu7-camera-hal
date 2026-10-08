@@ -128,6 +128,12 @@ int CBStage::configure(const StaticGraphNodeKernels& kernelGroup, const GraphLin
     ret = pacConfig(kernelGroup, &iaAicBuf, terminalConfig, termBufMap);
     CheckAndLogError(ret != OK, ret, "Failed to config PAC ret %d", ret);
 
+#ifdef LINUX_PRIVACY_MODE
+    // Kept for reapplyPacConfig() after a reinitAic().
+    mKernelGroup = &kernelGroup;
+    mStoredTerminalConfig = terminalConfig;
+#endif
+
     // Register buffers into driver
     ret = registerMetadataBuffer(&iaAicBuf, termBufMap);
     CheckAndLogError(ret != OK, ret, "Failed to register metadata buffers ret %d", ret);
@@ -337,6 +343,25 @@ void CBStage::updateInfoAndSendEvents(StageTask* task) {
 }
 
 int32_t CBStage::allocateFrameBuffers() {
+#ifdef LINUX_PRIVACY_MODE
+    // A privacy restart re-enters start(). The previous buffers are still queued in the
+    // upstream stage, so reallocating strands them and grows the working set every switch.
+    if (mFrameBuffersAllocated) {
+        if (mBufferProducer != nullptr) {
+            for (const auto& item : mInternalBuffers) {
+                for (const auto& buf : item.second) {
+                    if (buf != nullptr && buf->getBufferAddr() != nullptr) {
+                        memset(buf->getBufferAddr(), 0, buf->getBufferSize());
+                    }
+                    mBufferProducer->qbuf(item.first, buf);
+                }
+            }
+        }
+        return OK;
+    }
+    mFrameBuffersAllocated = true;
+#endif
+
     mInternalOutputBuffers.clear();
     // Allocate internal output buffers to support pipe execution without user output buffer
     for (auto const& item : mOutputFrameInfo) {
@@ -360,11 +385,107 @@ int32_t CBStage::allocateFrameBuffers() {
 }
 
 int CBStage::start() {
+#ifdef LINUX_PRIVACY_MODE
+    if (mNeedReconfigAic) {
+        int ret = reapplyPacConfig();
+        CheckAndLogError(ret != OK, ret, "%s, Failed to reapply pac config", __func__);
+        mNeedReconfigAic = false;
+    }
+
+    // The psys device fd (and its mappings) was closed in stop(); re-map all terminal
+    // and node2self buffers onto the reopened fd before any task references them.
+    for (auto& bufmap : mTerminalBufferMaps) {
+        for (auto& item : bufmap.second.mMetadataBufferMap) {
+            int ret = mPSysDevice->registerBuffer(&item.second);
+            CheckAndLogError(ret != OK, ret, "%s, Failed to re-register metadata buffer",
+                             __func__);
+            mUserToTerminalBuffer[item.second.userPtr] = item.second;
+        }
+        for (auto& item : bufmap.second.mPayloadBufferMap) {
+            int ret = mPSysDevice->registerBuffer(&item.second);
+            CheckAndLogError(ret != OK, ret, "%s, Failed to re-register payload buffer",
+                             __func__);
+            mUserToTerminalBuffer[item.second.userPtr] = item.second;
+        }
+    }
+
+    for (auto& it : mNode2SelfBuffers) {
+        for (auto& buf : it.second) {
+            int ret = mPSysDevice->registerBuffer(&buf);
+            CheckAndLogError(ret != OK, ret, "%s, Failed to re-register node2self buffer",
+                             __func__);
+            mUserToTerminalBuffer[buf.userPtr] = buf;
+        }
+    }
+#endif
     return allocateFrameBuffers();
 }
 
+#ifdef LINUX_PRIVACY_MODE
+// Re-run configAic + registerAicBuf after reinitAic() cleared the CCA buffer table.
+// The PSYS buffers themselves are still allocated, so only the registration is redone.
+int CBStage::reapplyPacConfig() {
+    if (mKernelGroup == nullptr) {
+        return OK;
+    }
+
+    LOG1("<id%d>@%s: stream %d ctx %d", mCameraId, __func__, mStreamId, mContextId);
+
+    memset(mIaAicBuf, 0, sizeof(aic::IaAicBuffer) * mTerminalDescCount * kMaxTerminalBufArray);
+    aic::IaAicBuffer* iaAicBuf = mIaAicBuf;
+    PacTerminalBufMap termBufMap;
+
+    int ret = pacConfig(*mKernelGroup, &iaAicBuf, mStoredTerminalConfig, termBufMap,
+                        true /*reinit*/);
+    CheckAndLogError(ret != OK, ret, "%s, Failed to reapply pac config", __func__);
+
+    ret = registerMetadataBuffer(&iaAicBuf, termBufMap);
+    CheckAndLogError(ret != OK, ret, "%s, Failed to re-register metadata buffers", __func__);
+
+    ret = mPacAdapt->setPacTerminalData(mStreamId, mContextId, termBufMap);
+    CheckAndLogError(ret != OK, ret, "%s, Failed to set PAC terminal data", __func__);
+
+    return OK;
+}
+#endif
+
 int CBStage::stop() {
+#ifndef LINUX_PRIVACY_MODE
     mInternalOutputBuffers.clear();
+#endif
+
+#ifdef LINUX_PRIVACY_MODE
+    // The frame buffers are freed and re-mmap'd before the next start, and mmap hands
+    // back the same addresses. PSysDevice keys its IPU mappings on those addresses, so a
+    // surviving entry would make PSys read the previous buffer's pages.
+    {
+        std::lock_guard<std::mutex> l(mDataLock);
+        for (auto& it : mFrameTerminalBuffers) {
+            mPSysDevice->unregisterBuffer(&it.second);
+        }
+        mFrameTerminalBuffers.clear();
+    }
+
+    // Zero node2self buffers so a restart doesn't reuse stale frame data, and drop their
+    // mappings: the psys fd is about to be closed, invalidating the old handles.
+    for (auto& it : mNode2SelfBuffers) {
+        for (auto& buf : it.second) {
+            if (buf.userPtr != nullptr) {
+                memset(buf.userPtr, 0, buf.size);
+            }
+            mPSysDevice->unregisterBuffer(&buf);
+        }
+    }
+    mNode2SelfBufIndex = 0;
+
+    // Purge any stale in-flight task objects and clear buffer queues.
+    {
+        std::lock_guard<std::mutex> l(mDataLock);
+        mStageTaskList.clear();
+    }
+    BufferQueue::clearBufferQueues();
+#endif
+
     return OK;
 }
 
@@ -696,7 +817,8 @@ int CBStage::getKernelOffsetFromPayloadDesc(const StaticGraphNodeKernels& kernel
 
 int CBStage::pacConfig(const StaticGraphNodeKernels& kernelGroup, aic::IaAicBuffer** iaAicPtr,
                        std::unordered_map<uint8_t, TerminalConfig>& terminalConfig,
-                       PacTerminalBufMap& termBufMap) {
+                       PacTerminalBufMap& termBufMap,
+                       bool reinit) {
     uint32_t* offsetPtr = mKernelOffsetBuf;
 
     cca::cca_aic_config aicConfig{};
@@ -741,8 +863,11 @@ int CBStage::pacConfig(const StaticGraphNodeKernels& kernelGroup, aic::IaAicBuff
                                    CBLayoutUtils::getStatsBufToTermIds());
     CheckAndLogError(ret != OK, ret, "Failed to config PAC");
 
-    ret = allocPayloadBuffer(pacConfig, terminalConfig);
-    CheckAndLogError(ret != OK, ret, "Failed to alloc payload buffer %d", ret);
+    // Already allocated when called from reapplyPacConfig().
+    if (!reinit) {
+        ret = allocPayloadBuffer(pacConfig, terminalConfig);
+        CheckAndLogError(ret != OK, ret, "Failed to alloc payload buffer %d", ret);
+    }
 
     ret = registerPayloadBuffer(iaAicPtr, termBufMap);
     CheckAndLogError(ret != OK, ret, "Failed to register buffers %d", ret);
@@ -884,6 +1009,13 @@ int CBStage::addFrameTerminals(std::unordered_map<uint8_t, TerminalBuffer>* term
 
         int ret = mPSysDevice->registerBuffer(&terminalBuf);
         CheckAndLogError(ret != OK, ret, "Failed to register outBuffers ret %d", ret);
+
+#ifdef LINUX_PRIVACY_MODE
+        {
+            std::lock_guard<std::mutex> l(mDataLock);
+            mFrameTerminalBuffers[terminalBuf.psysBuf.base.fd] = terminalBuf;
+        }
+#endif
 
         (*terminalBuffers)[terminalId] = terminalBuf;
 

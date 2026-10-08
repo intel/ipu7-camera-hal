@@ -122,6 +122,16 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
      */
     virtual int configure(const std::map<uuid, stream_t>& outputFrames);
 
+#ifdef LINUX_PRIVACY_MODE
+    /**
+     * \brief Re-apply the stored stream configuration, so the ISYS devices are fully
+     *        re-created before streaming restarts.
+     *
+     * \return OK if succeed, other value indicates failed
+     */
+    int reconfigure();
+#endif
+
     // Override EventSource API to delegate the listeners to DeviceBase.
     virtual void registerListener(EventType eventType, EventListener* eventListener);
     virtual void removeListener(EventType eventType, EventListener* eventListener);
