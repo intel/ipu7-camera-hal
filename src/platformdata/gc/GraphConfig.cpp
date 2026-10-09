@@ -58,7 +58,7 @@ GraphConfig::GraphConfig(int32_t camId, ConfigMode mode) : mCameraId(camId), mSe
                       "%s: failed to init graph reader", __func__);
 }
 
-GraphConfig::GraphConfig() : mCameraId(-1) { }
+GraphConfig::GraphConfig() : mCameraId(-1), mSensorRatio(0.0f) { }
 
 GraphConfig::~GraphConfig() {
     for (auto& graph : mStaticGraphs) graph.second.clear();
@@ -717,7 +717,8 @@ void GraphConfig::saveLink(int32_t streamId, const GraphLink* link,
         return;
     }
     // Ignore link: src="-1:Sensor:0" dest="2:Isys:0" type="Source2Node"
-    if ((link->type == LinkType::Source2Node) && (link->destNode->type == NodeTypes::Isys)) {
+    if ((link->type == LinkType::Source2Node) &&
+        (link->destNode != nullptr && link->destNode->type == NodeTypes::Isys)) {
         return;
     }
 
@@ -727,7 +728,8 @@ void GraphConfig::saveLink(int32_t streamId, const GraphLink* link,
         // src="-1:LscBuffer:0" dest="0:LbffBayer:4" type="Source2Node"
         ipuLink.isEdge = true;
         hasNecessaryNode = link->destNode;
-    } else if ((link->type == LinkType::Node2Node) && (link->srcNode->type == NodeTypes::Isys)) {
+    } else if ((link->type == LinkType::Node2Node) &&
+               (link->srcNode != nullptr && link->srcNode->type == NodeTypes::Isys)) {
         // src="2:Isys:1" dest="0:LbffBayer:3" type="Node2Node"
         ipuLink.isEdge = true;
         hasNecessaryNode = link->destNode;
@@ -799,8 +801,25 @@ status_t GraphConfig::fillConnectionFormat(const IpuGraphLink& ipuLink, const Ou
         }
     }
     int32_t bpp = useDest ? kernel->bpp_info.input_bpp : kernel->bpp_info.output_bpp;
-    fmtSettings->fourcc = GraphUtils::getFourccFmt(node->resourceId, terminal, bpp);
-    fmtSettings->format = CameraUtils::getV4L2Format(fmtSettings->fourcc);
+    // Handle ISYS input to LBFF: use ISysRawFormat from sensor configuration
+    // instead of hardcoded SGRBG10 to support different Bayer patterns (GBRG, SRGGB, etc.)
+    if (ipuLink.isEdge && useDest &&
+        node->resourceId == NODE_RESOURCE_ID_LBFF &&
+        (terminal == LBFF_TERMINAL_CONNECT_MAIN_DATA_INPUT ||
+#ifdef IPU_SYSVER_ipu75
+         terminal == LBFF_TERMINAL_CONNECT_DOL_LONG ||
+#endif
+         terminal == LBFF_TERMINAL_CONNECT_LSC_INPUT)) {
+
+        int isysRawFormat = PlatformData::getISysRawFormat(mCameraId);
+        fmtSettings->fourcc = CameraUtils::getFourccFormat(isysRawFormat);
+        fmtSettings->format = isysRawFormat;
+        LOG1("%s: Using ISysRawFormat for LBFF MAIN_INPUT: %s (0x%x)", __func__,
+             CameraUtils::pixelCode2String(isysRawFormat), isysRawFormat);
+    } else {
+        fmtSettings->fourcc = GraphUtils::getFourccFmt(node->resourceId, terminal, bpp);
+        fmtSettings->format = CameraUtils::getV4L2Format(fmtSettings->fourcc);
+    }
 
     fmtSettings->bpl= CameraUtils::getBpl(fmtSettings->fourcc, fmtSettings->width);
     fmtSettings->bpp = CameraUtils::getBpp(fmtSettings->fourcc);

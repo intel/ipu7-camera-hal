@@ -269,6 +269,8 @@ class MediaControl {
     int getI2CBusAddress(const std::string& sensorEntityName, const std::string& sinkEntityName,
                          std::string* i2cBus);
 
+    std::string acpiName2EntityName(const std::string& acpiName);
+
  private:
     MediaControl& operator=(const MediaControl&);
     MediaControl(const char* devName);
@@ -287,7 +289,7 @@ class MediaControl {
     int enumEntities(int fd, media_device_info& devInfo);
 
     // get entity info.
-    int getDevnameFromSysfs(MediaEntity* entity);
+    int populateEntityNamesFromSysfs(MediaEntity* entity);
     MediaEntity* getEntityById(uint32_t id);
     MediaEntity* getEntityByName(const std::string &name);
     bool checkHasSource(const MediaEntity* sink, const std::string& source);

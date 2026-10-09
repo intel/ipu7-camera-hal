@@ -33,6 +33,8 @@ class Gen2FragmentsConfigurator
 public:
     static const int32_t MIN_STRIPE_WIDTH_BEFORE_TNR = 128;
     static const int32_t MIN_STRIPE_WIDTH_AFTER_TNR = 64;
+    // b2i_ds HW/PAL minimum non-vanished stripe output width (matches Resolutionary validation).
+    static const int32_t B2I_DS_MIN_STRIPE_OUTPUT_WIDTH = 64;
     static const int32_t UPSCALER_MAX_OUTPUT_WIDTH = 4672;
 
     Gen2FragmentsConfigurator(IStaticGraphConfig* staticGraph, OuterNode* node, uint8_t numberOfFragments);
@@ -40,15 +42,25 @@ public:
 
     StaticGraphStatus configureFragments(std::vector<SmurfKernelInfo*>& smurfKernels);
 
+    // True if the last configureFragments() failed due to an illegal (< 64px) b2i_ds stripe
+    // output width, as opposed to some other failure.
+    bool hadStripeWidthViolation() const { return _hadStripeWidthViolation; }
+
 protected:
     virtual bool enforceUpscalerAspectRatioConstraints() const { return true; }
 
-    StaticGraphStatus configFragmentsDownscaler(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments);
-    StaticGraphStatus configFragmentsCropper(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments);
+    StaticGraphStatus configFragmentsDownscaler(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments, bool isOutputScaler);
+    StaticGraphStatus configFragmentsCropper(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments, bool beforeTnr);
     StaticGraphStatus configFragmentsUpscaler(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments);
     StaticGraphStatus configFragmentsOutput(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments, bool isTnr);
     StaticGraphStatus configFragmentsTnrScaler(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments);
     StaticGraphStatus configFragmentsTnrFeeder(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, GraphResolutionConfiguratorKernelRole kernelRole);
+    virtual StaticGraphStatus configFragmentsTnrMcFeeder(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, GraphResolutionConfiguratorKernelRole kernelRole) {
+        (void)runKernel;
+        (void)kernelFragments;
+        (void)kernelRole;
+        return StaticGraphStatus::SG_OK;
+    }
     StaticGraphStatus configFragmentsSmurf(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, StaticGraphFragmentDesc* prevKernelFragments,
         std::vector<SmurfKernelInfo*>& smurfKernels);
     StaticGraphStatus configFragmentsSmurfFeeder(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments);
@@ -63,11 +75,17 @@ protected:
     OuterNode* _node = nullptr;
     IStaticGraphConfig* _staticGraph = nullptr;
     uint8_t _numberOfFragments = 0;
+    bool _hadStripeWidthViolation = false;
 
     std::map<uint32_t, std::vector<uint16_t>> _outputStartX;
 
     StaticGraphFragmentDesc* _tnrScalerFragments = nullptr;
     StaticGraphRunKernel* _tnrScalerRunKernel = nullptr;
+    StaticGraphRunKernel* _mcFullRefRunKernel = nullptr;
+    StaticGraphFragmentDesc* _mcFullRefFragments = nullptr;
+    StaticGraphRunKernel* _mcSmallRefRunKernel = nullptr;
+    StaticGraphFragmentDesc* _mcSmallRefFragments = nullptr;
+    StaticGraphRunKernel* _mcFullRunKernel = nullptr;
 };
 
 class Ipu8FragmentsConfigurator : public Gen2FragmentsConfigurator
@@ -83,4 +101,6 @@ public:
 
 protected:
     bool enforceUpscalerAspectRatioConstraints() const override { return false; }
+    StaticGraphStatus configFragmentsTnrMcFeeder(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, GraphResolutionConfiguratorKernelRole kernelRole);
 };
+

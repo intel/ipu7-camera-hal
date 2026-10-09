@@ -425,12 +425,14 @@ int CBStage::setTerminalLinkAndAllocNode2SelfBuffers(const GraphLink** links, ui
                 psysLink.dstTermId = link->destTerminalId;
                 break;
             case LinkType::Node2Node:
-                if (link->destNode->contextId == mOuterNodeCtxId) {
+                if ((link->destNode != nullptr) &&
+                    (link->destNode->contextId == mOuterNodeCtxId)) {
                     psysLink.srcNodeCtxId = 0xFF;  // can't know psys ctx id of other node
                     psysLink.srcTermId = 0xFF;
                     psysLink.dstNodeCtxId = mContextId;
                     psysLink.dstTermId = link->destTerminalId;
-                } else if (link->srcNode->contextId == mOuterNodeCtxId) {
+                } else if ((link->srcNode != nullptr) &&
+                           (link->srcNode->contextId == mOuterNodeCtxId)) {
                     psysLink.srcNodeCtxId = mContextId;
                     psysLink.srcTermId = link->srcTerminalId;
                     psysLink.dstNodeCtxId = 0xFF;

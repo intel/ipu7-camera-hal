@@ -105,10 +105,10 @@ enum class HwSink : uint8_t
     ProcessedMainSink,
     ProcessedSecondarySink,
     GmvMatchOutSink,
-    CvOutputSink,
     SegnetSecondarySink,
     PdafOutSink,
     AwbSveOutSink,
+    CvOutputSink,
     IrAeOutSink,
     IrAfStdOutSink,
     IrAwbStdOutSink,
@@ -137,7 +137,6 @@ enum class AdditionalFeaturesBitValues {
     NntmEnableBit = 1,
     GdcEnableBit = 2,
     B2bEnableBit = 4,
-    RemosaicEnableBit = 8,
     ImvEnableBit = 16,
     CasBeforUpscaleBit = 32,
     FullLtmEnableBit = 64,
@@ -171,19 +170,88 @@ struct StaticGraphKernelRes {
     StaticGraphKernelResCrop output_crop;
 };
 
-// ia_pal_system_api_io_buffer_1_4_t;
-// We add only the fields that are used by tests
 struct StaticGraphKernelSystemApiIoBuffer {
-    uint32_t x_output_offset_per_stripe[4];
-    uint32_t plane_start_address_per_stripe[12];
+    int32_t aligner_data_size;
+    uint8_t allocate;
+    int32_t arbiter_pin;
+    uint16_t block_height;
+    uint16_t block_width;
+    uint8_t buffer_1d_enable;
+    uint8_t buffer_user_info_reserved_0;
+    uint8_t buffer_user_info_reserved_1;
+    uint8_t chip_location;
+    uint8_t chroma_base_conversion;
+    uint8_t chroma_duplication;
+    uint8_t chroma_non_duplication_location;
+    uint8_t chroma_planes_order;
+    uint8_t component_in_valid_pixel;
     uint8_t component_precision;
+    uint8_t compression_mode;
+    uint8_t dpa_bypass;
+    uint16_t first_row_blocks_height;
+    uint16_t granularity_pointer_update;
+    uint8_t in_chroma_signed;
+    uint8_t in_luma_signed;
+    uint16_t last_row_blocks_height;
+    uint8_t local_link_id;
+    uint8_t luma_base_conversion;
+    uint32_t max_credits;
+    uint32_t max_stride;
+    uint8_t middle_ack_enable;
+    uint16_t middle_ack_line_number;
+    uint8_t middle_ack_mode_stall;
+    uint8_t mipi_csi_eof;
+    uint8_t mipi_enable;
+    uint8_t num_of_planes;
+    uint8_t num_of_queues;
+    uint8_t onep_pixel_order;
+    uint8_t out_chroma_signed;
+    uint8_t out_luma_signed;
+    uint16_t pace_message_pace_line;
+    uint16_t pace_message_ref_line;
+    uint8_t pixels_in_valid_cycle;
+    uint8_t plane_horiz_subsample_config[3];
+    uint8_t plane_max_burst_size[3];
+    uint32_t plane_offset_end_address[3];
+    uint32_t plane_offset_start_address[3];
+    uint32_t plane_start_address_per_stripe[12];
+    uint32_t plane_stride[3];
+    uint8_t plane_tile_height[3];
+    uint8_t plane_tile_width[3];
+    uint8_t plane_vert_subsample_config[3];
+    uint8_t plane_zlr_granularity[3];
+    uint8_t ppc;
+    uint8_t proc_ff_bypass;
+    uint16_t progress_message_line;
+    uint8_t snoop;
+    uint8_t stream_dt;
+    int32_t stream_dt_for_mipi_packet;
+    uint8_t stream_vc;
+    uint16_t stream_wc;
+    uint8_t streaming_mode;
+    uint8_t streaming_sw_managed;
+    uint8_t stride_ratio;
+    uint8_t subsample_yuv444_to_yuv422;
+    uint8_t tile_mode;
+    uint8_t tiling_type;
+    uint8_t traffic_class;
+    uint8_t unpack_alignment;
+    uint8_t use_attributes;
+    uint8_t vector_format;
+    uint8_t vertical_ordering_enable;
+    uint8_t vertical_ordering_sub_line;
+    uint32_t x_output_offset_per_stripe[4];
+    uint8_t zlr_transaction_enable;
 };
+static_assert(sizeof(StaticGraphKernelSystemApiIoBuffer) == 216, "io_buffer system API size mismatch");
 
-// ia_pal_system_api_b2i_ds_1_1_t;
 struct StaticGraphKernelSystemApiB2iDs {
     uint8_t is_striping;
     int32_t scaling_ratio;
 };
+static_assert(sizeof(StaticGraphKernelSystemApiB2iDs) == 8, "b2i_ds system API size mismatch");
+
+   
 
 #endif
 struct StaticGraphKernelBppConfiguration {
@@ -335,12 +403,12 @@ struct HwBitmaps {
 };
 
 enum class NodeTypes : uint8_t {
-    Isys,
     Cb,
+    Isys,
     Sw,
 };
 
-enum class GraphElementType : uint8_t {
+enum class GraphElementType : uint32_t {
     // Sources
     Sensor,
     LscBuffer,
@@ -357,10 +425,10 @@ enum class GraphElementType : uint8_t {
     ProcessedMain,
     ProcessedSecondary,
     GmvMatchOut,
-    CvOutput,
     SegnetSecondary,
     PdafOut,
     AwbSveOut,
+    CvOutput,
     IrAeOut,
     IrAfStdOut,
     IrAwbStdOut,
@@ -372,15 +440,11 @@ enum class GraphElementType : uint8_t {
     RawIsysPdaf,
     // Outer Nodes
 
-    Isys,
-
     LbffBayerNoGmvNoTnrNoSap,
 
-    SwB2b,
+    Isys,
 
     SwRemosaic,
-
-    SwAinr,
 
     SwGdc,
 
@@ -408,9 +472,13 @@ enum class GraphElementType : uint8_t {
 
     LbffBayerWithGmvWithTnrWithSap,
 
-    IsysPdaf2,
+    SwB2b,
+
+    SwAinr,
 
     LbffBayerPdaf2NoGmvNoTnrNoSap,
+
+    IsysPdaf2,
 
     LbffBayerPdaf2WithGmvNoTnrNoSap,
 
@@ -498,8 +566,6 @@ enum class GraphElementType : uint8_t {
 
     LbffDol3InputsWithGmvWithTnrWithSap,
 
-    LbffBayerPdaf2WithTnrWithSap,
-
     LbffRgbIrNoGmvNoTnrNoSap,
 
     LbffRgbIrIrNoGmvNoTnrNoSap,
@@ -539,14 +605,12 @@ enum class GraphElementType : uint8_t {
     LbffIrNoGmvWithTnrWithSap,
 
     LbffIrWithGmvWithTnrWithSap,
-
-    WithCv,
 };
 
 enum class LinkType : uint8_t {
     Source2Node,
-    Node2Node,
     Node2Sink,
+    Node2Node,
     Node2Self,
 };
 

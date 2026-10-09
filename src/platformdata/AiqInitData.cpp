@@ -262,7 +262,7 @@ ia_binary_data* AiqInitData::getNvm(int cameraId, const char* overwrittenFile, i
         if (CameraDump::isDumpTypeEnable(DUMP_NVM_DATA)) {
             ia_binary_data* nvmData = mNvm->getData();
             if (nvmData && nvmData->data && (nvmData->size > 0U)) {
-                BinParam_t bParam;
+                BinParam_t bParam = {};
                 bParam.bType = BIN_TYPE_GENERAL;
                 bParam.mType = M_NVM;
                 bParam.sequence = 0;

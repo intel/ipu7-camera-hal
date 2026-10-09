@@ -115,10 +115,23 @@ void CameraSensorsParser::parseMediaCtlRouteObject(const Json::Value& node, Medi
         McRoute route;
 
         if (ele.isMember("name")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
             route.entityName = resolveI2CBusString(ele["name"].asString());
-            if (mMediaCtl != nullptr) {
-                route.entity = mMediaCtl->getEntityIdByName(route.entityName);
-            }
+            route.entity = mMediaCtl->getEntityIdByName(route.entityName);
+            if (route.entity < 0)
+                continue;
+        } else if (ele.isMember("acpiName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
+            route.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            route.entity = mMediaCtl->getEntityIdByName(route.entityName);
+            if (route.entity < 0)
+                continue;
+        } else {
+            continue;
         }
         if (ele.isMember("srcPad")) {
             route.srcPad = ele["srcPad"].asInt();
@@ -175,9 +188,23 @@ void CameraSensorsParser::parseMediaCtlControlObject(const Json::Value& node, Me
         McCtl ctl;
 
         if (ele.isMember("name")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
             ctl.entityName = resolveI2CBusString(ele["name"].asString());
-            if (mMediaCtl)
-                ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
+            ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
+            if (ctl.entity < 0)
+                continue;
+        } else if (ele.isMember("acpiName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
+            ctl.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            ctl.entity = mMediaCtl->getEntityIdByName(ctl.entityName);
+            if (ctl.entity < 0)
+                continue;
+        } else {
+            continue;
         }
         if (ele.isMember("ctrlId")) {
             const auto target = ele["ctrlId"].asString();
@@ -203,17 +230,45 @@ void CameraSensorsParser::parseMediaCtlLinkObject(const Json::Value& node, Media
 
         const auto ele = node[i];
         if (ele.isMember("srcName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
             link.srcEntityName = resolveI2CBusString(ele["srcName"].asString());
-            if (mMediaCtl)
-                link.srcEntity = mMediaCtl->getEntityIdByName(link.srcEntityName);
+            link.srcEntity = mMediaCtl->getEntityIdByName(link.srcEntityName);
+            if (link.srcEntity < 0)
+                continue;
+        } else if (ele.isMember("srcAcpiName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
+            link.srcEntityName = mMediaCtl->acpiName2EntityName(ele["srcAcpiName"].asString());
+            link.srcEntity = mMediaCtl->getEntityIdByName(link.srcEntityName);
+            if (link.srcEntity < 0)
+                continue;
+        } else {
+            continue;
         }
         if (ele.isMember("srcPad")) {
             link.srcPad = ele["srcPad"].asInt();
         }
         if (ele.isMember("sinkName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
             link.sinkEntityName = resolveI2CBusString(ele["sinkName"].asString());
-            if (mMediaCtl)
-                link.sinkEntity = mMediaCtl->getEntityIdByName(link.sinkEntityName);
+            link.sinkEntity = mMediaCtl->getEntityIdByName(link.sinkEntityName);
+            if (link.sinkEntity < 0)
+                continue;
+        } else if (ele.isMember("sinkAcpiName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
+            link.sinkEntityName = mMediaCtl->acpiName2EntityName(ele["sinkAcpiName"].asString());
+            link.sinkEntity = mMediaCtl->getEntityIdByName(link.sinkEntityName);
+            if (link.sinkEntity < 0)
+                continue;
+        } else {
+            continue;
         }
         if (ele.isMember("sinkPad")) {
             link.sinkPad = ele["sinkPad"].asInt();
@@ -231,7 +286,21 @@ void CameraSensorsParser::parseMediaCtlVideoNodeObject(const Json::Value& node,
         const auto ele = node[i];
         McVideoNode videoNode;
 
-        videoNode.name = resolveI2CBusString(ele["name"].asString());
+        if (mMediaCtl == nullptr)
+            continue;
+
+        if (ele.isMember("name") && !ele["name"].asString().empty()) {
+            videoNode.name = resolveI2CBusString(ele["name"].asString());
+        } else if (ele.isMember("acpiName") && !ele["acpiName"].asString().empty()) {
+            videoNode.name = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+        } else {
+            continue;
+        }
+
+        if (mMediaCtl->getEntityIdByName(videoNode.name) < 0) {
+            continue;
+        }
+
         videoNode.videoNodeType = GetNodeType(ele["videoNodeType"].asString().c_str());
         conf->videoNodes.push_back(videoNode);
     }
@@ -245,10 +314,23 @@ void CameraSensorsParser::parseMediaCtlConfigFormatsObject(const Json::Value& no
         fmt.type = RESOLUTION_TARGET;
 
         if (ele.isMember("name")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
             fmt.entityName = resolveI2CBusString(ele["name"].asString());
-            if (mMediaCtl != nullptr) {
-                fmt.entity = mMediaCtl->getEntityIdByName(fmt.entityName);
-            }
+            fmt.entity = mMediaCtl->getEntityIdByName(fmt.entityName);
+            if (fmt.entity < 0)
+                continue;
+        } else if (ele.isMember("acpiName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
+            fmt.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            fmt.entity = mMediaCtl->getEntityIdByName(fmt.entityName);
+            if (fmt.entity < 0)
+                continue;
+        } else {
+            continue;
         }
         if (ele.isMember("pad")) {
             fmt.pad = ele["pad"].asUInt();
@@ -332,11 +414,23 @@ void CameraSensorsParser::parseMediaCtlSelectionObject(const Json::Value& node, 
 
         const auto ele = node[i];
         if (ele.isMember("name")) {
-            const auto name = ele["name"].asString();
-            sel.entityName = resolveI2CBusString(name);
-            if (mMediaCtl != nullptr) {
-                sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
-            }
+            if (mMediaCtl == nullptr)
+                continue;
+
+            sel.entityName = resolveI2CBusString(ele["name"].asString());
+            sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
+            if (sel.entity < 0)
+                continue;
+        } else if (ele.isMember("acpiName")) {
+            if (mMediaCtl == nullptr)
+                continue;
+
+            sel.entityName = mMediaCtl->acpiName2EntityName(ele["acpiName"].asString());
+            sel.entity = mMediaCtl->getEntityIdByName(sel.entityName);
+            if (sel.entity < 0)
+                continue;
+        } else {
+            continue;
         }
         if (ele.isMember("pad")) {
             sel.pad = ele["pad"].asInt();
@@ -781,7 +875,9 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
         mCurCam->mVCGroupId = node["vcGoupId"].asInt();
     }
     // VIRTUAL_CHANNEL_E
-    resolveCsiPortAndI2CBus();
+    if (node.isMember("MediaCtlConfig")) {
+        resolveCsiPortAndI2CBus(node["MediaCtlConfig"]);
+    }
     if (node.isMember("supportedTuningConfig")) {
         parseSupportedTuningConfig(node["supportedTuningConfig"]);
     }
@@ -931,7 +1027,7 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
 #endif
 }
 
-void CameraSensorsParser::resolveCsiPortAndI2CBus() {
+void CameraSensorsParser::resolveCsiPortAndI2CBus(const Json::Value& mediaCtlConfigs) {
     std::string fullSensorName = mCurCam->sensorName;
     if (fullSensorName.empty()) {
         LOGW("%s: Cannot find any sensors in this box.", __func__);
@@ -943,9 +1039,37 @@ void CameraSensorsParser::resolveCsiPortAndI2CBus() {
         mSensorInfo.sensorResolved = true;
         mCsiPort = sinkEntityName.substr(sinkEntityName.find_last_of(' ') + 1);
 
-        auto sensorName = fullSensorName;
-        if (sensorName.find_first_of('-') != std::string::npos)
-            sensorName = fullSensorName.substr(0, (sensorName.find_first_of('-')));
+        std::string sensorName;
+        for (const auto& mediaCtlConfig : mediaCtlConfigs) {
+            if (!mediaCtlConfig.isMember("videonode")) continue;
+
+            for (const auto& videoNode : mediaCtlConfig["videonode"]) {
+                if (!videoNode.isMember("videoNodeType") ||
+                    videoNode["videoNodeType"].asString() != "VIDEO_PIXEL_ARRAY") {
+                    continue;
+                }
+
+                if (videoNode.isMember("acpiName") && mMediaCtl != nullptr) {
+                    sensorName = mMediaCtl->acpiName2EntityName(
+                        videoNode["acpiName"].asString());
+                } else if (videoNode.isMember("name")) {
+                    sensorName = videoNode["name"].asString();
+                    if (sensorName.find("$I2CBUS") != std::string::npos)
+                        sensorName.clear();
+                }
+
+                if (!sensorName.empty()) {
+                    break;
+                }
+            }
+            if (!sensorName.empty()) break;
+        }
+
+        if (sensorName.empty()) {
+            sensorName = fullSensorName;
+            if (sensorName.find_first_of('-') != std::string::npos)
+                sensorName = fullSensorName.substr(0, sensorName.find_first_of('-'));
+        }
 
         if (mMediaCtl != nullptr) {
             mMediaCtl->getI2CBusAddress(sensorName, sinkEntityName, &mI2CBus);

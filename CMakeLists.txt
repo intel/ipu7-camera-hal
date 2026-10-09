@@ -14,7 +14,7 @@
 #  limitations under the License.
 #
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8...4.2.3)
 
 project(libcamhal)
 
@@ -377,7 +377,8 @@ elseif (IPU_VER STREQUAL "ipu6sepla")
     endif()
 elseif (IPU_VER MATCHES "ipu7.*" OR IPU_VER STREQUAL "ipu8")
     message("Install ${IPU_VER} configure files")
-    install(DIRECTORY config/linux/${IPU_VER}/ DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/camera/${IPU_VER} PATTERN "config/linux/*/gcss/*.xml" EXCLUDE)
+    install(DIRECTORY config/linux/${IPU_VER}/ DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/camera/${IPU_VER} PATTERN "config/linux/*/gcss/*.xml" EXCLUDE PATTERN "config/linux/*/sensors/*.img" EXCLUDE)
+    install(DIRECTORY config/linux/${IPU_VER}/sensors/ DESTINATION /boot FILES_MATCHING PATTERN "config/linux/${IPU_VER}/sensors/*.img")
 else()
     message("Install APL IPU4 configure files")
     install(DIRECTORY config/linux/ipu4/ DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/camera/${IPU_VER})

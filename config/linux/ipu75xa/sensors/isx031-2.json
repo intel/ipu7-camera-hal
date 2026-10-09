@@ -38,7 +38,7 @@
                 "name": "Intel IPU7 CSI2 0", "videoNodeType": "VIDEO_ISYS_RECEIVER"
               },
               {
-                "name": "isx031 b-0", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+                "acpiName": "\\_SB_.PC00.DES0.CH01.SER1.CAM1", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
           },
@@ -56,7 +56,7 @@
                 "name": "Intel IPU7 CSI2 0", "videoNodeType": "VIDEO_ISYS_RECEIVER"
               },
               {
-                "name": "isx031 b-0", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+                "acpiName": "\\_SB_.PC00.DES0.CH01.SER1.CAM1", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
           },
@@ -74,7 +74,7 @@
                 "name": "Intel IPU7 CSI2 0", "videoNodeType": "VIDEO_ISYS_RECEIVER"
               },
               {
-                "name": "isx031 b-0", "videoNodeType": "VIDEO_PIXEL_ARRAY"
+                "acpiName": "\\_SB_.PC00.DES0.CH01.SER1.CAM1", "videoNodeType": "VIDEO_PIXEL_ARRAY"
               }
             ]
           }

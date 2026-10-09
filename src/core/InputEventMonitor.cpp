@@ -46,7 +46,8 @@ InputEventMonitor::InputEventMonitor() : mCheckThread(nullptr),
                                          mEventType(-1),
                                          mEventCode(-1),
                                          mFd(-1),
-                                         mValue(-1) {
+                                         mValue(-1),
+                                         mEventIoctlModesIndex(0) {
     mCheckThread = new WorkThread(this);
 }
 
@@ -115,7 +116,7 @@ int InputEventMonitor::getValue() {
 int InputEventMonitor::readRawValue() {
     // Only used inside locked context so no need to get lock again
     if (mFd < 0 || mEventType < 0 || mEventCode < 0) return -1;
-    
+
     int status = -1;
     uint32_t bits = EVENTIOCTLMODES[mEventIoctlModesIndex].max;
     uint32_t req = EVENTIOCTLMODES[mEventIoctlModesIndex].rq;

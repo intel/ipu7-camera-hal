@@ -857,14 +857,31 @@ StaticGraphStatus GraphResolutionConfigurator::updateRunKernelResolutionHistory(
 
 StaticGraphRunKernel* GraphResolutionConfigurator::getRunKernel(RunKernelCoords& coord)
 {
-    GraphTopology* graphTopology = nullptr;
-    StaticGraphStatus status = _staticGraph->getGraphTopology(&graphTopology);
-
-    if (status != StaticGraphStatus::SG_OK) {
+    if (_staticGraph == nullptr) {
         return nullptr;
     }
 
-    auto node = graphTopology->links[coord.nodeInd]->destNode;
+    GraphTopology* graphTopology = nullptr;
+    StaticGraphStatus status = _staticGraph->getGraphTopology(&graphTopology);
+
+    if (status != StaticGraphStatus::SG_OK || graphTopology == nullptr || graphTopology->links == nullptr) {
+        return nullptr;
+    }
+
+    if (coord.nodeInd >= static_cast<uint32_t>(graphTopology->numOfLinks)) {
+        return nullptr;
+    }
+
+    auto link = graphTopology->links[coord.nodeInd];
+    if (link == nullptr || link->destNode == nullptr) {
+        return nullptr;
+    }
+
+    auto node = link->destNode;
+    if (coord.kernelInd >= node->nodeKernels.kernelCount) {
+        return nullptr;
+    }
+
     return &node->nodeKernels.kernelList[coord.kernelInd].run_kernel;
 }
 
@@ -1286,6 +1303,97 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::initRunKernel(uint32_t kernel
     return StaticGraphStatus::SG_ERROR;
 }
 
+StaticGraphStatus Gen2GraphResolutionConfigurator::computeMinimumSafePanStep(double zoomFactor, double& outMinPanStep)
+{
+    outMinPanStep = 0.0;
+
+    if (_staticGraph == nullptr || _outputRunKernel == nullptr || _downscalerRunKernel == nullptr)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    StaticGraphRunKernel* outputDsRunKernel = nullptr;
+    if (initRunKernel(GraphResolutionConfiguratorKernelRole::DownScalerOutput, outputDsRunKernel) != StaticGraphStatus::SG_OK ||
+        outputDsRunKernel == nullptr || outputDsRunKernel->enable == 0)
+    {
+        // No enabled DownScalerOutput in this graph - no restriction needed.
+        return StaticGraphStatus::SG_OK;
+    }
+
+    auto outputDsResInfo = outputDsRunKernel->resolution_info;
+    if (outputDsResInfo == nullptr)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    const int32_t outputDsInputWidth = static_cast<int32_t>(outputDsResInfo->input_width)
+        - static_cast<int32_t>(outputDsResInfo->input_crop.left)
+        - static_cast<int32_t>(outputDsResInfo->input_crop.right);
+
+    if (outputDsResInfo->output_width == 0 || outputDsInputWidth <= 0)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    // DownScalerOutput's scale factor is architecturally independent of zoom/pan (cropper's
+    // target size is fixed); kept as a parameter for documentation only.
+    (void)zoomFactor;
+
+    const double scaleFactorOutputDs = static_cast<double>(outputDsResInfo->output_width) / static_cast<double>(outputDsInputWidth);
+    if (scaleFactorOutputDs <= 0.0)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    // Matches Gen2FragmentsConfigurator::B2I_DS_MIN_STRIPE_OUTPUT_WIDTH and Resolutionary validation.
+    int32_t criticalInputWidth = static_cast<int32_t>(ceil(
+        static_cast<double>(Gen2FragmentsConfigurator::B2I_DS_MIN_STRIPE_OUTPUT_WIDTH) / scaleFactorOutputDs));
+    // CasEspaCropper's output-width alignment (feeds DownScalerOutput).
+    const int32_t kCasEspaCropperGranularity = 4;
+    // MIN_STRIPE_WIDTH_BEFORE_TNR: below this, EspaCropper fully vanishes the stripe.
+    const int32_t kMinStripeWidthBeforeTnr = Gen2FragmentsConfigurator::MIN_STRIPE_WIDTH_BEFORE_TNR;
+    criticalInputWidth = GRA_ROUND_UP(criticalInputWidth, kCasEspaCropperGranularity);
+
+    if (criticalInputWidth <= kMinStripeWidthBeforeTnr)
+    {
+        // Vanishes before it could ever reach the illegal output-width range.
+        return StaticGraphStatus::SG_OK;
+    }
+
+    // Only the gap between "vanished" and "first legal width" is actually dangerous.
+    const int32_t dangerZoneWidth = criticalInputWidth - kMinStripeWidthBeforeTnr;
+
+    // Translate the danger-zone width into ROI-factor units (mirrors getDownscalerInputRoi()).
+    StaticGraphKernelRes* outputRunKernelResolution = _outputRunKernel->resolution_history;
+    if (_outputRunKernel->resolution_info != nullptr)
+    {
+        outputRunKernelResolution = _outputRunKernel->resolution_info;
+    }
+
+    if (outputRunKernelResolution == nullptr || _downscalerRunKernel->resolution_history == nullptr)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    const double widthHistScale = _widthIn2OutScale / _sensorHorizontalScaling;
+
+    const double scaleWidth = static_cast<double>(
+        _downscalerRunKernel->resolution_history->input_width
+        - _downscalerRunKernel->resolution_history->input_crop.left
+        - _downscalerRunKernel->resolution_history->input_crop.right)
+        / _downscalerRunKernel->resolution_history->output_width;
+
+    if (outputRunKernelResolution->output_width == 0 || widthHistScale <= 0.0 || scaleWidth <= 0.0)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    outMinPanStep = (static_cast<double>(dangerZoneWidth) * scaleWidth)
+        / (static_cast<double>(outputRunKernelResolution->output_width) * widthHistScale);
+
+    return StaticGraphStatus::SG_OK;
+}
+
 StaticGraphStatus Gen2GraphResolutionConfigurator::initOutputRunKernel()
 {
     GraphTopology* graphTopology = nullptr;
@@ -1437,16 +1545,176 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::updateStaticGraphConfig(const
         userRoi.tiltFactor = (1 - userRoi.zoomFactor) / 2;
     }
 
+   
     ResolutionRoi downscalerInputRoi;
+    StaticGraphStatus status = applyUserRoi(userRoi, downscalerInputRoi, isFragmentsChanged);
+    if (status == StaticGraphStatus::SG_OK)
+    {
+        return StaticGraphStatus::SG_OK;
+    }
+
+    if (_fragmentsConfigurator == nullptr || !_fragmentsConfigurator->hadStripeWidthViolation())
+    {
+        // Some other, non-recoverable failure - propagate as-is.
+        return status;
+    }
+
+    // A stripe boundary landed in the illegal (< 64px output) range - nudge to the nearest
+    // legal ROI instead of rejecting outright; fall back to the original error if none is found.
+    RegionOfInterest correctedUserRoi = userRoi;
+    if (findNearestLegalRoi(userRoi, isCenteredZoom, correctedUserRoi, downscalerInputRoi, isFragmentsChanged) == StaticGraphStatus::SG_OK)
+    {
+        return StaticGraphStatus::SG_OK;
+    }
+
+    return status;
+}
+
+StaticGraphStatus Gen2GraphResolutionConfigurator::applyUserRoi(const RegionOfInterest& userRoi, ResolutionRoi& downscalerInputRoi, bool& isFragmentsChanged)
+{
+    if (userRoi.fromInput == true)
+    {
+        if (userRoi.zoomFactor == 1 && userRoi.panFactor == 0)
+        {
+            auto cropRunKernel = _cropperRunKernel;
+            _cropperRunKernel->resolution_info->input_crop.top = GRA_ROUND_DOWN(std::min(cropRunKernel->resolution_info->input_height - cropRunKernel->resolution_info->output_height - std::abs(std::min(0,_cropperRunKernel->resolution_history->input_crop.bottom)), std::max(0, static_cast<int32_t>(static_cast<int32_t>(cropRunKernel->resolution_history->input_height * _sensorVerticalScaling * userRoi.tiltFactor - _cropperRunKernel->resolution_history->input_crop.top)))), 2);
+            _cropperRunKernel->resolution_info->input_crop.bottom = std::max(std::abs(_cropperRunKernel->resolution_history->input_crop.bottom), static_cast<int32_t>(cropRunKernel->resolution_info->input_height - cropRunKernel->resolution_info->output_height - _cropperRunKernel->resolution_info->input_crop.top));
+            StaticGraphStatus ret = StaticGraphStatus::SG_OK;
+            updateAfterRecalculation(ret, isFragmentsChanged);
+            return ret;
+        }
+        else
+        {
+            return StaticGraphStatus::SG_ERROR;
+        }
+    }
+  
     if (getDownscalerInputRoi(userRoi, downscalerInputRoi) != StaticGraphStatus::SG_OK)
     {
         return StaticGraphStatus::SG_ERROR;
     }
-
+    
     //
     // Step #2 Dynamic update according to this ROI
     //
     return updateRunKernelOfScalers(downscalerInputRoi, isFragmentsChanged);
+}
+
+StaticGraphStatus Gen2GraphResolutionConfigurator::findNearestLegalRoi(const RegionOfInterest& originalUserRoi, bool isCenteredZoom,
+    RegionOfInterest& correctedUserRoi, ResolutionRoi& downscalerInputRoi, bool& isFragmentsChanged)
+{
+    double step = 0.0;
+    if (computeMinimumSafePanStep(originalUserRoi.zoomFactor, step) != StaticGraphStatus::SG_OK || step <= 0.0)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    static constexpr int kMaxAttemptsPerAxis = 4;
+    static const double kSigns[2] = { -1.0, 1.0 };
+
+    if (isCenteredZoom)
+    {
+        // Keep the ROI centered while adjusting zoom.
+        for (int attempt = 1; attempt <= kMaxAttemptsPerAxis; attempt++)
+        {
+            const double delta = step * attempt;
+            for (double sign : kSigns)
+            {
+                RegionOfInterest candidate = originalUserRoi;
+                candidate.zoomFactor = originalUserRoi.zoomFactor + sign * delta;
+                if (candidate.zoomFactor < 0.0 || candidate.zoomFactor > 1.0)
+                {
+                    continue;
+                }
+
+                candidate.panFactor = (1 - candidate.zoomFactor) / 2;
+                candidate.tiltFactor = (1 - candidate.zoomFactor) / 2;
+                if (applyUserRoi(candidate, downscalerInputRoi, isFragmentsChanged) == StaticGraphStatus::SG_OK)
+                {
+                    correctedUserRoi = candidate;
+                    return StaticGraphStatus::SG_OK;
+                }
+            }
+        }
+
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    // In PTZ mode, preserve zoom and tilt so recovery does not change the field of view.
+    // Find the closest legal pan on each side instead of moving by the full danger-zone width.
+    static constexpr int kPanBinarySearchIterations = 20;
+    auto findNearestLegalPanInDirection = [&](double sign, RegionOfInterest& nearestCandidate, double& distance) -> bool
+    {
+        RegionOfInterest legalCandidate = originalUserRoi;
+        bool foundLegalCandidate = false;
+
+        for (int attempt = 1; attempt <= kMaxAttemptsPerAxis; attempt++)
+        {
+            RegionOfInterest candidate = originalUserRoi;
+            candidate.panFactor = originalUserRoi.panFactor + sign * step * attempt;
+            if (candidate.panFactor < 0.0 || candidate.panFactor + candidate.zoomFactor > 1.0)
+            {
+                continue;
+            }
+
+            if (applyUserRoi(candidate, downscalerInputRoi, isFragmentsChanged) == StaticGraphStatus::SG_OK)
+            {
+                legalCandidate = candidate;
+                foundLegalCandidate = true;
+                break;
+            }
+        }
+
+        if (!foundLegalCandidate)
+        {
+            return false;
+        }
+
+        double illegalPan = originalUserRoi.panFactor;
+        double legalPan = legalCandidate.panFactor;
+        for (int iteration = 0; iteration < kPanBinarySearchIterations; iteration++)
+        {
+            RegionOfInterest candidate = originalUserRoi;
+            candidate.panFactor = (illegalPan + legalPan) / 2;
+            if (applyUserRoi(candidate, downscalerInputRoi, isFragmentsChanged) == StaticGraphStatus::SG_OK)
+            {
+                legalPan = candidate.panFactor;
+            }
+            else
+            {
+                illegalPan = candidate.panFactor;
+            }
+        }
+
+        nearestCandidate = originalUserRoi;
+        nearestCandidate.panFactor = legalPan;
+        distance = fabs(legalPan - originalUserRoi.panFactor);
+        return true;
+    };
+
+    RegionOfInterest lowerPanCandidate = originalUserRoi;
+    RegionOfInterest higherPanCandidate = originalUserRoi;
+    double lowerPanDistance = 0.0;
+    double higherPanDistance = 0.0;
+    bool foundLowerPan = findNearestLegalPanInDirection(-1.0, lowerPanCandidate, lowerPanDistance);
+    bool foundHigherPan = findNearestLegalPanInDirection(1.0, higherPanCandidate, higherPanDistance);
+
+    if (!foundLowerPan && !foundHigherPan)
+    {
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    // Prefer increasing pan when both directions are equally close.
+    correctedUserRoi = foundHigherPan && (!foundLowerPan || higherPanDistance <= lowerPanDistance)
+        ? higherPanCandidate
+        : lowerPanCandidate;
+
+    if (applyUserRoi(correctedUserRoi, downscalerInputRoi, isFragmentsChanged) == StaticGraphStatus::SG_OK)
+    {
+        return StaticGraphStatus::SG_OK;
+    }
+
+    return StaticGraphStatus::SG_ERROR;
 }
 
 StaticGraphStatus Gen2GraphResolutionConfigurator::getDownscalerInputRoi(const RegionOfInterest& userRoi, ResolutionRoi& downscalerInputRoi)
@@ -1481,10 +1749,10 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::getDownscalerInputRoi(const R
     double widthHistScale = _widthIn2OutScale / _sensorHorizontalScaling;
     double heightHistScale = _heightIn2OutScale / _sensorVerticalScaling;
 
-    pipeInputRoi.left = static_cast<uint32_t>(((outputLeft + _originalCropOfOutput.left) * widthHistScale) + _originaHistoryOfOutput.left);
-    pipeInputRoi.right = static_cast<uint32_t>(((outputRight + _originalCropOfOutput.right) * widthHistScale) + _originaHistoryOfOutput.right);
-    pipeInputRoi.top = static_cast<uint32_t>(((outputTop + _originalCropOfOutput.top) * heightHistScale) + _originaHistoryOfOutput.top);
-    pipeInputRoi.bottom = static_cast<uint32_t>(((outputBottom + _originalCropOfOutput.bottom) * heightHistScale) + _originaHistoryOfOutput.bottom);
+    pipeInputRoi.left = static_cast<uint32_t>(outputLeft * widthHistScale + _originaHistoryOfOutput.left);
+    pipeInputRoi.right = static_cast<uint32_t>(outputRight * widthHistScale + _originaHistoryOfOutput.right);
+    pipeInputRoi.top = static_cast<uint32_t>(outputTop * heightHistScale + _originaHistoryOfOutput.top);
+    pipeInputRoi.bottom = static_cast<uint32_t>(outputBottom * heightHistScale + _originaHistoryOfOutput.bottom);
 
     // Translate ROI on input to ROI as input to downscaler
     double scaleWidth = static_cast<double>(_downscalerRunKernel->resolution_history->input_width
@@ -1558,6 +1826,13 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::updateRunKernelOfScalers(Reso
         }
     }
 
+    updateAfterRecalculation(ret, isFragmentsChanged);
+
+    return ret;
+}
+
+void Gen2GraphResolutionConfigurator::updateAfterRecalculation(StaticGraphStatus& ret, bool& isFragmentsChanged)
+{
     // Update resolution histories according to decisions made above
     if (updateRunKernelResolutionHistory(_cropperRunKernel, _downscalerRunKernel) != StaticGraphStatus::SG_OK)
     {
@@ -1609,8 +1884,6 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::updateRunKernelOfScalers(Reso
     {
         ret = doFragmentsUpdate(isFragmentsChanged);
     }
-
-    return ret;
 }
 
 StaticGraphStatus Gen2GraphResolutionConfigurator::updateRunKernelDownScaler(StaticGraphRunKernel* runKernel, ResolutionRoi& roi,
@@ -2004,6 +2277,12 @@ StaticGraphStatus Gen2GraphResolutionConfigurator::getInputRoiForOutput(const Re
     widthIn2OutScale *= _sensorHorizontalScaling;
     heightIn2OutScale *= _sensorVerticalScaling;
 
+    // outputCrop was computed at history-level scale (before sensor scale); bring it into sensor space now
+    outputCrop.left = static_cast<int32_t>(outputCrop.left * _sensorHorizontalScaling);
+    outputCrop.right = static_cast<int32_t>(outputCrop.right * _sensorHorizontalScaling);
+    outputCrop.top = static_cast<int32_t>(outputCrop.top * _sensorVerticalScaling);
+    outputCrop.bottom = static_cast<int32_t>(outputCrop.bottom * _sensorVerticalScaling);
+
     if ((outputCropHist.left < _sensorHorizontalCropLeft) ||
         (outputCropHist.right < _sensorHorizontalCropRight) ||
         (outputCropHist.top < _sensorVerticalCropTop) ||
@@ -2210,6 +2489,30 @@ void copyRunKernel(StaticGraphRunKernel* runKernel, StaticGraphRunKernel* runKer
     runKernelOther->resolution_history->input_crop.right = runKernel->resolution_history->input_crop.right;
     runKernelOther->resolution_history->input_crop.top = runKernel->resolution_history->input_crop.top;
     runKernelOther->resolution_history->input_crop.bottom = runKernel->resolution_history->input_crop.bottom;
+
+#ifdef STATIC_GRAPH_USE_IA_LEGACY_TYPES
+    // Update the left crop in striping system api. Currently assuming one stripe
+    if (runKernel->system_api.size != ((GRA_ROUND_UP(sizeof(SystemApiRecordHeader), 4)) + (sizeof(StaticGraphKernelSystemApiIoBuffer))))
+    {
+        return;
+    }
+#endif
+
+    auto systemApiHeader = static_cast<SystemApiRecordHeader*>(runKernel->system_api.data);
+    if (systemApiHeader->systemApiUuid != GraphResolutionConfiguratorHelper::getRunKernelIoBufferSystemApiUuid())
+    {
+        return;
+    }
+
+    // The following will update the system API for single stripe. In case there are additional stripes system API will
+    // be configured by FrgamentsConfigurator.
+    StaticGraphKernelSystemApiIoBuffer* systemApi = reinterpret_cast<StaticGraphKernelSystemApiIoBuffer*>
+        (static_cast<int8_t*>(runKernel->system_api.data) + GRA_ROUND_UP(sizeof(SystemApiRecordHeader), 4));
+
+    StaticGraphKernelSystemApiIoBuffer* systemApiOther = reinterpret_cast<StaticGraphKernelSystemApiIoBuffer*>
+        (static_cast<int8_t*>(runKernelOther->system_api.data) + GRA_ROUND_UP(sizeof(SystemApiRecordHeader), 4));
+
+    systemApiOther->x_output_offset_per_stripe[0] = systemApi->x_output_offset_per_stripe[0];
 }
 
 Ipu9GraphResolutionConfigurator::Ipu9GraphResolutionConfigurator(IStaticGraphConfig* staticGraph) : Gen2GraphResolutionConfigurator(staticGraph)
@@ -2264,22 +2567,7 @@ StaticGraphStatus Ipu9GraphResolutionConfigurator::updateRunKernelUpScaler(Stati
     uint32_t totalCropW = roi.left + roi.right - cropperKernelCrop.left - cropperKernelCrop.right - _originalCropOfUpscaler.left - _originalCropOfUpscaler.right;
     uint32_t totalCropH = roi.top + roi.bottom - cropperKernelCrop.top - cropperKernelCrop.bottom - _originalCropOfUpscaler.top - _originalCropOfUpscaler.bottom;
 
-    // Cropping must be done in units of stepW x stepH.
-    // How many units of stepW x stepH should we crop?
-    /*uint32_t unitsW = GRA_ROUND_DOWN(totalCropW, _upscalerStepW) / _upscalerStepW;
-    uint32_t unitsH = GRA_ROUND_DOWN(totalCropH, _upscalerStepH) / _upscalerStepH;
-
-    uint32_t units = unitsW < unitsH ? unitsW : unitsH;
-
-    uint32_t actualCropW = units * _upscalerStepW;
-    uint32_t actualCropH = units * _upscalerStepH;*/
-
-    /*uint32_t deltaLeft = GRA_ROUND_DOWN((totalCropW - actualCropW) / 2, 2);
-    uint32_t deltaRight = totalCropW - actualCropW - deltaLeft;
-    uint32_t deltaTop = GRA_ROUND_DOWN((totalCropH - actualCropH) / 2, 2);
-    uint32_t deltaBottom = totalCropH - actualCropH - deltaTop;*/
-
-    // we must make sure that the scale facotr of width and height are matching. So we recalculate the extra crop to get this.
+    // We must make sure that the scale facotr of width and height are matching. So we recalculate the extra crop to get this.
     uint32_t widthAfterCrop = runKernel->resolution_info->input_width - totalCropW;
     uint32_t heightAfterCrop = runKernel->resolution_info->input_height - totalCropH;
     auto scaleFactorW = static_cast<double>(widthAfterCrop) / outputWidth;
@@ -2290,13 +2578,14 @@ StaticGraphStatus Ipu9GraphResolutionConfigurator::updateRunKernelUpScaler(Stati
         GRA_ROUND_DOWN(static_cast<uint32_t>(floor(static_cast<double>(outputWidth * scaleFactor))), 2));
     heightAfterCrop = std::min(inputHeight,
         GRA_ROUND_DOWN(static_cast<uint32_t>(floor(static_cast<double>(outputHeight * scaleFactor))), 2));
-    totalCropW = (inputWidth - widthAfterCrop)-(roi.left + roi.right - cropperKernelCrop.left - cropperKernelCrop.right - _originalCropOfUpscaler.left - _originalCropOfUpscaler.right);
-    totalCropH = (inputHeight - heightAfterCrop)-(roi.top + roi.bottom - cropperKernelCrop.top - cropperKernelCrop.bottom - _originalCropOfUpscaler.top - _originalCropOfUpscaler.bottom);
 
-    uint32_t deltaLeft = GRA_ROUND_DOWN((totalCropW) / 2, 2);
-    uint32_t deltaRight = totalCropW - deltaLeft;
-    uint32_t deltaTop = GRA_ROUND_DOWN((totalCropH) / 2, 2);
-    uint32_t deltaBottom = totalCropH - deltaTop;
+    uint32_t actualCropW = inputWidth - widthAfterCrop;
+    uint32_t actualCropH = inputHeight - heightAfterCrop;
+
+    uint32_t deltaLeft = GRA_ROUND_DOWN((totalCropW - actualCropW) / 2, 2);
+    uint32_t deltaRight = totalCropW - actualCropW - deltaLeft;
+    uint32_t deltaTop = GRA_ROUND_DOWN((totalCropH - actualCropH) / 2, 2);
+    uint32_t deltaBottom = totalCropH - actualCropH - deltaTop;
 
     runKernel->resolution_info->input_crop.left = roi.left - cropperKernelCrop.left - deltaLeft;
     runKernel->resolution_info->input_crop.right = roi.right - cropperKernelCrop.right - deltaRight;

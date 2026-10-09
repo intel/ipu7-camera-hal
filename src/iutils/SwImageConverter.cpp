@@ -435,13 +435,15 @@ int SwImageConverter::convertFormat(unsigned int width, unsigned int height, uns
     for (y = 0U; y < height; y += 2) {
         for (x = 0U; x < width; x += 2) {
             if (CameraUtils::isRaw(srcFmt)) {
-                if (CameraUtils::getBpp(srcFmt) == 8) {
+                const int bpp = CameraUtils::getBpp(srcFmt);
+                if (bpp == 8) {
                     bayer_data[0] = inBuf[y * srcStride + x];
                     bayer_data[1] = inBuf[y * srcStride + x + 1];
                     bayer_data[2] = inBuf[(y + 1) * srcStride + x];
                     bayer_data[3] = inBuf[(y + 1) * srcStride + x + 1];
                 } else {
-                    const int offset = srcStride / (CameraUtils::getBpp(srcFmt) / 8);
+                    CheckAndLogError(bpp < 8, BAD_VALUE, "Unsupported BPP: %d", bpp);
+                    const int offset = srcStride / (bpp / 8);
                     bayer_data[0] = *((unsigned short*)inBuf + y * offset + x);
                     bayer_data[1] = *((unsigned short*)inBuf + y * offset + x + 1U);
                     bayer_data[2] = *((unsigned short*)inBuf + (y + 1U) * offset + x);

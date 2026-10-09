@@ -113,7 +113,7 @@ class CameraSensorsParser : public JsonParserBase {
     void resolveLensName(const Json::Value& node);
     void parseSupportedISysFormat(const Json::Value& node);
     void parseSupportedPSysFormat(const Json::Value& node);
-    void resolveCsiPortAndI2CBus();
+    void resolveCsiPortAndI2CBus(const Json::Value& mediaCtlConfigs);
     void parseSupportedISysSizes(const Json::Value& node);
 };
 
