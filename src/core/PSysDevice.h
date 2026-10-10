@@ -107,12 +107,26 @@ class PSysDevice {
 
     virtual int poll();
 
+#ifdef LINUX_PRIVACY_MODE
+    // Drain in-flight tasks and stop the poll thread; call before closeGraph() and
+    // resume once addGraph() has run again.
+    void suspendPolling();
+    void resumePolling();
+
+    // Release the psys character device so its runtime PM reference is dropped,
+    // letting ISYS (which shares the clock/interconnect domain) power down; call
+    // after closeGraph(). reopenDev() restores it before the next addGraph().
+    void closeDev();
+    int reopenDev();
+#endif
+
  private:
     int wait(ipu_psys_event& event);
     int poll(short events, int timeout);
     void handleEvent(const ipu_psys_event& event);
     void updatePsysBufMap(TerminalBuffer* buf);
-    void erasePsysBufMap(const TerminalBuffer* buf);
+    // Returns false when the buffer was already unregistered by another stage.
+    bool erasePsysBufMap(const TerminalBuffer* buf);
     bool getPsysBufMap(TerminalBuffer* buf);
 
  private:

@@ -107,6 +107,13 @@ public:
      */
     void resetAiqStatistics();
 
+#ifdef LINUX_PRIVACY_MODE
+    /**
+     * \brief Invalidate all stored AiqResults so a new streaming period cannot reuse them.
+     */
+    void resetAiqResults();
+#endif
+
     /**
      * \brief Acquire a FaceDetectionResult buffer
      */

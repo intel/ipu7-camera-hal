@@ -119,18 +119,46 @@ int PipeLine::configure(TuningMode tuningMode, IpuPacAdaptor* adaptor) {
 int PipeLine::start() {
     LOG1("<id%d>@%s stream %d", mCameraId, __func__, mStreamId);
 
+#ifdef LINUX_PRIVACY_MODE
+    // Keep the decision: the CBStages must only redo their PAC config when the CCA
+    // buffer table was actually cleared.
+    const bool didReinitAic = mNeedReinitAic;
+    if (mNeedReinitAic) {
+        mPacAdaptor->reinitAic(mStreamId);
+        mNeedReinitAic = false;
+    }
+
+    // Device was released in the matching stop(); restore it before the graph reopens.
+    int reopenRet = mPSysDevice->reopenDev();
+    CheckAndLogError(reopenRet != OK, reopenRet, "%s: failed to reopen psys device", __func__);
+#endif
+
     for (auto& unit : mPSUnit) {
+#ifdef LINUX_PRIVACY_MODE
+        if (unit.ipuStage) {
+            unit.ipuStage->setNeedReconfigAic(didReinitAic);
+        }
+#endif
         int ret = unit.pipeStage->start();
         CheckAndLogError(ret != OK, ret, "%s, pipe stage %s start fails.", __func__,
                          unit.pipeStage->getName());
     }
 
-    return mPSysDevice->addGraph(mPSysGraph);
+    int ret = mPSysDevice->addGraph(mPSysGraph);
+#ifdef LINUX_PRIVACY_MODE
+    // Resume polling only once the graph is open, so completion events are not missed.
+    mPSysDevice->resumePolling();
+#endif
+    return ret;
 }
 
 int PipeLine::stop() {
     LOG1("<id%d>@%s stream %d", mCameraId, __func__, mStreamId);
 
+#ifdef LINUX_PRIVACY_MODE
+    // Drain in-flight PSys tasks before closing the graph, or the firmware gets stuck.
+    mPSysDevice->suspendPolling();
+#endif
     mPSysDevice->closeGraph();
 
     for (auto& unit : mPSUnit) {
@@ -138,6 +166,18 @@ int PipeLine::stop() {
         CheckAndLogError(ret != OK, ret, "%s, pipe stage %s stop fails.", __func__,
                          unit.pipeStage->getName());
     }
+
+#ifdef LINUX_PRIVACY_MODE
+    // Release the psys device after every stage has unmapped its buffers through it.
+    mPSysDevice->closeDev();
+#endif
+
+#ifdef LINUX_PRIVACY_MODE
+    // The graph is torn down with PSys tasks still in flight, so their CCA statistics
+    // slots are never decoded and never freed. decodeStats never ran for them, so they
+    // cannot be detected here and CCA would run out of slots after a few cycles.
+    mNeedReinitAic = true;
+#endif
 
     return OK;
 }

@@ -81,6 +81,7 @@ FileSource::FileSource(int cameraId)
 }
 
 FileSource::~FileSource() {
+    stop();
     delete mProduceThread;
 }
 
@@ -258,9 +259,26 @@ bool FileSource::produce() {
 
     for (auto& buf : qBuffer) {
         buf.second->setSequence(mSequence);
+#ifdef LINUX_PRIVACY_MODE
+        buf.second->setSettingSequence(mSequence);
+#endif
         buf.second->setTimestamp(stamp);
         fillFrameBuffer(buf.second);
     }
+
+#ifdef LINUX_PRIVACY_MODE
+    {
+        // Don't deliver once a stop has been requested; put the buffers back so the
+        // queue stays consistent for the next start.
+        AutoMutex l(mLock);
+        if (mExitPending) {
+            for (auto& buf : qBuffer) {
+                mBufferQueue[buf.first].push(buf.second);
+            }
+            return false;
+        }
+    }
+#endif
 
     notifyFrame(qBuffer);
 

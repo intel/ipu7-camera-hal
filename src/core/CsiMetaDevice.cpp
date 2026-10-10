@@ -18,7 +18,9 @@
 
 #include "CsiMetaDevice.h"
 
+#include <fcntl.h>
 #include <poll.h>
+#include <unistd.h>
 
 #include "PlatformData.h"
 #include "iutils/CameraDump.h"
@@ -41,10 +43,31 @@ CsiMetaDevice::CsiMetaDevice(int cameraId)
           mState(CSI_META_DEVICE_UNINIT),
           mExitPending(false) {
     mPollThread = new PollThread<CsiMetaDevice>(this);
+    mFlushFd[0] = -1;
+    mFlushFd[1] = -1;
+
+    int ret = pipe(mFlushFd);
+    if (ret >= 0) {
+        ret = fcntl(mFlushFd[0], F_SETFL, O_NONBLOCK);
+        if (ret < 0) {
+            LOG1("failed to set flush pipe flag: %s", strerror(errno));
+            close(mFlushFd[0]);
+            close(mFlushFd[1]);
+            mFlushFd[0] = -1;
+            mFlushFd[1] = -1;
+        }
+        LOG1("%s, mFlushFd [%d-%d]", __func__, mFlushFd[0], mFlushFd[1]);
+    }
     CLEAR(mEmbeddedMetaData);
 }
 
 CsiMetaDevice::~CsiMetaDevice() {
+    if (mFlushFd[0] != -1) {
+        close(mFlushFd[0]);
+    }
+    if (mFlushFd[1] != -1) {
+        close(mFlushFd[1]);
+    }
     delete mPollThread;
 }
 
@@ -64,8 +87,14 @@ void CsiMetaDevice::deinitLocked() {
     LOG1("@%s", __func__);
 
     mCsiMetaCameraBuffers.clear();
-    deinitDev();
+    mExitPending = true;
+    if (mFlushFd[1] != -1) {
+        char buf = 0xf;
+        (void)write(mFlushFd[1], &buf, sizeof(char));
+    }
+    mPollThread->exit();
     mPollThread->wait();
+    deinitDev();
     mState = CSI_META_DEVICE_UNINIT;
 }
 
@@ -201,6 +230,12 @@ int CsiMetaDevice::start() {
     int ret = mCsiMetaDevice->Start();
     CheckAndLogError(ret < 0, ret, "failed to stream on csi meta device, ret = %d", ret);
 
+    if (mFlushFd[0] != -1) {
+        char readBuf;
+        int readSize = read(mFlushFd[0], reinterpret_cast<void*>(&readBuf), sizeof(char));
+        LOG1("%s, readSize %d", __func__, readSize);
+    }
+
     mExitPending = false;
     mPollThread->start();
     mState = CSI_META_DEVICE_START;
@@ -218,6 +253,10 @@ int CsiMetaDevice::stop() {
     CheckWarning(mState != CSI_META_DEVICE_START, OK, "%s: device not started", __func__);
 
     mExitPending = true;
+    if (mFlushFd[1] != -1) {
+        char buf = 0xf;
+        (void)write(mFlushFd[1], &buf, sizeof(char));
+    }
     mPollThread->exit();
 
     int ret = mCsiMetaDevice->Stop(false);
@@ -252,7 +291,7 @@ int CsiMetaDevice::poll() {
 
     std::vector<V4L2Device*> readyDevices;
     while (((timeOutCount--) != 0) && (ret == 0)) {
-        V4L2DevicePoller poller{pollDevs, -1};
+        V4L2DevicePoller poller{pollDevs, mFlushFd[0]};
         ret = poller.Poll(poll_timeout, POLLPRI | POLLIN | POLLOUT | POLLERR, &readyDevices);
 
         LOG2("@%s ing poll number buffer in devices: %d", __func__, mBuffersInCsiMetaDevice.load());

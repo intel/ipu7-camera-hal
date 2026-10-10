@@ -251,6 +251,12 @@ int AiqUnit::start() {
     AutoMutex l(mAiqUnitLock);
     LOG1("<id%d>@%s", mCameraId, __func__);
 
+    if (mAiqUnitState == AIQ_UNIT_START) {
+        LOG1("%s: already started", __func__);
+        mAiqEngine->reset();
+        return OK;
+    }
+
     if ((mAiqUnitState != AIQ_UNIT_CONFIGURED) && (mAiqUnitState != AIQ_UNIT_STOP)) {
         LOGW("%s: configure in wrong state: %d", __func__, mAiqUnitState);
         return BAD_VALUE;

@@ -160,6 +160,10 @@ int ProcessingUnit::start() {
 
 void ProcessingUnit::stop() {
     PERF_CAMERA_ATRACE();
+    // Final teardown calls stop() again after switchToBackup() already stopped it;
+    // skip the redundant PipeManager/PSysDevice teardown.
+    CheckWarning(!IProcessingUnit::mThreadRunning, VOID_VALUE, "%s: already stopped", __func__);
+
     mPipeManager->stop();
 
     IProcessingUnit::mThreadRunning = false;
@@ -178,8 +182,17 @@ void ProcessingUnit::stop() {
 
     mProcessThread->wait();
 
-    mRawBufferMap.clear();
-    // Thread is not running. It is safe to clear the Queue
+    {
+        AutoMutex l(mBufferMapLock);
+        mRawBufferMap.clear();
+        // Thread is not running. It is safe to clear the Queue
+    }
+#ifdef LINUX_PRIVACY_MODE
+    {
+        AutoMutex l(mBufferQueueLock);
+        mSequencesInflight.clear();
+    }
+#endif
     BufferQueue::clearBufferQueues();
 }
 
