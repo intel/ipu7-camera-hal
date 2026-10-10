@@ -155,7 +155,7 @@ struct intel_cca_run_aic_data {
     cca::cca_pal_input_params* inParams;
     int32_t inParamsHandle;
     int32_t aicId;
-    uint8_t bitmap;
+    uint32_t bitmap;
 };
 
 struct intel_cca_get_cmc_data {
