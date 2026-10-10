@@ -270,7 +270,7 @@ ia_err IntelCca::decodeStats(int32_t groupId, int64_t sequence, int32_t aicId,
     return static_cast<ia_err>(ret);
 }
 
-ia_err IntelCca::runAIC(uint64_t frameId, const cca::cca_pal_input_params* params, uint8_t bitmap,
+ia_err IntelCca::runAIC(uint64_t frameId, const cca::cca_pal_input_params* params, uint32_t bitmap,
                         int32_t aicId) {
     intel_cca_run_aic_data* aicParams = static_cast<intel_cca_run_aic_data*>(mMemAIC.mAddr);
     aicParams->frameId = frameId;

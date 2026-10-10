@@ -427,7 +427,7 @@ status_t IpuPacAdaptor::runAIC(const IspSettings* ispSettings,
         }
         // HDR_FEATURE_E
 
-        iaErr = mIntelCca->runAIC(aiqResults->mFrameId, inputParams, 0xffU, streamId);
+        iaErr = mIntelCca->runAIC(aiqResults->mFrameId, inputParams, 0xffffffffU, streamId);
     }
     CheckAndLogError((iaErr != ia_err_none) && (iaErr != ia_err_not_run), UNKNOWN_ERROR,
                      "Pac parameter adaptation has failed %d", iaErr);

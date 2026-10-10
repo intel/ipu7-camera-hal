@@ -68,7 +68,7 @@ class IntelCca {
     ia_err getAicBuf(cca::cca_aic_terminal_config& termConfig, int32_t aicId);
     ia_err decodeStats(int32_t groupId, int64_t sequence, int32_t aicId,
                        cca::cca_out_stats* outStats);
-    ia_err runAIC(uint64_t frameId, const cca::cca_pal_input_params* params, uint8_t bitmap,
+    ia_err runAIC(uint64_t frameId, const cca::cca_pal_input_params* params, uint32_t bitmap,
                   int32_t aicId);
     ia_err updateConfigurationResolutions(const cca::cca_aic_config& aicConf,
                                           int32_t aicId, bool isKeyResChanged);

@@ -237,7 +237,7 @@ ia_err IntelCca::decodeStats(int32_t groupId, int64_t sequence, int32_t aicId,
 }
 
 ia_err IntelCca::runAIC(uint64_t frameId, const cca::cca_pal_input_params* params,
-                         uint8_t bitmap, int32_t aicId) {
+                        uint32_t bitmap, int32_t aicId) {
     cca::cca_multi_pal_output output = {};
     const ia_err ret = getIntelCCA()->runAIC(frameId, *params, output, bitmap, aicId);
     LOG2("@%s, ret:%d", __func__, ret);
