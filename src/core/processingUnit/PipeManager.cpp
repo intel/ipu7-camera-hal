@@ -102,6 +102,12 @@ int PipeManager::stop() {
         pipeLine.second->stop();
     }
     mPacAdaptor->clearAicResult();
+#ifdef LINUX_PRIVACY_MODE
+    {
+        AutoMutex taskLock(mTaskLock);
+        mOngoingTasks.clear();
+    }
+#endif
     return icamera::OK;
 }
 

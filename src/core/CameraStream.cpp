@@ -139,13 +139,13 @@ int CameraStream::qbuf(camera_buffer_t* ubuffer, int64_t sequence, bool addExtra
     }
 
     int ret = BAD_VALUE;
-    // mBufferProducer will not change after start, no lock
+    // GstBuffer release can race with redirectBufferProducer() on another thread
+    // (e.g. a shutter switch), so mBufferProducer must not be read without the lock.
+    AutoMutex l(mBufferPoolLock);
     if (mBufferProducer != nullptr) {
         ret = mBufferProducer->qbuf(mPort, camBuffer);
         if (ret == OK) {
-            AutoMutex l(mBufferPoolLock);
 #ifdef LINUX_PRIVACY_MODE
-            // Add buffer to processing container
             mBufferInProcessing.push_back(camBuffer);
 #else
             mBufferInProcessing++;
@@ -156,37 +156,42 @@ int CameraStream::qbuf(camera_buffer_t* ubuffer, int64_t sequence, bool addExtra
 }
 
 #ifdef LINUX_PRIVACY_MODE
-// This function is called in stop status, no lock
-void CameraStream::setBufferProducer(BufferProducer* producer) {
+// Redirect active stream to a new buffer producer and transfer pending buffers.
+int CameraStream::redirectBufferProducer(BufferProducer* producer) {
+    AutoMutex l(mBufferPoolLock);
     BufferProducer* oldProducer = mBufferProducer;
 
-    // If we had a previous producer, remove ourselves as a listener
     if (oldProducer != nullptr) {
         oldProducer->removeFrameAvailableListener(this);
     }
-    
-    mBufferProducer = producer;
 
-    if (producer != nullptr) {
-        producer->addFrameAvailableListener(this);
-        
-        // If we had a previous producer and there are buffers being processed,
-        // transfer them to the new producer
-        if (oldProducer != nullptr) {
-            AutoMutex l(mBufferPoolLock);
-            // Queue all processing buffers to the new producer
-            for (auto& buffer : mBufferInProcessing) {
-                int ret = producer->qbuf(mPort, buffer);
-                if (ret == OK) {
-                    LOG2("<id%d>@%s: Transferred buffer %p to new producer", 
-                         mCameraId, __func__, buffer.get());
-                } else {
-                    LOGE("<id%d>@%s: Failed to transfer buffer %p to new producer, ret=%d",
-                         mCameraId, __func__, buffer.get(), ret);
-                }
-            }
+    BufferConsumer::setBufferProducer(producer);
+    if ((producer == nullptr) || (oldProducer == nullptr)) {
+        return 0;
+    }
+
+    int transferred = 0;
+    std::vector<std::shared_ptr<CameraBuffer>> buffersToTransfer = mBufferInProcessing;
+    mBufferInProcessing.clear();
+
+    for (auto& buffer : buffersToTransfer) {
+        // The new producer starts a new sequence epoch, so a settingSequence from the
+        // previous one would stall the buffer in needExecutePipe() until the input
+        // sequence caught up. -1 means no particular input frame is required.
+        buffer->setSettingSequence(-1);
+        int ret = producer->qbuf(mPort, buffer);
+        if (ret == OK) {
+            mBufferInProcessing.push_back(buffer);
+            ++transferred;
+        } else {
+            LOGW("<id%d>@%s: failed to transfer buffer %p, ret=%d", mCameraId, __func__,
+                 buffer.get(), ret);
         }
     }
+
+    LOG1("<id%d>@%s: transferred %d buffer(s) to the new producer", mCameraId, __func__,
+         transferred);
+    return transferred;
 }
 #endif
 
@@ -205,14 +210,6 @@ int CameraStream::onBufferAvailable(uuid port, const shared_ptr<CameraBuffer>& c
     // Update the user buffer info before return back
     camBuffer->updateUserBuffer();
 
-    EventFrameAvailable frameData;
-    frameData.streamId = mStreamId;
-    EventData eventData;
-    eventData.type = EVENT_FRAME_AVAILABLE;
-    eventData.buffer = camBuffer;
-    eventData.data.frameDone = frameData;
-    notifyListeners(eventData);
-
     camera_buffer_t* ubuffer = camBuffer->getUserBuffer();
     LOG2("ubuffer:%p, addr:%p, timestamp:%lu, sequence:%ld", ubuffer, ubuffer->addr,
          ubuffer->timestamp, ubuffer->sequence);
@@ -221,21 +218,30 @@ int CameraStream::onBufferAvailable(uuid port, const shared_ptr<CameraBuffer>& c
                               camBuffer->getCsi2Port(), "virtual_channel",
                               camBuffer->getVirtualChannel());
 
-    AutoMutex l(mBufferPoolLock);
+    {
+        AutoMutex l(mBufferPoolLock);
 #ifdef LINUX_PRIVACY_MODE
-    // Remove buffer from processing container
-    auto it = std::find(mBufferInProcessing.begin(), mBufferInProcessing.end(), camBuffer);
-    if (it != mBufferInProcessing.end()) {
-        mBufferInProcessing.erase(it);
+        auto it = std::find(mBufferInProcessing.begin(), mBufferInProcessing.end(), camBuffer);
+        if (it != mBufferInProcessing.end()) {
+            mBufferInProcessing.erase(it);
+        }
+
+        LOG2("%s, buffer in processing: %zu for stream: %p", __func__, mBufferInProcessing.size(), this);
+#else
+        if (mBufferInProcessing > 0) {
+            mBufferInProcessing--;
+        }
+        LOG2("%s, buffer in processing: %d for stream: %p", __func__, mBufferInProcessing, this);
+#endif
     }
 
-    LOG2("%s, buffer in processing: %zu for stream: %p", __func__, mBufferInProcessing.size(), this);
-#else
-    if (mBufferInProcessing > 0) {
-        mBufferInProcessing--;
-    }
-    LOG2("%s, buffer in processing: %d for stream: %p", __func__, mBufferInProcessing, this);
-#endif
+    EventFrameAvailable frameData;
+    frameData.streamId = mStreamId;
+    EventData eventData;
+    eventData.type = EVENT_FRAME_AVAILABLE;
+    eventData.buffer = camBuffer;
+    eventData.data.frameDone = frameData;
+    notifyListeners(eventData);
 
     return OK;
 }

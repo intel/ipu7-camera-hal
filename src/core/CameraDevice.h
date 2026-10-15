@@ -15,9 +15,12 @@
  */
 
 #pragma once
+#include <algorithm>
+
 #include "AiqUnit.h"
 #include "CameraStream.h"
 #ifdef LINUX_PRIVACY_MODE
+#include <thread>
 #include "InputEventMonitor.h"
 #endif
 #include "IProcessingUnitFactory.h"
@@ -215,6 +218,7 @@ class CameraDevice : public EventListener {
 #ifdef LINUX_PRIVACY_MODE
     void switchToNormal();
     void switchToBackup();
+    void joinIsysTeardown();
 #endif
 
  private:
@@ -226,6 +230,9 @@ class CameraDevice : public EventListener {
         DEVICE_STOP,
         DEVICE_BUFFER_READY,  // At least one buffer is queued to ISP
     } mState;
+#ifdef LINUX_PRIVACY_MODE
+    bool mInBackupMode = false;
+#endif
 
     // Guard for CameraDevice public API
     Mutex mDeviceLock;
@@ -238,6 +245,7 @@ class CameraDevice : public EventListener {
 #ifdef LINUX_PRIVACY_MODE
     StreamSource* mBackupProducer;
     InputEventMonitor* mPrivacyShutter;
+    std::thread mIsysTeardownThread;
 #endif
 
     IProcessingUnit* mProcessingUnit;

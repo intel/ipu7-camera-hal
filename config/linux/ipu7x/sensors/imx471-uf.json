@@ -217,7 +217,8 @@
         "isPSACompression": false,
         "usingMockPSys": false,
         "privacyShutterEventType": 5,
-        "privacyShutterEventCode": 9
+        "privacyShutterEventCode": 9,
+        "privacyShutterActiveLow": true
       }
     ]
   }

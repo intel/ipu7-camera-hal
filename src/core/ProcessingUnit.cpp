@@ -160,26 +160,38 @@ int ProcessingUnit::start() {
 
 void ProcessingUnit::stop() {
     PERF_CAMERA_ATRACE();
-    mPipeManager->stop();
 
-    IProcessingUnit::mThreadRunning = false;
-    BufferQueue::setThreadWaiting(false);
-    mProcessThread->exit();
+    if (IProcessingUnit::mThreadRunning) {
+        mPipeManager->stop();
 
+        IProcessingUnit::mThreadRunning = false;
+        BufferQueue::setThreadWaiting(false);
+        mProcessThread->exit();
+
+        {
+            AutoMutex l(mBufferQueueLock);
+            mFrameAvailableSignal.notify_one();
+        }
+
+        {
+            AutoMutex lMeta(mMetaQueueLock);
+            mMetaAvailableSignal.notify_one();
+        }
+
+        mProcessThread->wait();
+    }
+
+    {
+        AutoMutex l(mBufferMapLock);
+        mRawBufferMap.clear();
+        // Thread is not running. It is safe to clear the Queue
+    }
+#ifdef LINUX_PRIVACY_MODE
     {
         AutoMutex l(mBufferQueueLock);
-        mFrameAvailableSignal.notify_one();
+        mSequencesInflight.clear();
     }
-
-    {
-        AutoMutex lMeta(mMetaQueueLock);
-        mMetaAvailableSignal.notify_one();
-    }
-
-    mProcessThread->wait();
-
-    mRawBufferMap.clear();
-    // Thread is not running. It is safe to clear the Queue
+#endif
     BufferQueue::clearBufferQueues();
 }
 
@@ -316,11 +328,20 @@ bool ProcessingUnit::needSkipOutputFrame(int64_t sequence) {
  * be skipped.
  */
 bool ProcessingUnit::needExecutePipe(int64_t settingSequence, int64_t inputSequence) const {
+#ifdef LINUX_PRIVACY_MODE
+    // In live camera streaming with privacy shutter transitions, every captured sensor frame
+    // must be processed immediately with the next available output buffer.
+    // Stalling the pipeline and dropping input frames because settingSequence > inputSequence
+    // causes request backlog, out-of-order queue delivery, and intermediate buffer collisions
+    // (ghosting artifacts).
+    return true;
+#else
     if ((settingSequence == -1) || (inputSequence >= settingSequence)) {
         return true;
     }
 
     return false;
+#endif
 }
 
 /**
@@ -332,11 +353,20 @@ bool ProcessingUnit::needExecutePipe(int64_t settingSequence, int64_t inputSeque
  * may be required by following output buffer, so it may be reused later.
  */
 bool ProcessingUnit::needHoldOnInputFrame(int64_t settingSequence, int64_t inputSequence) const {
+#ifdef LINUX_PRIVACY_MODE
+    // In continuous live streaming with privacy shutter transitions, sensor input
+    // frames must not be held and reused across multiple requests when inputSequence
+    // advances past settingSequence. Holding sensor frames leads to duplicate PSYS task
+    // dispatches (causing ghosting artifacts) and prevents returning buffers to CaptureUnit
+    // (causing V4L2 queue starvation and stream freeze).
+    return false;
+#else
     if ((settingSequence == -1) || (inputSequence <= settingSequence)) {
         return false;
     }
 
     return true;
+#endif
 }
 
 // ProcessingUnit ThreadLoop
