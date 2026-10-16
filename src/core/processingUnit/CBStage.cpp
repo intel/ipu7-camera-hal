@@ -402,10 +402,11 @@ int CBStage::allocateNode2SelfBuffers(const PSysLink& psysLink, uint32_t bufferS
 }
 
 int CBStage::setTerminalLinkAndAllocNode2SelfBuffers(const GraphLink** links, uint8_t numOfLink) {
+    CheckAndLogError(!links, UNKNOWN_ERROR, "%s: links is nullptr", __func__);
     for (uint8_t i = 0U; i < numOfLink; i++) {
         const GraphLink* link = links[i];
 
-        if (!link->isActive) {
+        if (!link || !link->isActive) {
             continue;
         }
         const bool related = ((link->srcNode != nullptr) &&
@@ -416,7 +417,7 @@ int CBStage::setTerminalLinkAndAllocNode2SelfBuffers(const GraphLink** links, ui
             continue;
         }
 
-        PSysLink psysLink;
+        PSysLink psysLink = {};
         switch (link->type) {
             case LinkType::Source2Node:
                 psysLink.srcNodeCtxId = 0xFF;
@@ -425,12 +426,12 @@ int CBStage::setTerminalLinkAndAllocNode2SelfBuffers(const GraphLink** links, ui
                 psysLink.dstTermId = link->destTerminalId;
                 break;
             case LinkType::Node2Node:
-                if (link->destNode->contextId == mOuterNodeCtxId) {
+                if (link->destNode && link->destNode->contextId == mOuterNodeCtxId) {
                     psysLink.srcNodeCtxId = 0xFF;  // can't know psys ctx id of other node
                     psysLink.srcTermId = 0xFF;
                     psysLink.dstNodeCtxId = mContextId;
                     psysLink.dstTermId = link->destTerminalId;
-                } else if (link->srcNode->contextId == mOuterNodeCtxId) {
+                } else if (link->srcNode && link->srcNode->contextId == mOuterNodeCtxId) {
                     psysLink.srcNodeCtxId = mContextId;
                     psysLink.srcTermId = link->srcTerminalId;
                     psysLink.dstNodeCtxId = 0xFF;
@@ -454,10 +455,12 @@ int CBStage::setTerminalLinkAndAllocNode2SelfBuffers(const GraphLink** links, ui
                 break;
         }
 
-        psysLink.streamingMode = link->linkConfiguration->streamingMode;
+        if (link->linkConfiguration) {
+            psysLink.streamingMode = link->linkConfiguration->streamingMode;
+        }
         psysLink.delayedLink = link->frameDelay;
 
-        if (link->type == LinkType::Node2Self) {
+        if (link->type == LinkType::Node2Self && link->linkConfiguration) {
             const int ret = allocateNode2SelfBuffers(psysLink, link->linkConfiguration->bufferSize);
             CheckAndLogError(ret != OK, NO_MEMORY, "Failed to alloc node2self buffer");
         }

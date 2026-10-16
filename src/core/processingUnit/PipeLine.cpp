@@ -331,12 +331,14 @@ status_t PipeLine::updateConfigurationSettingForPtz(bool isKeyResChanged) {
 }
 
 status_t PipeLine::createPSysGraph(int32_t numLinks, GraphLink** links) {
+    CheckAndLogError(!links, UNKNOWN_ERROR, "%s: links is nullptr", __func__);
+
     mPSysGraph.links.clear();
 
     std::map<uint8_t, PSysNode> nodes;  // <contextId, node>
     for (int32_t i = 0; i < numLinks; i++) {
         const GraphLink* link = links[i];
-        if (!link->isActive) {
+        if (!link || !link->isActive) {
             continue;
         }
 
@@ -374,7 +376,7 @@ status_t PipeLine::createPSysGraph(int32_t numLinks, GraphLink** links) {
         if (link->type != LinkType::Node2Node && link->type != LinkType::Node2Self) {
             continue;
         }
-        if (link->srcNode->type == NodeTypes::Isys) {
+        if (!link->srcNode || !link->destNode || link->srcNode->type == NodeTypes::Isys) {
             continue;
         }
 
