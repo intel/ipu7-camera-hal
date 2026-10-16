@@ -503,12 +503,12 @@ int MediaControl::getDevnameFromSysfs(MediaEntity* entity) {
         return -EINVAL;
     }
 
-    ret = readlink(sysName, target, MAX_TARGET_NAME);
+    ret = readlink(sysName, target, sizeof(target) - 1);
     if (ret <= 0) {
         LOGE("readlink sysName %s failed ret %d.", sysName, ret);
         return -EINVAL;
     }
-    target[MAX_TARGET_NAME - 1] = '\0';
+    target[ret] = '\0';
 
     char* d = strrchr(target, '/');
     if (!d) {
