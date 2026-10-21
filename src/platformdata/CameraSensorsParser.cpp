@@ -777,8 +777,8 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
     if (node.isMember("vcId")) {
         mCurCam->mVCId = node["vcId"].asInt();
     }
-    if (node.isMember("vcGoupId")) {
-        mCurCam->mVCGroupId = node["vcGoupId"].asInt();
+    if (node.isMember("vcGroupId")) {
+        mCurCam->mVCGroupId = node["vcGroupId"].asInt();
     }
     // VIRTUAL_CHANNEL_E
     resolveCsiPortAndI2CBus();
@@ -807,7 +807,7 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
         mCurCam->mMaxRawDataNum = node["maxRawDataNum"].asInt();
     }
     if (node.isMember("initialSkipFrame")) {
-        mCurCam->mInitialSkipFrame = node[";initialSkipFrame"].asInt();
+        mCurCam->mInitialSkipFrame = node["initialSkipFrame"].asInt();
     }
     if (node.isMember("exposureLag")) {
         mCurCam->mExposureLag = node["exposureLag"].asInt();
