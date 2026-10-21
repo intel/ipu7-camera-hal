@@ -77,7 +77,11 @@ void AiqEngine::reset() {
 
     AutoMutex l(mEngineLock);
     mFirstAiqRunning = true;
+    mAiqCore->init();
     mAiqResultStorage->resetAiqStatistics();
+#ifdef LINUX_PRIVACY_MODE
+    mAiqResultStorage->resetAiqResults();
+#endif
     mSensorManager->reset();
     mLensManager->reset();
 }

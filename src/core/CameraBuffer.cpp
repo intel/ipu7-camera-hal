@@ -339,8 +339,17 @@ void CameraBuffer::updateUserBuffer(void) {
     mU->timestamp = TIMEVAL2NSECS(getTimestamp());
     mU->s.field = getField();
 
+#ifdef LINUX_PRIVACY_MODE
+    // In continuous live streaming with privacy mode toggling, the true hardware
+    // frame sequence (derived from ISYS/PSYS pipeline ticks) must always be used
+    // so user space (GStreamer) receives monotonically strictly increasing frame sequences.
+    // Carried-over or re-queued buffers with mSettingSequence = -1 or arbitrary settingSequence
+    // must never corrupt the output sequence number.
+    mU->sequence = getSequence();
+#else
     // Use valid setting sequence to align shutter/parameter with buffer
     mU->sequence = (mSettingSequence < 0) ? getSequence() : static_cast<uint32_t>(mSettingSequence);
+#endif
 }
 
 void CameraBuffer::updateFlags(void) {

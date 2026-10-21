@@ -102,7 +102,9 @@ int PSysDevice::init() {
     mFd = open(DRIVER_NAME, O_RDWR | O_NONBLOCK, 0);
     CheckAndLogError(mFd < 0, INVALID_OPERATION, "Failed to open psys device %s", strerror(errno));
 
+#ifndef LINUX_PRIVACY_MODE
     mPollThread->start();
+#endif
 
     return OK;
 }
@@ -171,6 +173,96 @@ int PSysDevice::addGraph(const PSysGraph& graph) {
     return OK;
 }
 
+#ifdef LINUX_PRIVACY_MODE
+void PSysDevice::suspendPolling() {
+    LOG1("<id%d>@%s", mCameraId, __func__);
+
+    // Stop the poll thread
+    mExitPending = true;
+    if (mEventFd >= 0) {
+        const uint64_t value = 1U;
+        (void)write(mEventFd, &value, sizeof(value));
+    }
+    mPollThread->wait();
+
+    // Clear the eventfd counter so it doesn't interfere with future polls
+    if (mEventFd >= 0) {
+        uint64_t val = 0U;
+        ssize_t ret = read(mEventFd, &val, sizeof(val));
+        if (ret < 0 && errno != EAGAIN) {
+            LOGW("<id%d>@%s: failed to read eventfd, errno:%d", mCameraId, __func__, errno);
+        }
+    }
+
+    // Drain any remaining completion events still in the kernel queue
+    int drained = 0;
+    for (int i = 0; i < (MAX_NODE_NUM * MAX_TASK_NUM + 1); i++) {
+        struct pollfd pfd = {mFd, POLLIN, 0};
+        int ret = ::poll(&pfd, 1, 50); // 50ms timeout per event
+        if (ret <= 0 || !(pfd.revents & POLLIN)) break;
+        ipu_psys_event event;
+        CLEAR(event);
+        int dqret = ::ioctl(mFd, static_cast<int>(IPU_IOC_DQEVENT), &event);
+        if (dqret != 0) break;
+        handleEvent(event);
+        drained++;
+    }
+    LOG1("<id%d>@%s: drained %d event(s)", mCameraId, __func__, drained);
+
+    mExitPending = false;
+}
+
+void PSysDevice::resumePolling() {
+    LOG1("<id%d>@%s", mCameraId, __func__);
+    // init() already started the thread, so skip the redundant start on the first run.
+    if (!mPollThread->isRunning()) {
+        mPollThread->start();
+    }
+}
+
+void PSysDevice::closeDev() {
+    LOG1("<id%d>@%s", mCameraId, __func__);
+
+    // Old mappings belong to the closed file description; close exported userptr
+    // buffer fds and drop the maps so registerBuffer() re-gets and re-mmaps on reopen.
+    {
+        std::lock_guard<std::mutex> l(mDataLock);
+        for (auto& item : mPtrToTermBufMap) {
+            if (((item.second.flags & IPU_BUFFER_FLAG_USERPTR) != 0U) &&
+                (item.second.psysBuf.base.fd >= 0)) {
+                ::close(item.second.psysBuf.base.fd);
+            }
+        }
+        mPtrToTermBufMap.clear();
+        mFdToTermBufMap.clear();
+    }
+
+    if (mFd >= 0) {
+        const int ret = ::close(mFd);
+        if (ret < 0) {
+            LOGE("Failed to close psys device %s, ret %d", strerror(errno), ret);
+        }
+        mFd = -1;
+    }
+}
+
+int PSysDevice::reopenDev() {
+    // init() already opened the device; the very first start() has nothing to
+    // reopen, and reopening here would leak that first fd.
+    if (mFd >= 0) {
+        return OK;
+    }
+
+    LOG1("<id%d>@%s", mCameraId, __func__);
+
+    mFd = open(DRIVER_NAME, O_RDWR | O_NONBLOCK, 0);
+    CheckAndLogError(mFd < 0, INVALID_OPERATION, "Failed to reopen psys device %s",
+                     strerror(errno));
+
+    return OK;
+}
+#endif
+
 int PSysDevice::closeGraph() {
     CheckAndLogError(mFd < 0, INVALID_OPERATION, "psys device wasn't opened");
 
@@ -180,6 +272,10 @@ int PSysDevice::closeGraph() {
         mGraphId = INVALID_GRAPH_ID;
     }
     CLEAR(mFrameId);
+#ifdef LINUX_PRIVACY_MODE
+    // Drop the sequence mapping so completion events from the old graph are discarded.
+    (void)memset(&mFrameIdToSeqMap, -1, sizeof(mFrameIdToSeqMap));
+#endif
     return OK;
 }
 
@@ -242,17 +338,16 @@ void PSysDevice::updatePsysBufMap(TerminalBuffer* buf) {
     }
 }
 
-void PSysDevice::erasePsysBufMap(const TerminalBuffer* buf) {
+bool PSysDevice::erasePsysBufMap(const TerminalBuffer* buf) {
     std::lock_guard<std::mutex> l(mDataLock);
     if ((buf->flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
-        if (mPtrToTermBufMap.find(buf->userPtr) != mPtrToTermBufMap.end()) {
-            mPtrToTermBufMap.erase(buf->userPtr);
-        }
-    } else if ((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) != 0U) {
-        if (mFdToTermBufMap.find(static_cast<int>(buf->handle)) != mFdToTermBufMap.end()) {
-            mFdToTermBufMap.erase(static_cast<int>(buf->handle));
-        }
+        return mPtrToTermBufMap.erase(buf->userPtr) > 0U;
     }
+    if ((buf->flags & IPU_BUFFER_FLAG_DMA_HANDLE) != 0U) {
+        return mFdToTermBufMap.erase(static_cast<int>(buf->handle)) > 0U;
+    }
+
+    return false;
 }
 
 bool PSysDevice::getPsysBufMap(TerminalBuffer* buf) {
@@ -337,21 +432,25 @@ void PSysDevice::unregisterBuffer(const TerminalBuffer* buf) {
         return;
     }
 
+    // buf may alias a map entry, and the same buffer can be referenced by several
+    // stages. Take a copy, then let the erase decide who owns the unmap and close.
+    const TerminalBuffer local = *buf;
+    if (!erasePsysBufMap(&local)) {
+        return;
+    }
+
     int ret = ioctl(mFd, static_cast<int>(IPU_IOC_UNMAPBUF),
-                    reinterpret_cast<void*>(static_cast<intptr_t>(buf->psysBuf.base.fd)));
+                    reinterpret_cast<void*>(static_cast<intptr_t>(local.psysBuf.base.fd)));
     if (ret != 0) {
         LOGW("Failed to unmap buffer %s", strerror(errno));
     }
 
-    if ((buf->flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
-        ret = close(buf->psysBuf.base.fd);
+    if ((local.flags & IPU_BUFFER_FLAG_USERPTR) != 0U) {
+        ret = close(local.psysBuf.base.fd);
         if (ret < 0) {
-            LOGE("Failed to close fd %d, error %s", buf->psysBuf.base.fd, strerror(errno));
+            LOGE("Failed to close fd %d, error %s", local.psysBuf.base.fd, strerror(errno));
         }
     }
-
-    // erase PSYS buf
-    erasePsysBufMap(buf);
 }
 
 void PSysDevice::registerPSysDeviceCallback(uint8_t contextId, IPSysDeviceCallback* callback) {

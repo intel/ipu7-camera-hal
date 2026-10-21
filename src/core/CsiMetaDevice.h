@@ -81,6 +81,7 @@ class CsiMetaDevice : public EventSource {
 
     PollThread<CsiMetaDevice>* mPollThread;
     int mCameraId;
+    int mFlushFd[2];
     V4L2VideoNode* mCsiMetaDevice;
     std::vector<V4L2VideoNode*> mConfiguredDevices;
     EmbeddedMetaData mEmbeddedMetaData;
