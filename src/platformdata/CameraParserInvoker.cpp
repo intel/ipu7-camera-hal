@@ -110,6 +110,16 @@ std::vector<std::pair<std::string, SensorInfo>> CameraParserInvoker::getAvailabl
                 SensorInfo sensorInfo = {sensor, true};
                 availableSensors.push_back({sensor, sensorInfo});
                 LOG1("@%s, found %s", __func__, sensor.c_str());
+                continue;
+            }
+
+            // Look for ACPI-described sensors: any pure-source entity in
+            // the media graph that exposes a non-empty firmware_node/path is
+            // treated as ACPI-described.
+            if (mMediaCtl && mMediaCtl->checkAvailableAcpiSensor()) {
+                SensorInfo sensorInfo = {sensor, false};
+                availableSensors.push_back({sensor, sensorInfo});
+                LOG1("@%s, found ACPI-described sensor %s", __func__, sensor.c_str());
             }
         } else {
             // sensors with suffix port number
