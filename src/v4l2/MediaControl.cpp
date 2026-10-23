@@ -916,7 +916,7 @@ int MediaControl::setVideoNodeFormat(struct V4L2VideoNode* device, const stream_
     v4l2fmt.fmt.pix.width = config->width;
     v4l2fmt.fmt.pix.height = config->height;
     v4l2fmt.fmt.pix.pixelformat = config->format;
-    v4l2fmt.fmt.pix.bytesperline = config->width;
+    v4l2fmt.fmt.pix.bytesperline = CameraUtils::getStride(config->format, config->width);
     v4l2fmt.fmt.pix.sizeimage = 0;
 
     v4l2fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
