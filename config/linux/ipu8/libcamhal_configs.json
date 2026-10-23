@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2025-2026 Intel Corporation
+// Copyright (C) 2024 Intel Corporation
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,9 +21,13 @@
         //  The value format of availableSensors is "sensor name"-wf/uf-"CSI port ID".
         //  wf is word facing, and uf is user facing.
         "availableSensors": [
+            "ov8856-wf-0",
             "ov13b10-wf-0",
             "ov13b10-uf-2",
             "ov08x40-uf-0",
+            "ov08x40-uf-2",
+            "imx471-uf-0",
+            "ov05c10-uf-0",
             "lt6911gxd-1-0",
             "lt6911gxd-2-2",
             "isx031-1-0",
@@ -33,8 +37,18 @@
             "isx031-5-2",
             "isx031-6-2",
             "isx031-7-2",
-            "isx031-8-2"
-
+            "isx031-8-2",
+            "ar0233-1-0",
+            "ar0820-1-0",
+            "isx031-5-0",
+            "isx031-6-0",
+            "isx031-7-0",
+            "isx031-8-0",
+            "ar0830-a-0",
+            "ar0830-b-2",
+            "isx031-a-0",
+            "isx031-b-2",
+            "acpi"
         ],
         "videoStreamNum" : 2
     }
