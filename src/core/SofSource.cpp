@@ -164,6 +164,11 @@ int SofSource::stop() {
         return OK;
     }
 
+#ifdef LINUX_PRIVACY_MODE
+    // Set the flag before waking the poll thread, otherwise it can miss the exit and block
+    // in DequeueEvent until the next SOF, which never comes while the shutter is closed.
+    mExitPending = true;
+#endif
     if (mFlushFd[1] != -1) {
         char buf = 0xf;  // random value to write to flush fd.
         const int size = write(mFlushFd[1], &buf, sizeof(char));
@@ -171,7 +176,9 @@ int SofSource::stop() {
     }
 
     mPollThread->exit();
+#ifndef LINUX_PRIVACY_MODE
     mExitPending = true;
+#endif
     mPollThread->wait();
 
     return OK;
@@ -211,6 +218,15 @@ int SofSource::poll() {
         LOGI("Sof poll time out.");
         return 0;
     }
+
+#ifdef LINUX_PRIVACY_MODE
+    // Woken only by the flush pipe: do not block in DequeueEvent without a pending event.
+    if (readyDevices.empty()) {
+        char readBuf;
+        (void)read(mFlushFd[0], reinterpret_cast<void*>(&readBuf), sizeof(char));
+        return 0;
+    }
+#endif
 
     struct v4l2_event event;
     CLEAR(event);

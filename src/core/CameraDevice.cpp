@@ -18,6 +18,9 @@
 
 #include "CameraDevice.h"
 
+#ifdef LINUX_PRIVACY_MODE
+#include <algorithm>
+#endif
 #include <vector>
 
 #include "iutils/CameraLog.h"
@@ -87,12 +90,13 @@ CameraDevice::CameraDevice(int cameraId)
 CameraDevice::~CameraDevice() {
     PERF_CAMERA_ATRACE();
     LOG1("<id%d>@%s", mCameraId, __func__);
+#ifdef LINUX_PRIVACY_MODE
+    stopPrivacyShutterMonitor();
+#endif
     AutoMutex m(mDeviceLock);
 
 #ifdef LINUX_PRIVACY_MODE
-    if (mPrivacyShutter->isConfigured()) {
-        mPrivacyShutter->stop();
-    }
+    joinIsysTeardown();
 #endif
 
     // Clear the media control when close the device.
@@ -163,7 +167,14 @@ int CameraDevice::init() {
 void CameraDevice::deinit() {
     PERF_CAMERA_ATRACE();
     LOG1("<id%d>@%s, mState:%d", mCameraId, __func__, mState);
+#ifdef LINUX_PRIVACY_MODE
+    stopPrivacyShutterMonitor();
+#endif
     AutoMutex m(mDeviceLock);
+
+#ifdef LINUX_PRIVACY_MODE
+    joinIsysTeardown();
+#endif
 
     // deinit should not be call in UNINIT or START STATE
     if (mState == DEVICE_UNINIT) {
@@ -261,9 +272,6 @@ void CameraDevice::bindListeners() {
     }
 
     mSofSource->registerListener(EVENT_ISYS_SOF, mRequestThread);
-#ifdef LINUX_PRIVACY_MODE
-    mPrivacyShutter->registerListener(EVENT_INPUT_EVENT, this);
-#endif
     // FILE_SOURCE_S
     if (PlatformData::isFileSourceEnabled()) {
         // File source needs to produce SOF event as well when it's enabled.
@@ -306,9 +314,6 @@ void CameraDevice::unbindListeners() {
         mProducer->removeListener(EVENT_ISYS_FRAME, mRequestThread);
     }
 
-#ifdef LINUX_PRIVACY_MODE
-    mPrivacyShutter->removeListener(EVENT_INPUT_EVENT, this);
-#endif
     mSofSource->removeListener(EVENT_ISYS_SOF, mRequestThread);
     // FILE_SOURCE_S
     if (PlatformData::isFileSourceEnabled()) {
@@ -454,6 +459,9 @@ int CameraDevice::configure(stream_config_t* streamList) {
     int eventCode = PlatformData::getPrivacyShutterEventCode(mCameraId);
     if (eventType < 0 || eventCode < 0) {
         LOG1("@%s Privacy shutter is not configured", __func__);
+    } else if (dynamic_cast<CaptureUnit*>(mProducer) == nullptr) {
+        // The privacy switch tears down and re-creates the ISYS capture devices.
+        LOG1("@%s Privacy shutter needs the ISYS capture unit, not enabled", __func__);
     } else {
         ret = mPrivacyShutter->configure(eventType, eventCode);
         CheckAndLogError(ret < 0, ret, "@%s Privacy shutter configure failed", __func__);
@@ -822,6 +830,46 @@ int CameraDevice::start() {
         CheckAndLogError(mStreamNum == 0, BAD_VALUE,
                          "@%s: device doesn't add any stream yet.", __func__);
 
+#ifdef LINUX_PRIVACY_MODE
+        bool startInBackup = false;
+        if (mPrivacyShutter->isConfigured()) {
+            // Not registered in bindListeners(): switchToBackup()/switchToNormal() run from
+            // this listener's own callback, so changing the registration there would deadlock
+            // on the EventSource lock that notifyListeners() still holds.
+            mPrivacyShutter->registerListener(EVENT_INPUT_EVENT, this);
+            mPrivacyShutter->start();
+            const int coverVal = mPrivacyShutter->getValue();
+            const bool activeLow = PlatformData::isPrivacyShutterActiveLow(mCameraId);
+            const int closedVal = activeLow ? 0 : 1;
+            LOG1("<id%d>@%s: privacy shutter monitor started, lens cover %d, activeLow %d", mCameraId,
+                 __func__, coverVal, activeLow);
+            if (coverVal == closedVal) {
+                startInBackup = true;
+            }
+        }
+
+        if (startInBackup) {
+            // The lens stays open, as in switchToBackup(): switchToNormal() only restarts 3A.
+            m3AControl->stop();
+            mRequestThread->setBackupModeActive(true);
+            mRequestThread->resetSequence();
+            mBackupProducer->registerListener(EVENT_ISYS_SOF, mRequestThread);
+            mBackupProducer->registerListener(EVENT_ISYS_FRAME, mRequestThread);
+            (void)mBackupProducer->start();
+
+            for (const auto& item : mStreamIdToPortMap) {
+                (void)mStreams[item.first]->redirectBufferProducer(mBackupProducer);
+            }
+            if (mProcessingUnit != nullptr) {
+                mProcessingUnit->stop();
+            }
+            mInBackupMode = true;
+            mState = DEVICE_START;
+            LOG1("<id%d>@%s: started directly in backup mode (shutter closed)", mCameraId, __func__);
+            return OK;
+        }
+#endif
+
         mScheduler->start();
         const int ret = startLocked();
         if (ret != OK) {
@@ -830,17 +878,11 @@ int CameraDevice::start() {
             return INVALID_OPERATION;
         }
 
+#ifdef LINUX_PRIVACY_MODE
+        mInBackupMode = false;
+#endif
         mState = DEVICE_START;
     }
-
-#ifdef LINUX_PRIVACY_MODE
-    if (mPrivacyShutter->isConfigured()) {
-        if (mPrivacyShutter->getValue() == 0) {
-            switchToBackup();
-        }
-        mPrivacyShutter->start();
-    }
-#endif
 
     return OK;
 }
@@ -848,7 +890,15 @@ int CameraDevice::start() {
 int CameraDevice::stop() {
     PERF_CAMERA_ATRACE();
     LOG1("<id%d>@%s, mState:%d", mCameraId, __func__, mState);
+#ifdef LINUX_PRIVACY_MODE
+    stopPrivacyShutterMonitor();
+#endif
     AutoMutex m(mDeviceLock);
+
+#ifdef LINUX_PRIVACY_MODE
+    joinIsysTeardown();
+    mInBackupMode = false;
+#endif
 
     mRequestThread->clearRequests();
 
@@ -889,10 +939,26 @@ int CameraDevice::dqbuf(int streamId, camera_buffer_t** ubuffer) {
     PERF_CAMERA_ATRACE();
     LOG2("<id%d>@%s, stream id:%d", mCameraId, __func__, streamId);
 
+#ifdef LINUX_PRIVACY_MODE
+    // Do not hold mDeviceLock while waiting for a frame, otherwise a privacy switch
+    // (which takes mDeviceLock) is blocked until the 5 s frame wait times out.
+    // Check the state only after a timeout, so a frame that did arrive is not dropped.
+    int ret = OK;
+    do {
+        ret = mRequestThread->waitFrame(streamId, ubuffer);
+        if (ret == TIMED_OUT) {
+            AutoMutex m(mDeviceLock);
+            if (mState != DEVICE_START) {
+                return NO_INIT;
+            }
+        }
+    } while (ret == TIMED_OUT);
+#else
     int ret;
     do {
         ret = mRequestThread->waitFrame(streamId, ubuffer);
     } while (ret == TIMED_OUT);
+#endif
 
     if (ret == NO_INIT) {
         return ret;
@@ -1064,74 +1130,182 @@ int CameraDevice::stopLocked() {
         mProcessingUnit->stop();
     }
 
+#ifdef LINUX_PRIVACY_MODE
+    if (mBackupProducer != nullptr) {
+        mBackupProducer->removeListener(EVENT_ISYS_FRAME, mRequestThread);
+        mBackupProducer->removeListener(EVENT_ISYS_SOF, mRequestThread);
+        (void)mBackupProducer->stop();
+    }
+#endif
+
     unbindListeners();
 
     return OK;
 }
 
 #ifdef LINUX_PRIVACY_MODE
+void CameraDevice::joinIsysTeardown() {
+    if (mIsysTeardownThread.joinable()) {
+        mIsysTeardownThread.join();
+    }
+}
+
+// Must be called without mDeviceLock: the monitor callback takes mDeviceLock, so waiting for
+// the monitor thread while holding it would deadlock on a concurrent shutter event.
+void CameraDevice::stopPrivacyShutterMonitor() {
+    if (mPrivacyShutter->isConfigured()) {
+        mPrivacyShutter->stop();
+        mPrivacyShutter->removeListener(EVENT_INPUT_EVENT, this);
+    }
+}
+
+// Shutter opened: tear the backup path down and bring the live ISYS/PSYS path back.
 void CameraDevice::switchToNormal() {
-    LOG2("%s", __func__);
+    LOG1("<id%d>@%s", mCameraId, __func__);
+    // Wait for the background ISYS teardown before taking mDeviceLock: it can take seconds
+    // (FW flush/close timeouts), and qbuf/dqbuf need the lock to keep the dummy frames flowing.
+    // Only this listener thread starts a teardown, so none can start before the lock is taken.
+    joinIsysTeardown();
     AutoMutex m(mDeviceLock);
 
-    (void)mBackupProducer->stop();
+    if (mState != DEVICE_START || !mInBackupMode) {
+        LOG1("<id%d>@%s: ignored, state %d, inBackup %d", mCameraId, __func__,
+             mState, mInBackupMode);
+        return;
+    }
 
-    mRequestThread->resetSequence();
-
+    // Now stop backup producer and reset sequencing for the switchover to live path.
     mBackupProducer->removeListener(EVENT_ISYS_FRAME, mRequestThread);
     mBackupProducer->removeListener(EVENT_ISYS_SOF, mRequestThread);
+    (void)mBackupProducer->stop();
+    mRequestThread->resetSequence();
 
-    mScheduler->start();
+    mRequestThread->setBackupModeActive(false);
+
+    // IPU7 needs a close+reopen of the V4L2 fds to flush the firmware DMA cache;
+    // STREAMOFF alone is not enough.
+    CaptureUnit* captureUnit = static_cast<CaptureUnit*>(mProducer);
+    int ret = captureUnit->reconfigure();
+    if (ret != OK) {
+        LOGE("<id%d>@%s: failed to reconfigure CaptureUnit, ret:%d", mCameraId, __func__, ret);
+        mRequestThread->setBackupModeActive(true);
+        mBackupProducer->registerListener(EVENT_ISYS_SOF, mRequestThread);
+        mBackupProducer->registerListener(EVENT_ISYS_FRAME, mRequestThread);
+        (void)mBackupProducer->start();
+        for (const auto& item : mStreamIdToPortMap) {
+            (void)mStreams[item.first]->redirectBufferProducer(mBackupProducer);
+        }
+        return;
+    }
+
+    mInBackupMode = false;
+
+    // Re-attach ProcessingUnit to the new ISYS devices. The scheduler starts after
+    // ProcessingUnit::start() so addNode() runs while the executor is inactive.
     if (mProcessingUnit != nullptr) {
         mProcessingUnit->setBufferProducer(mProducer);
-    }
-    for (const auto& item : mStreamIdToPortMap) {
-        if (mProcessingUnit != nullptr) {
-            mStreams[item.first]->setBufferProducer(mProcessingUnit);
-        } else {
-            mStreams[item.first]->setBufferProducer(mProducer);
-        }
-    }
-    if (mProcessingUnit != nullptr) {
         (void)mProcessingUnit->start();
     }
+
+    // Redirect the streams before ISYS starts, while the input sequence is still 0.
+    // The carried-over buffers have settingSequence -1 so they consume the first frames
+    // without stalling the pipeline.
+    int carriedOver = 0;
+    if (mProcessingUnit != nullptr) {
+        for (const auto& item : mStreamIdToPortMap) {
+            carriedOver = std::max(carriedOver,
+                                   mStreams[item.first]->redirectBufferProducer(mProcessingUnit));
+        }
+    }
+
+    bindListeners();
+    mScheduler->start();
+
+    // SofSource and 3A start before ISYS so SOF(0) is not missed.
+    (void)mSofSource->configure();
+    (void)mSofSource->start();
+    m3AControl->start();
 
     (void)mProducer->start();
 
     // CSI_META_S
+    (void)mCsiMetaDevice->configure();
     (void)mCsiMetaDevice->start();
     // CSI_META_E
 
-    (void)mSofSource->configure();
-    (void)mSofSource->start();
-    m3AControl->start();
+    LOG1("<id%d>@%s: live path restored, %d buffer(s) carried over", mCameraId, __func__,
+         carriedOver);
 }
 
+// Shutter closed: swap the streams over to the dummy frame producer and stop ISYS.
 void CameraDevice::switchToBackup() {
-    LOG2("%s", __func__);
+    LOG1("<id%d>@%s", mCameraId, __func__);
     AutoMutex m(mDeviceLock);
-    m3AControl->stop();
 
-    (void)mSofSource->stop();
-
-    // CSI_META_S
-    (void)mCsiMetaDevice->stop();
-    // CSI_META_E
-
-    (void)mProducer->stop();
-    if (mProcessingUnit != nullptr) {
-        mProcessingUnit->stop();
+    if (mState != DEVICE_START || mInBackupMode) {
+        LOG1("<id%d>@%s: ignored, state %d, inBackup %d", mCameraId, __func__,
+             mState, mInBackupMode);
+        return;
     }
-    mScheduler->stop();
+
+    mInBackupMode = true;
+
+    joinIsysTeardown();
+
+    mRequestThread->setBackupModeActive(true);
+
+    // Only reset the sequencing. clearRequests() would drop pending requests and ready
+    // frames, and the app never gets those buffers back while it keeps streaming.
     mRequestThread->resetSequence();
 
-    mBackupProducer->registerListener(EVENT_ISYS_SOF, mRequestThread);
-    mBackupProducer->registerListener(EVENT_ISYS_FRAME, mRequestThread);
-    for (const auto& item : mStreamIdToPortMap) {
-        mStreams[item.first]->setBufferProducer(mBackupProducer);
+    // Detach ProcessingUnit from the ISYS callbacks before starting backup, so no new PSys
+    // task is submitted while draining.
+    if (mProcessingUnit != nullptr) {
+        mProducer->removeFrameAvailableListener(mProcessingUnit);
     }
 
+    // Start backup producer and redirect streams before initiating asynchronous ISYS teardown.
+    mBackupProducer->registerListener(EVENT_ISYS_SOF, mRequestThread);
+    mBackupProducer->registerListener(EVENT_ISYS_FRAME, mRequestThread);
     (void)mBackupProducer->start();
+
+    for (const auto& item : mStreamIdToPortMap) {
+        (void)mStreams[item.first]->redirectBufferProducer(mBackupProducer);
+    }
+
+    unbindListeners();
+
+    // Asynchronously stop 3A, SofSource, Scheduler, ProcessingUnit, and ISYS in the background
+    // so hardware timeouts do not block the active backup pipeline.
+    mIsysTeardownThread = std::thread([ctrl3A = m3AControl, sofSource = mSofSource,
+                                       csiMeta = mCsiMetaDevice, scheduler = mScheduler,
+                                       procUnit = mProcessingUnit, producer = mProducer]() {
+        if (ctrl3A != nullptr) {
+            ctrl3A->stop();
+        }
+        if (sofSource != nullptr) {
+            (void)sofSource->stop();
+        }
+        // CSI_META_S
+        if (csiMeta != nullptr) {
+            (void)csiMeta->stop();
+            csiMeta->deinitDev();
+        }
+        // CSI_META_E
+        if (scheduler != nullptr) {
+            scheduler->stop();
+        }
+        if (procUnit != nullptr) {
+            procUnit->stop();
+        }
+        if (producer != nullptr) {
+            producer->stop();
+            CaptureUnit* cu = static_cast<CaptureUnit*>(producer);
+            cu->destroyDevices();
+        }
+    });
+
+    LOG1("<id%d>@%s: backup path streaming", mCameraId, __func__);
 }
 #endif
 
@@ -1141,7 +1315,15 @@ void CameraDevice::handleEvent(EventData eventData) {
     switch (eventData.type) {
         case EVENT_PROCESS_REQUEST: {
             const EventRequestData& request = eventData.data.request;
+#ifdef LINUX_PRIVACY_MODE
+            // Skip 3A context lookup when backup mode is active.
+            const bool skipDataContextLookup = (mRequestThread != nullptr) &&
+                                               mRequestThread->isBackupModeActive();
+            if (!skipDataContextLookup &&
+                !IS_INPUT_BUFFER(request.buffer[0]->timestamp, request.buffer[0]->sequence)) {
+#else
             if (!IS_INPUT_BUFFER(request.buffer[0]->timestamp, request.buffer[0]->sequence)) {
+#endif
                 auto cameraContext = CameraContext::getInstance(mCameraId);
                 auto dataContext = cameraContext->getDataContextBySeq(request.settingSeq);
                 // Set test pattern mode
@@ -1196,13 +1378,19 @@ void CameraDevice::handleEvent(EventData eventData) {
         }
 
 #ifdef LINUX_PRIVACY_MODE
-        case EVENT_INPUT_EVENT:
-            if (eventData.data.inputEvent.value == 0) {
+        case EVENT_INPUT_EVENT: {
+            const bool activeLow = PlatformData::isPrivacyShutterActiveLow(mCameraId);
+            const int closedVal = activeLow ? 0 : 1;
+            LOG1("<id%d>@%s: input event type %d code %d value %d, activeLow %d", mCameraId,
+                 __func__, eventData.data.inputEvent.type, eventData.data.inputEvent.code,
+                 eventData.data.inputEvent.value, activeLow);
+            if (eventData.data.inputEvent.value == closedVal) {
                 switchToBackup();
             } else {
                 switchToNormal();
             }
             break;
+        }
 #endif
 
         default:

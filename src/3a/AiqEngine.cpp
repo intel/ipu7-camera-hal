@@ -78,6 +78,11 @@ void AiqEngine::reset() {
     AutoMutex l(mEngineLock);
     mFirstAiqRunning = true;
     mAiqResultStorage->resetAiqStatistics();
+#ifdef LINUX_PRIVACY_MODE
+    // Start each streaming period with clean AE/AWB history and no stale results.
+    mAiqCore->init();
+    mAiqResultStorage->resetAiqResults();
+#endif
     mSensorManager->reset();
     mLensManager->reset();
 }

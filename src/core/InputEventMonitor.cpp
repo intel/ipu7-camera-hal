@@ -21,6 +21,7 @@
 #include "iutils/CameraLog.h"
 
 #include <string>
+#include <cerrno>
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -28,6 +29,7 @@
 #include <sys/ioctl.h>
 
 namespace icamera {
+
 
 static const struct EventIoctlMode {
     uint32_t type;
@@ -41,10 +43,15 @@ static const struct EventIoctlMode {
 };
 
 static const uint8_t U32_BITS = sizeof(uint32_t) * 8;
+// The kernel copies event bitmaps in whole longs, so a bitmap sized exactly for SW_MAX or
+// EV_MAX is too small. KEY_MAX is the largest bitmap and its size is a multiple of a long.
+static const uint32_t BITMAP_WORDS = (KEY_MAX / U32_BITS) + 1U;
+static const size_t PHYS_PATH_MAX_LEN = 256;
 
 InputEventMonitor::InputEventMonitor() : mCheckThread(nullptr),
                                          mEventType(-1),
                                          mEventCode(-1),
+                                         mEventIoctlModesIndex(0U),
                                          mFd(-1),
                                          mValue(-1),
                                          mEventIoctlModesIndex(0) {
@@ -68,6 +75,25 @@ int InputEventMonitor::configure(int eventType, int eventCode) {
         return BAD_VALUE;
     }
 
+    bool modeFound = false;
+    for (uint32_t i = 0; i < sizeof(EVENTIOCTLMODES) / sizeof(EVENTIOCTLMODES[0]); ++i) {
+        if (static_cast<uint32_t>(eventType) == EVENTIOCTLMODES[i].type) {
+            mEventIoctlModesIndex = i;
+            modeFound = true;
+            break;
+        }
+    }
+    if (!modeFound) {
+        LOGE("Unsupported event type %d", eventType);
+        return BAD_VALUE;
+    }
+
+    // Release the device of a previous configure() before opening it again.
+    if (mFd >= 0) {
+        ::close(mFd);
+        mFd = -1;
+    }
+
     DIR *dir = ::opendir("/dev/input/");
     if (!dir) {
         LOGE("Unable to open input directory");
@@ -78,19 +104,31 @@ int InputEventMonitor::configure(int eventType, int eventCode) {
     while ((entry = readdir(dir)) != NULL) {
         if (strncmp(entry->d_name, "event", 5) == 0) {
             std::string devicePath = std::string("/dev/input/") + entry->d_name;
+
+            int tmpFd = ::open(devicePath.c_str(), O_RDONLY);
+            if (tmpFd < 0) {
+                LOGE("open %s fail: %d, errno: %d", devicePath.c_str(), tmpFd, errno);
+                continue;
+            }
+            char physPath[PHYS_PATH_MAX_LEN] = {0};
+            bool isVirtual = (ioctl(tmpFd, EVIOCGPHYS(sizeof(physPath)), physPath) < 0)
+                             || (physPath[0] == '\0');
+            struct input_id inputId = {};
+            if (!isVirtual && (ioctl(tmpFd, EVIOCGID, &inputId) < 0)) {
+                isVirtual = true;
+            }
+            ::close(tmpFd);
+            if (isVirtual || (inputId.bustype == BUS_VIRTUAL)) {
+                LOG1("Skip virtual device %s", devicePath.c_str());
+                continue;
+            }
+
             if (checkDeviceCapabilities(devicePath, eventType, eventCode)) {
                 int status = ::open(devicePath.c_str(), O_RDONLY);
                 if (status >= 0) {
                     mFd = status;
                     mEventType = eventType;
                     mEventCode = eventCode;
-                    const uint32_t modes_count = sizeof(EVENTIOCTLMODES) / sizeof(struct EventIoctlMode);
-                    for (uint32_t i = 0; i < modes_count; ++i) {
-                        if (mEventType == EVENTIOCTLMODES[i].type) {
-                            mEventIoctlModesIndex = i;
-                            break;
-                        }
-                    }
                     LOG1("Use %s for event type %d code %d", devicePath.c_str(), eventType,
                             eventCode);
                     status = readRawValue();
@@ -118,14 +156,13 @@ int InputEventMonitor::readRawValue() {
     if (mFd < 0 || mEventType < 0 || mEventCode < 0) return -1;
 
     int status = -1;
-    uint32_t bits = EVENTIOCTLMODES[mEventIoctlModesIndex].max;
     uint32_t req = EVENTIOCTLMODES[mEventIoctlModesIndex].rq;
-    uint32_t codeBits[bits / U32_BITS + 1];
+    uint32_t codeBits[BITMAP_WORDS];
 
     memset(codeBits, 0, sizeof(codeBits));
     status = ioctl(mFd, req, codeBits);
     if (status >= 0) {
-        mValue = (codeBits[mEventCode / U32_BITS] & (1UL << (mEventCode % U32_BITS)) != 0U) ? 1 : 0;
+        mValue = ((codeBits[mEventCode / U32_BITS] & (1UL << (mEventCode % U32_BITS))) != 0U) ? 1 : 0;
     }
 
     return status;
@@ -159,19 +196,31 @@ bool InputEventMonitor::check() {
     struct pollfd pfd = {mFd, POLLIN};
     int status = ::poll(&pfd, 1, 33);
     if (status < 0) {
-        LOGE("poll fd %d error: %d", mFd, status);
+        if (errno == EINTR) {
+            return true;
+        }
+        LOGE("poll fd %d error: %d, stop monitoring", mFd, errno);
         return false;
     }
     if (status == 0) {
         // timeout
         return true;
     }
+    // The input device is gone (e.g. driver unbound): poll() would return at once forever.
+    if ((pfd.revents & (POLLERR | POLLHUP | POLLNVAL)) != 0) {
+        LOGE("input fd %d revents 0x%x, stop monitoring", mFd, pfd.revents);
+        return false;
+    }
 
     struct input_event ev;
     CLEAR(ev);
     ssize_t n = read(mFd, &ev, sizeof(struct input_event));
     if (n <= 0) {
-        LOGE("read event fail: %lld", n);
+        if ((n < 0) && (errno == EINTR)) {
+            return true;
+        }
+        LOGE("read event fail: %zd, errno %d, stop monitoring", n, errno);
+        return false;
     } else {
         if (ev.type == mEventType && ev.code == mEventCode) {
             LOG1("read input event value %d", ev.value);
@@ -201,11 +250,11 @@ bool InputEventMonitor::checkDeviceCapabilities(const std::string &device, const
     const int fd = status;
 
     // To store event type bitmap
-    uint32_t typeBits[EV_MAX / U32_BITS + 1];
+    uint32_t typeBits[BITMAP_WORDS];
     memset(typeBits, 0, sizeof(typeBits));
 
     // To store event code bitmap
-    uint32_t codeBits[KEY_MAX / U32_BITS + 1];
+    uint32_t codeBits[BITMAP_WORDS];
     memset(codeBits, 0, sizeof(codeBits));
 
     status = ioctl(fd, EVIOCGBIT(0, EV_MAX), typeBits);
