@@ -1024,6 +1024,9 @@ void CameraSensorsParser::parseSensorSection(const Json::Value& node) {
     if (node.isMember("privacyShutterEventCode")) {
         mCurCam->mPrivacyShutterEventCode = node["privacyShutterEventCode"].asInt();
     }
+    if (node.isMember("privacyShutterActiveLow")) {
+        mCurCam->mPrivacyShutterActiveLow = node["privacyShutterActiveLow"].asBool();
+    }
 #endif
 }
 

@@ -105,6 +105,20 @@ int BufferQueue::qbuf(uuid port, const std::shared_ptr<CameraBuffer>& camBuffer)
 
     CameraBufQ& output = mOutputQueue[port];
     output.push(camBuffer);
+#ifdef LINUX_PRIVACY_MODE
+    // Wake the processing thread only if an input frame is already waiting for this buffer,
+    // so a wait for the next input frame is not cut short.
+    bool inputPending = !mInputQueue.empty();
+    for (const auto& input : mInputQueue) {
+        if (input.second.empty()) {
+            inputPending = false;
+            break;
+        }
+    }
+    if (inputPending) {
+        mFrameAvailableSignal.notify_one();
+    }
+#endif
 
     return OK;
 }

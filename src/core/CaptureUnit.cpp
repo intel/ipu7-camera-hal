@@ -237,6 +237,23 @@ int CaptureUnit::stop() {
     return OK;
 }
 
+#ifdef LINUX_PRIVACY_MODE
+int CaptureUnit::reconfigure() {
+    LOG1("<id%d>%s", mCameraId, __func__);
+
+    CheckAndLogError(mOutputFrameInfo.empty(), BAD_VALUE, "@%s: no stored stream config",
+                     __func__);
+
+    if (mState == CAPTURE_START) {
+        stop();
+    }
+    destroyDevices();
+
+    // Re-create devices to clear hardware DMA and driver state.
+    return configure(mOutputFrameInfo);
+}
+#endif
+
 int CaptureUnit::configure(const map<uuid, stream_t>& outputFrames) {
     PERF_CAMERA_ATRACE();
 

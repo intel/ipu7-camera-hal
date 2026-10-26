@@ -102,7 +102,9 @@ int PSysDevice::init() {
     mFd = open(DRIVER_NAME, O_RDWR | O_NONBLOCK, 0);
     CheckAndLogError(mFd < 0, INVALID_OPERATION, "Failed to open psys device %s", strerror(errno));
 
+#ifndef LINUX_PRIVACY_MODE
     mPollThread->start();
+#endif
 
     return OK;
 }
@@ -171,15 +173,117 @@ int PSysDevice::addGraph(const PSysGraph& graph) {
     return OK;
 }
 
+#ifdef LINUX_PRIVACY_MODE
+void PSysDevice::suspendPolling() {
+    LOG1("<id%d>@%s", mCameraId, __func__);
+
+    // Stop the poll thread
+    mExitPending = true;
+    if (mEventFd >= 0) {
+        const uint64_t value = 1U;
+        (void)write(mEventFd, &value, sizeof(value));
+    }
+    mPollThread->wait();
+
+    // Clear the eventfd counter so it doesn't interfere with future polls
+    if (mEventFd >= 0) {
+        uint64_t val = 0U;
+        ssize_t ret = read(mEventFd, &val, sizeof(val));
+        if (ret < 0 && errno != EAGAIN) {
+            LOGW("<id%d>@%s: failed to read eventfd, errno:%d", mCameraId, __func__, errno);
+        }
+    }
+
+    // Drain any remaining completion events still in the kernel queue
+    int drained = 0;
+    for (int i = 0; i < (MAX_NODE_NUM * MAX_TASK_NUM + 1); i++) {
+        struct pollfd pfd = {mFd, POLLIN, 0};
+        int ret = ::poll(&pfd, 1, 50); // 50ms timeout per event
+        if (ret <= 0 || !(pfd.revents & POLLIN)) break;
+        ipu_psys_event event;
+        CLEAR(event);
+        int dqret = ::ioctl(mFd, static_cast<int>(IPU_IOC_DQEVENT), &event);
+        if (dqret != 0) break;
+        handleEvent(event);
+        drained++;
+    }
+    LOG1("<id%d>@%s: drained %d event(s)", mCameraId, __func__, drained);
+
+    mExitPending = false;
+}
+
+void PSysDevice::resumePolling() {
+    LOG1("<id%d>@%s", mCameraId, __func__);
+    // The poll thread is started only once a graph is open; init() does not start it.
+    if (!mPollThread->isRunning()) {
+        mPollThread->start();
+    }
+}
+
+void PSysDevice::closeDev() {
+    LOG1("<id%d>@%s", mCameraId, __func__);
+
+    // Old mappings belong to the closed file description; close exported userptr
+    // buffer fds and drop the maps so registerBuffer() re-gets and re-mmaps on reopen.
+    {
+        std::lock_guard<std::mutex> l(mDataLock);
+        for (auto& item : mPtrToTermBufMap) {
+            if (((item.second.flags & IPU_BUFFER_FLAG_USERPTR) != 0U) &&
+                (item.second.psysBuf.base.fd >= 0)) {
+                ::close(item.second.psysBuf.base.fd);
+            }
+        }
+        mPtrToTermBufMap.clear();
+        mFdToTermBufMap.clear();
+    }
+
+    if (mFd >= 0) {
+        const int ret = ::close(mFd);
+        if (ret < 0) {
+            LOGE("Failed to close psys device %s, ret %d", strerror(errno), ret);
+        }
+        mFd = -1;
+    }
+}
+
+int PSysDevice::reopenDev() {
+    // init() already opened the device; the very first start() has nothing to
+    // reopen, and reopening here would leak that first fd.
+    if (mFd >= 0) {
+        return OK;
+    }
+
+    LOG1("<id%d>@%s", mCameraId, __func__);
+
+    mFd = open(DRIVER_NAME, O_RDWR | O_NONBLOCK, 0);
+    CheckAndLogError(mFd < 0, INVALID_OPERATION, "Failed to reopen psys device %s",
+                     strerror(errno));
+
+    return OK;
+}
+#endif
+
 int PSysDevice::closeGraph() {
     CheckAndLogError(mFd < 0, INVALID_OPERATION, "psys device wasn't opened");
 
     if (mGraphId != INVALID_GRAPH_ID) {
         int ret = ::ioctl(mFd, static_cast<int>(IPU_IOC_GRAPH_CLOSE), &mGraphId);
+#ifdef LINUX_PRIVACY_MODE
+        // The device is closed and reopened next, so reset the graph state even on
+        // failure: the new graph must start again from frame id 0.
+        if (ret != 0) {
+            LOGE("Failed to close graph %s", strerror(errno));
+        }
+#else
         CheckAndLogError(ret != 0, INVALID_OPERATION, "Failed to close graph %s", strerror(errno));
+#endif
         mGraphId = INVALID_GRAPH_ID;
     }
     CLEAR(mFrameId);
+#ifdef LINUX_PRIVACY_MODE
+    // Drop the sequence mapping so completion events from the old graph are discarded.
+    (void)memset(&mFrameIdToSeqMap, -1, sizeof(mFrameIdToSeqMap));
+#endif
     return OK;
 }
 

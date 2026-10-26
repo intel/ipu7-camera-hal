@@ -64,6 +64,11 @@ class CBStage : public IPipeStage, public IPSysDeviceCallback {
     virtual int start();
     virtual int stop();
 
+#ifdef LINUX_PRIVACY_MODE
+    // Mirrors the reinitAic() decision taken by PipeLine::start() for this stream.
+    void setNeedReconfigAic(bool need) { mNeedReconfigAic = need; }
+#endif
+
     virtual void setControl(int64_t sequence, const StageControl& control) {}
 
     // IPSysDeviceCallback
@@ -98,7 +103,13 @@ class CBStage : public IPipeStage, public IPSysDeviceCallback {
                                        cca::cca_cb_kernel_offset& offsets);
     int pacConfig(const StaticGraphNodeKernels& kernelGroup, aic::IaAicBuffer** iaAicPtr,
                   std::unordered_map<uint8_t, TerminalConfig>& terminalConfig,
+#ifdef LINUX_PRIVACY_MODE
+                  PacTerminalBufMap& termBufMap,
+                  bool reinit = false);
+    int reapplyPacConfig();
+#else
                   PacTerminalBufMap& termBufMap);
+#endif
     int allocPayloadBuffer(const cca::cca_aic_terminal_config& pacConfig,
                            std::unordered_map<uint8_t, TerminalConfig>& terminalConfig);
     bool isInPlaceTerminal(uint8_t resourceId, uint8_t terminalId);
@@ -175,6 +186,14 @@ class CBStage : public IPipeStage, public IPSysDeviceCallback {
 
     // first: sequence, second:: TerminalBuffer
     std::unordered_multimap<int64_t, TerminalBuffer> mSeqToTerminalBufferMaps;
+
+#ifdef LINUX_PRIVACY_MODE
+    // Kept from configure() so reapplyPacConfig() can redo configAic + registerAicBuf.
+    const StaticGraphNodeKernels* mKernelGroup = nullptr;
+    std::unordered_map<uint8_t, TerminalConfig> mStoredTerminalConfig;
+    bool mNeedReconfigAic = false;
+    bool mFrameBuffersAllocated = false;
+#endif
 };
 
 }  // namespace icamera

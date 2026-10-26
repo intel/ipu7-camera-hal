@@ -43,6 +43,23 @@ public:
      * \brief Reset request processing state.
      */
     void resetSequence();
+
+    /**
+     * \brief Mark whether the backup (dummy frame) producer is active.
+     */
+    void setBackupModeActive(bool active) {
+        mBackupModeActive.store(active);
+        if (active) {
+            AutoMutex l(mPendingReqLock);
+            mBlockRequest = false;
+            mRequestSignal.notify_one();
+        }
+    }
+
+    /**
+     * \brief Check whether the backup (dummy frame) producer is active.
+     */
+    bool isBackupModeActive() const { return mBackupModeActive.load(); }
 #endif
 
     /**
@@ -145,6 +162,9 @@ private:
 
     int64_t mLastCcaId;
     int64_t mLastEffectSeq;  // Last sequence is which last results had been taken effect on
+#ifdef LINUX_PRIVACY_MODE
+    std::atomic<bool> mBackupModeActive;
+#endif
     int64_t mLastAppliedSeq; // Last sequence id which last results had been set on
     int64_t mLastSofSeq;
     bool mBlockRequest;  // Process the 2nd or 3th request after the 1st 3A event
