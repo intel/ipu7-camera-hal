@@ -159,7 +159,7 @@ int32_t GraphConfigManager::configStreams(const stream_config_t* streamList,
                          "Not support two different MC ID at same time:(%d/%d)", mMcId, id);
         mMcId = id;
         LOG2("%s: Add graph setting for op_mode %d", __func__, mode);
-        gcs[mode] = graphConfig;
+        gcs[mode] = std::move(graphConfig);
     }
 
     if (static_cast<size_t>(configuredNum) > mHalStreams.size()) {

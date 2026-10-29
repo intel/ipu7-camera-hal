@@ -389,7 +389,7 @@ class Parameters {
      *
      * \return 0 if set successfully, otherwise non-0 value is returned.
      */
-    int setAeRegions(camera_window_list_t aeRegions);
+    int setAeRegions(const camera_window_list_t& aeRegions);
 
     /**
      * \brief Get AE region
@@ -823,7 +823,7 @@ class Parameters {
      */
     int getColorGains(camera_color_gains_t& colorGains) const;
 
-    int setAwbRegions(camera_window_list_t awbRegions);
+    int setAwbRegions(const camera_window_list_t& awbRegions);
     int getAwbRegions(camera_window_list_t& awbRegions) const;
 
     // Belows are convergence speed related parameters operations
@@ -1417,7 +1417,7 @@ class Parameters {
      *
      * \return 0 if set successfully, otherwise non-0 value is returned.
      */
-    int setAfRegions(camera_window_list_t afRegions);
+    int setAfRegions(const camera_window_list_t& afRegions);
 
     /**
      * \brief Get af region

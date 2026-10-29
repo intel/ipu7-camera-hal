@@ -36,7 +36,7 @@ Thread::~Thread() {
     delete mThread;
 }
 
-int Thread::run(std::string name, int priority) {
+int Thread::run(const std::string& name, int priority) {
     AutoMutex lock(mLock);
 
     if ((mState != NOT_STARTED) && (mState != EXITED)) {

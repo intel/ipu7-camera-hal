@@ -119,7 +119,7 @@ static int getRegions(icamera_metadata_ro_entry_t entry, camera_window_list_t& r
     return OK;
 }
 
-int Parameters::setAeRegions(camera_window_list_t aeRegions) {
+int Parameters::setAeRegions(const camera_window_list_t& aeRegions) {
     ParameterHelper::AutoWLock wl(mData);
     return setRegions(ParameterHelper::getMetadata(mData), aeRegions, CAMERA_AE_REGIONS);
 }
@@ -434,7 +434,7 @@ int Parameters::getColorGains(camera_color_gains_t& colorGains) const {
     return OK;
 }
 
-int Parameters::setAwbRegions(camera_window_list_t awbRegions) {
+int Parameters::setAwbRegions(const camera_window_list_t& awbRegions) {
     ParameterHelper::AutoWLock wl(mData);
     return setRegions(ParameterHelper::getMetadata(mData), awbRegions, CAMERA_AWB_REGIONS);
 }
@@ -1474,7 +1474,7 @@ int Parameters::getAfTrigger(camera_af_trigger_t& afTrigger) const {
     return OK;
 }
 
-int Parameters::setAfRegions(camera_window_list_t afRegions) {
+int Parameters::setAfRegions(const camera_window_list_t& afRegions) {
     ParameterHelper::AutoWLock wl(mData);
     return setRegions(ParameterHelper::getMetadata(mData), afRegions, CAMERA_AF_REGIONS);
 }

@@ -174,6 +174,78 @@ StaticGraphStatus StaticGraphReader::GetStaticGraphConfig(GraphConfigurationKey&
     // fetching the graph
     switch (selectedGraphConfigurationHeader->graphId)
     {
+        case 200048:
+            if (StaticGraph200048::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200048(
+                reinterpret_cast<GraphConfiguration200048*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
+        case 200049:
+            if (StaticGraph200049::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200049(
+                reinterpret_cast<GraphConfiguration200049*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
+        case 200050:
+            if (StaticGraph200050::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200050(
+                reinterpret_cast<GraphConfiguration200050*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
+        case 200051:
+            if (StaticGraph200051::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200051(
+                reinterpret_cast<GraphConfiguration200051*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
+        case 200052:
+            if (StaticGraph200052::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200052(
+                reinterpret_cast<GraphConfiguration200052*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
+        case 200053:
+            if (StaticGraph200053::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200053(
+                reinterpret_cast<GraphConfiguration200053*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
+        case 200054:
+            if (StaticGraph200054::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200054(
+                reinterpret_cast<GraphConfiguration200054*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
+        case 200055:
+            if (StaticGraph200055::hashCode != selectedGraphConfigurationHeader->graphHashCode)
+            {
+                STATIC_GRAPH_LOG("Graph %d hash code is not matching the settings. Binary should be re-created.", selectedGraphConfigurationHeader->graphId);
+                return StaticGraphStatus::SG_ERROR;
+            }
+            *graph = new StaticGraph200055(
+                reinterpret_cast<GraphConfiguration200055*>(selectedConfigurationData), &selectedSinkMappingConfiguration, &_sensorModes[selectedGraphConfigurationHeader->sensorModeIndex], selectedGraphConfigurationHeader->settingId, selectedGraphConfigurationHeader->additionalFeaturesBit, selectedGraphConfigurationHeader->isIsysUnpacked, configurationInformation);
+            break;
         case 200000:
             if (StaticGraph200000::hashCode != selectedGraphConfigurationHeader->graphHashCode)
             {

@@ -71,7 +71,7 @@ int32_t CameraScheduler::createExecutors() {
         }
         mPolicy->getNodeList(exe.first, &group.nodeList);
 
-        mExeGroups.push_back(group);
+        mExeGroups.push_back(std::move(group));
     }
     return OK;
 }
