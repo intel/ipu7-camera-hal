@@ -110,6 +110,10 @@ std::vector<std::pair<std::string, SensorInfo>> CameraParserInvoker::getAvailabl
                 SensorInfo sensorInfo = {sensor, true};
                 availableSensors.push_back({sensor, sensorInfo});
                 LOG1("@%s, found %s", __func__, sensor.c_str());
+            } else if (sensor == "acpi") {
+                SensorInfo sensorInfo = {sensor, true};
+                availableSensors.push_back({sensor, sensorInfo});
+                LOG1("@%s, available ACPI sensor profile", __func__);
             }
         } else {
             // sensors with suffix port number
