@@ -81,6 +81,9 @@ FileSource::FileSource(int cameraId)
 }
 
 FileSource::~FileSource() {
+#ifdef LINUX_PRIVACY_MODE
+    stop();
+#endif
     delete mProduceThread;
 }
 
@@ -141,6 +144,14 @@ int FileSource::allocateSourceBuffer() {
                                                             width, height);
         CheckAndLogError(buf == nullptr, BAD_VALUE, "@%s: Allocate producer buffer failed",
                          __func__);
+#ifdef LINUX_PRIVACY_MODE
+        // Fill neutral grey first, so a missing or short frame file never shows
+        // uninitialized memory while the privacy shutter is closed.
+        if (buf->getBufferAddr() != nullptr) {
+            const int fill = (fmt == V4L2_PIX_FMT_NV12) ? 0x80 : 0;
+            memset(buf->getBufferAddr(), fill, buf->getBufferSize());
+        }
+#endif
         fillFrameBuffer(fileName, buf);
         mFrameFileBuffers[fileName] = buf;
     }
@@ -214,13 +225,27 @@ bool FileSource::produce() {
             if (mExitPending) {
                 return false;
             }
+#ifdef LINUX_PRIVACY_MODE
+            std::cv_status ret = std::cv_status::no_timeout;
+#else
             std::cv_status ret;
+#endif
             if (bufQueue.second.empty()) {
                 ret = mBufferSignal.wait_for(lock, std::chrono::nanoseconds(kWaitDuration));
             }
+#ifdef LINUX_PRIVACY_MODE
+            if (mExitPending) {
+                return false;
+            }
+            // Keep the dummy producer alive when the app stops queueing buffers for a while.
+            if (ret == std::cv_status::timeout) {
+                return true;
+            }
+#else
             if (mExitPending || (ret == std::cv_status::timeout)) {
                 return false;
             }
+#endif
             if (bufQueue.second.empty()) {
                 return true;
             }
@@ -261,6 +286,16 @@ bool FileSource::produce() {
         buf.second->setTimestamp(stamp);
         fillFrameBuffer(buf.second);
     }
+
+#ifdef LINUX_PRIVACY_MODE
+    {
+        // Don't deliver once a stop has been requested; stop() drops the queued buffers.
+        AutoMutex l(mLock);
+        if (mExitPending) {
+            return false;
+        }
+    }
+#endif
 
     notifyFrame(qBuffer);
 
@@ -695,5 +730,23 @@ int DummyImageSource::configure(const std::map<uuid, stream_t>& outputFrames) {
 
     return ret;
 }
+
+#ifdef LINUX_PRIVACY_MODE
+void FileSource::clearBufferQueue() {
+    AutoMutex l(mLock);
+    for (auto& bufQueue : mBufferQueue) {
+        while (!bufQueue.second.empty()) {
+            bufQueue.second.pop();
+        }
+    }
+}
+
+int DummyImageSource::start() {
+    // A buffer queued while stopped can belong to another producer by now; the streams
+    // queue their buffers again right after this start.
+    clearBufferQueue();
+    return FileSource::start();
+}
+#endif
 
 }  // end of namespace icamera

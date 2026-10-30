@@ -69,6 +69,10 @@ class FileSource : public StreamSource {
     void notifySofEvent();
 
  protected:
+#ifdef LINUX_PRIVACY_MODE
+    // Drop all buffers queued to this source.
+    void clearBufferQueue();
+#endif
     float mFps;
     std::string mInjectedFile;  // The injected file can be a actual frame or a XML config file.
     enum {
@@ -192,6 +196,9 @@ class DummyImageSource : public FileSource {
 
     virtual int init() override;
     virtual int configure(const std::map<uuid, stream_t>& outputFrames) override;
+#ifdef LINUX_PRIVACY_MODE
+    virtual int start() override;
+#endif
 
  public:
     const std::string mCameraConfigPath;
