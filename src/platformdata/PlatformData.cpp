@@ -1455,5 +1455,9 @@ int PlatformData::getPrivacyShutterEventCode(int cameraId) {
 int PlatformData::getPrivacyShutterEventType(int cameraId) {
     return getInstance()->mStaticCfg.mCameras[cameraId].mPrivacyShutterEventType;
 }
+
+bool PlatformData::isPrivacyShutterActiveLow(int cameraId) {
+    return getInstance()->mStaticCfg.mCameras[cameraId].mPrivacyShutterActiveLow;
+}
 #endif
 }  // namespace icamera

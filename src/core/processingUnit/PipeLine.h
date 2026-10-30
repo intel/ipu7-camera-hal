@@ -138,6 +138,9 @@ class PipeLine {
     PSysDevice* mPSysDevice;
     PSysGraph mPSysGraph;
     IpuPacAdaptor* mPacAdaptor;
+#ifdef LINUX_PRIVACY_MODE
+    bool mNeedReinitAic = false;
+#endif
 };
 
 }  // namespace icamera

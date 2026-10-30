@@ -72,6 +72,13 @@ int AiqResult::deinit() const {
     return OK;
 }
 
+#ifdef LINUX_PRIVACY_MODE
+void AiqResult::invalidate() {
+    mSequence = -1;
+    mFrameId = -1;
+}
+#endif
+
 AiqResult &AiqResult::operator=(const AiqResult &other) {
     mCameraId = other.mCameraId;
     mSequence = other.mSequence;

@@ -37,6 +37,16 @@ public:
 
     int init();
     int deinit() const;
+#ifdef LINUX_PRIVACY_MODE
+    /**
+     * \brief Mark the result as not belonging to any frame, for a new streaming period.
+     *
+     * Only the frame identification is cleared, so the result can no longer match a frame by
+     * sequence. The 3A data is kept on purpose: it is the "latest result" fallback until the
+     * first new 3A run (see IpuPacAdaptor::runAIC and ParameterConvert).
+     */
+    void invalidate();
+#endif
 
     AiqResult& operator=(const AiqResult& other);
 

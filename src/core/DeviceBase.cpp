@@ -347,9 +347,22 @@ int MainDevice::onDequeueBuffer(shared_ptr<CameraBuffer> buffer) {
 
     DeviceBase::dumpFrame(buffer);
 
+#ifdef LINUX_PRIVACY_MODE
+    // A privacy switch can change the consumer set while this poll thread runs.
+    std::set<BufferConsumer*> consumers;
+    {
+        AutoMutex l(DeviceBase::mConsumerLock);
+        consumers = DeviceBase::mConsumers;
+    }
+
+    for (auto& consumer : consumers) {
+        consumer->onBufferAvailable(DeviceBase::mPort, buffer);
+    }
+#else
     for (auto& consumer : DeviceBase::mConsumers) {
         consumer->onBufferAvailable(DeviceBase::mPort, buffer);
     }
+#endif
 
     if (DeviceBase::mPort == MAIN_INPUT_PORT_UID) {
         EventData frameData;
@@ -366,6 +379,19 @@ int MainDevice::onDequeueBuffer(shared_ptr<CameraBuffer> buffer) {
 
 bool MainDevice::needQueueBack(shared_ptr<CameraBuffer> buffer) {
     bool needSkipFrame = (DeviceBase::mFrameSkipNum > 0);
+
+#ifdef LINUX_PRIVACY_MODE
+    // ISYS can return a late frame after the Normal->Backup handoff detached all
+    // consumers; requeue it instead of delivering it into a dead path.
+    {
+        AutoMutex l(DeviceBase::mConsumerLock);
+        if (DeviceBase::mConsumers.empty()) {
+            LOG2("<seq%u>%s: drop orphan ISYS frame, no consumer left", buffer->getSequence(),
+                 __func__);
+            return true;
+        }
+    }
+#endif
 
     const V4L2Buffer& vbuf = buffer->getV4L2Buffer();
     // Check for STR2MMIO Error from kernel space

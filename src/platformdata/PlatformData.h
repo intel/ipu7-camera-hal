@@ -249,6 +249,7 @@ class PlatformData {
 #ifdef LINUX_PRIVACY_MODE
                       mPrivacyShutterEventType(-1),
                       mPrivacyShutterEventCode(-1),
+                      mPrivacyShutterActiveLow(false),
 #endif
                       mUsePSysProcessor(true) {
             }
@@ -362,6 +363,7 @@ class PlatformData {
 #ifdef LINUX_PRIVACY_MODE
             int mPrivacyShutterEventType;
             int mPrivacyShutterEventCode;
+            bool mPrivacyShutterActiveLow;
 #endif
             bool mUsePSysProcessor;
 
@@ -1514,6 +1516,7 @@ class PlatformData {
 #ifdef LINUX_PRIVACY_MODE
     static int getPrivacyShutterEventType(int cameraId);
     static int getPrivacyShutterEventCode(int cameraId);
+    static bool isPrivacyShutterActiveLow(int cameraId);
 #endif
 
 };
