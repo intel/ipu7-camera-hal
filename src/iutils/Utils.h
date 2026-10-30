@@ -259,7 +259,7 @@ bool isUllPsysPipe(TuningMode tuningMode);
 
 ConfigMode getConfigModeByName(const char* ConfigName);
 
-void getConfigModeFromString(std::string str, std::vector<ConfigMode>& cfgModes);
+void getConfigModeFromString(const std::string& str, std::vector<ConfigMode>& cfgModes);
 
 camera_scene_mode_t getSceneModeByName(const char* sceneName);
 

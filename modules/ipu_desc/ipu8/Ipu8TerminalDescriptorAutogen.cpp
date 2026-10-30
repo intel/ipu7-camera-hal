@@ -560,7 +560,7 @@ TerminalDescriptor SW_NNTMTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_IN,
-        8034, // nntm_1_2
+        27456, // nntm_1_2
     },
     {
         SW_NNTM_TERMINAL_CONNECT_OUTPUT_1,
@@ -591,7 +591,7 @@ TerminalDescriptor SW_B2BTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_IN,
-        17306, // b2b
+        23614, // b2b
     },
     {
         SW_B2B_TERMINAL_CONNECT_OUTPUT,
@@ -600,7 +600,7 @@ TerminalDescriptor SW_B2BTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        17306, // b2b
+        23614, // b2b
     },
 };
 
@@ -666,7 +666,7 @@ TerminalDescriptor SW_AINRTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_IN,
-        0, // ainr
+        57271, // ainr
     },
     {
         SW_AINR_TERMINAL_CONNECT_OUTPUT,
@@ -675,7 +675,69 @@ TerminalDescriptor SW_AINRTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        0, // ainr
+        57271, // ainr
+    },
+};
+
+TerminalDescriptor SW_FLIPTerminalDesc[] =
+{
+    {
+        SW_FLIP_TERMINAL_CONNECT_INPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_INPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_IN,
+        19706, // sw_scaler
+    },
+    {
+        SW_FLIP_TERMINAL_CONNECT_OUTPUT_1,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_1",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+    {
+        SW_FLIP_TERMINAL_CONNECT_OUTPUT_2,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_2",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+};
+
+TerminalDescriptor SW_FLIP_UPSCALETerminalDesc[] =
+{
+    {
+        SW_FLIP_UPSCALE_TERMINAL_CONNECT_INPUT,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_INPUT",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_IN,
+        19706, // sw_scaler
+    },
+    {
+        SW_FLIP_UPSCALE_TERMINAL_CONNECT_OUTPUT_1,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_1",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
+    },
+    {
+        SW_FLIP_UPSCALE_TERMINAL_CONNECT_OUTPUT_2,
+        TERMINAL_TYPE_CONNECT,
+        "TERMINAL_CONNECT_OUTPUT_2",
+        PAC_BUFFER_TYPE_NONE,
+        TERMINAL_BUFFER_TYPE_DATA,
+        TERMINAL_DIR_OUT,
+        0, // 
     },
 };
 
@@ -689,3 +751,5 @@ int CountOfSW_B2BTerminalDesc = sizeof(SW_B2BTerminalDesc) / sizeof(SW_B2BTermin
 int CountOfSW_IMVTerminalDesc = sizeof(SW_IMVTerminalDesc) / sizeof(SW_IMVTerminalDesc[0]);
 int CountOfSW_REMOSAICTerminalDesc = sizeof(SW_REMOSAICTerminalDesc) / sizeof(SW_REMOSAICTerminalDesc[0]);
 int CountOfSW_AINRTerminalDesc = sizeof(SW_AINRTerminalDesc) / sizeof(SW_AINRTerminalDesc[0]);
+int CountOfSW_FLIPTerminalDesc = sizeof(SW_FLIPTerminalDesc) / sizeof(SW_FLIPTerminalDesc[0]);
+int CountOfSW_FLIP_UPSCALETerminalDesc = sizeof(SW_FLIP_UPSCALETerminalDesc) / sizeof(SW_FLIP_UPSCALETerminalDesc[0]);

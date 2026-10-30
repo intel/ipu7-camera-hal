@@ -27,7 +27,7 @@
 namespace icamera {
 
 CameraSensorsParser::CameraSensorsParser(MediaControl* mc, PlatformData::StaticCfg* cfg,
-                                         SensorInfo info)
+                                         const SensorInfo& info)
         : mMediaCtl(mc),
           mStaticCfg(cfg),
           mSensorInfo(info) {}
@@ -101,7 +101,7 @@ void CameraSensorsParser::parseMediaCtlConfigSection(const Json::Value& node) {
             parseMediaCtlVideoNodeObject(cfg["videonode"], &mc);
         }
 
-        mCurCam->mMediaCtlConfs.push_back(mc);
+        mCurCam->mMediaCtlConfs.push_back(std::move(mc));
     }
 }
 
@@ -134,10 +134,10 @@ void CameraSensorsParser::parseMediaCtlRouteObject(const Json::Value& node, Medi
 
         auto it = conf->routings.find(route.entityName);
         if (it != conf->routings.end()) {
-            it->second.push_back(route);
+            it->second.push_back(std::move(route));
         } else {
             std::vector<McRoute> routes;
-            routes.push_back(route);
+            routes.push_back(std::move(route));
             conf->routings.insert(std::pair<std::string, std::vector<McRoute>>
                                   (route.entityName, routes));
         }
@@ -182,7 +182,7 @@ void CameraSensorsParser::parseMediaCtlControlObject(const Json::Value& node, Me
             ctl.ctlName = ele["ctrlName"].asString();
         }
 
-        conf->ctls.push_back(ctl);
+        conf->ctls.push_back(std::move(ctl));
     }
 }
 
@@ -210,7 +210,7 @@ void CameraSensorsParser::parseMediaCtlLinkObject(const Json::Value& node, Media
         if (ele.isMember("enable")) {
             link.enable = ele["enable"].asBool();
         }
-        conf->links.push_back(link);
+        conf->links.push_back(std::move(link));
     }
 }
 
@@ -222,7 +222,7 @@ void CameraSensorsParser::parseMediaCtlVideoNodeObject(const Json::Value& node,
 
         videoNode.name = resolveI2CBusString(ele["name"].asString());
         videoNode.videoNodeType = GetNodeType(ele["videoNodeType"].asString().c_str());
-        conf->videoNodes.push_back(videoNode);
+        conf->videoNodes.push_back(std::move(videoNode));
     }
 }
 
@@ -274,7 +274,7 @@ void CameraSensorsParser::parseMediaCtlConfigFormatsObject(const Json::Value& no
         }
 
         fmt.formatType = FC_FORMAT;
-        conf->formats.push_back(fmt);
+        conf->formats.push_back(std::move(fmt));
     }
 }
 
@@ -306,7 +306,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedStreamConfig(const 
         mCurCam->mStreamToMcMap[mcId].push_back(cfg);
     }
 
-    mCurCam->mStaticMetadata.mConfigsArray = configsArray;
+    mCurCam->mStaticMetadata.mConfigsArray = std::move(configsArray);
 }
 
 void CameraSensorsParser::parseMediaCtlSelectionObject(const Json::Value& node, MediaCtlConf* mc) {
@@ -351,7 +351,7 @@ void CameraSensorsParser::parseMediaCtlSelectionObject(const Json::Value& node, 
         if (ele.isMember("height")) {
             sel.height = ele["height"].asInt();
         }
-        mc->formats.push_back(sel);
+        mc->formats.push_back(std::move(sel));
     }
 }
 
@@ -422,7 +422,7 @@ void CameraSensorsParser::parseNvmeDeviceInfo(const Json::Value& node) {
         return;
     }
     NvmDeviceInfo info{node[0].asString(), node[1].asInt()};
-    mNVMDeviceInfo.push_back(info);
+    mNVMDeviceInfo.push_back(std::move(info));
 }
 
 void CameraSensorsParser::parsesupportModuleNames(const Json::Value& node) {
@@ -430,10 +430,10 @@ void CameraSensorsParser::parsesupportModuleNames(const Json::Value& node) {
 
     for (Json::Value::ArrayIndex i = 0; i < node.size(); ++i) {
         auto name = node[i].asString();
-        supportModuleNames.push_back(name);
+        supportModuleNames.push_back(std::move(name));
     }
 
-    mCurCam->mSupportModuleNames = supportModuleNames;
+    mCurCam->mSupportModuleNames = std::move(supportModuleNames);
 }
 
 void CameraSensorsParser::parseDVSType(const Json::Value& node) {
@@ -529,21 +529,21 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedFeatures(const Json
         }
     }
 
-    mCurCam->mStaticMetadata.mSupportedFeatures = features;
+    mCurCam->mStaticMetadata.mSupportedFeatures = std::move(features);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionFpsRange(const Json::Value& node) {
     std::vector<double> range;
     for (Json::Value::ArrayIndex i = 0; i < node.size(); ++i) range.push_back(node[i].asDouble());
 
-    mCurCam->mStaticMetadata.mFpsRange = range;
+    mCurCam->mStaticMetadata.mFpsRange = std::move(range);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionEVRange(const Json::Value& node) {
     std::vector<int> range;
     for (Json::Value::ArrayIndex i = 0; i < node.size(); ++i) range.push_back(node[i].asInt());
 
-    mCurCam->mStaticMetadata.mEvRange = range;
+    mCurCam->mStaticMetadata.mEvRange = std::move(range);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionEVSetp(const Json::Value& node) {
@@ -552,7 +552,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionEVSetp(const Json::Value& no
     }
 
     std::vector<int> evStep = {node[0].asInt(), node[1].asInt()};
-    mCurCam->mStaticMetadata.mEvStep = evStep;
+    mCurCam->mStaticMetadata.mEvStep = std::move(evStep);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionSupportedAeMode(const Json::Value& node) {
@@ -569,7 +569,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedAeMode(const Json::
         supportedModes.push_back(aeMode);
     }
 
-    mCurCam->mStaticMetadata.mSupportedAeMode = supportedModes;
+    mCurCam->mStaticMetadata.mSupportedAeMode = std::move(supportedModes);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionSupportedAWBModes(const Json::Value& node) {
@@ -577,7 +577,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedAWBModes(const Json
     for (Json::Value::ArrayIndex i = 0; i < node.size(); ++i)
         awbModes.push_back(CameraUtils::getAwbModeByName(node[i].asString().c_str()));
 
-    mCurCam->mStaticMetadata.mSupportedAwbMode = awbModes;
+    mCurCam->mStaticMetadata.mSupportedAwbMode = std::move(awbModes);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionSupportedSceneMode(const Json::Value& node) {
@@ -585,7 +585,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedSceneMode(const Jso
     for (Json::Value::ArrayIndex i = 0; i < node.size(); ++i)
         sceneModes.push_back(CameraUtils::getSceneModeByName(node[i].asString().c_str()));
 
-    mCurCam->mStaticMetadata.mSupportedSceneMode = sceneModes;
+    mCurCam->mStaticMetadata.mSupportedSceneMode = std::move(sceneModes);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionSupportedAfMode(const Json::Value& node) {
@@ -629,7 +629,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedAntibandingMode(
         supportedModes.push_back(antibandingMode);
     }
 
-    mCurCam->mStaticMetadata.mSupportedAntibandingMode = supportedModes;
+    mCurCam->mStaticMetadata.mSupportedAntibandingMode = std::move(supportedModes);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionSupportedVideoStabilizationMode(
@@ -648,7 +648,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedVideoStabilizationM
         supportedModes.push_back(mode);
     }
 
-    mCurCam->mStaticMetadata.mVideoStabilizationModes = supportedModes;
+    mCurCam->mStaticMetadata.mVideoStabilizationModes = std::move(supportedModes);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSectionSupportedRotateMode(const Json::Value& node) {
@@ -671,7 +671,7 @@ void CameraSensorsParser::parseStaticMetaDataSectionSupportedRotateMode(const Js
         supportedModes.push_back(mode);
     }
 
-    mCurCam->mStaticMetadata.mSupportedRotateMode = supportedModes;
+    mCurCam->mStaticMetadata.mSupportedRotateMode = std::move(supportedModes);
 }
 
 void CameraSensorsParser::parseStaticMetaDataSection(const Json::Value& node) {
@@ -728,7 +728,7 @@ void CameraSensorsParser::parseSupportedTuningConfig(const Json::Value& node) {
         cfg.configMode = CameraUtils::getConfigModeByName(cnode[0].asString().c_str());
         cfg.tuningMode = CameraUtils::string2TuningMode(cnode[1].asString().c_str());
         cfg.aiqbName = cnode[2].asString();
-        mCurCam->mSupportedTuningConfig.push_back(cfg);
+        mCurCam->mSupportedTuningConfig.push_back(std::move(cfg));
     }
 }
 
@@ -928,7 +928,7 @@ void CameraSensorsParser::resolveCsiPortAndI2CBus() {
     }
 
     if (mSensorInfo.sensorResolved != true) {
-        auto sinkEntityName = mSensorInfo.sinkEntityName;
+        const auto& sinkEntityName = mSensorInfo.sinkEntityName;
         mSensorInfo.sensorResolved = true;
         mCsiPort = sinkEntityName.substr(sinkEntityName.find_last_of(' ') + 1);
 
@@ -1073,7 +1073,7 @@ void CameraSensorsParser::updateNVMDir() {
         LOGE("Failed to open dir %s", nvmPath.c_str());
     }
 
-    for (auto nvm : mNVMDeviceInfo) {
+    for (const auto& nvm : mNVMDeviceInfo) {
         if (!nvm.directory.empty()) {
             // The first one in list is prioritized and should be selected.
             std::string nvmPath;
@@ -1085,7 +1085,7 @@ void CameraSensorsParser::updateNVMDir() {
 
             nvmPath.append("eeprom");
             LOG2("NVM data is located in %s", nvmPath.c_str());
-            mCurCam->mNvmDirectory = nvmPath;
+            mCurCam->mNvmDirectory = std::move(nvmPath);
             mCurCam->mMaxNvmDataSize = nvm.dataSize;
             int ret =
                 getCameraModuleNameFromEEPROM(mCurCam->mNvmDirectory, &mCurCam->mCamModuleName);

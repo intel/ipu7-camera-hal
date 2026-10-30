@@ -699,7 +699,7 @@ ConfigMode CameraUtils::getConfigModeByName(const char* ConfigName) {
     return configMode;
 }
 
-void CameraUtils::getConfigModeFromString(string str, std::vector<ConfigMode>& cfgModes) {
+void CameraUtils::getConfigModeFromString(const string& str, std::vector<ConfigMode>& cfgModes) {
     bool split = true;
     ConfigMode mode;
     string resultStr, modeStr = str;

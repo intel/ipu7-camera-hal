@@ -39,7 +39,7 @@ struct streamProps {
 class HalStream
 {
  public:
-    HalStream() : mWidth(0), mHeight(0), mFormat(0), mStreamId(0), mUseCase(USE_CASE_VIDEO) {}
+    HalStream() : mWidth(0), mHeight(0), mFormat(0), mStreamId(0), mUseCase(USE_CASE_VIDEO), maxBuffers(0), mPrivate(nullptr) {}
     HalStream(struct streamProps &props, void *priv) :
         mWidth(props.width),
         mHeight(props.height),

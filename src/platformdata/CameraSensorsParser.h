@@ -51,7 +51,7 @@ struct SensorInfo {
 
 class CameraSensorsParser : public JsonParserBase {
  public:
-    CameraSensorsParser(MediaControl* mc, PlatformData::StaticCfg* cfg, SensorInfo info);
+    CameraSensorsParser(MediaControl* mc, PlatformData::StaticCfg* cfg, const SensorInfo& info);
     ~CameraSensorsParser();
 
     bool run(const std::string& filename) override final;

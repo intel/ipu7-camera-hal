@@ -95,7 +95,7 @@ class Thread {
     /**
      * Start the thread.
      */
-    virtual int run(std::string name = ("nameless"), int priority = PRIORITY_DEFAULT);
+    virtual int run(const std::string& name = ("nameless"), int priority = PRIORITY_DEFAULT);
 
     /**
      * Ask this object's thread to exit. This function is asynchronous, so when it

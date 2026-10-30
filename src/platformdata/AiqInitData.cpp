@@ -163,7 +163,7 @@ AiqInitData::AiqInitData(const std::string& sensorName, const std::string& camCf
         }
     }
 
-    for (auto cfg : mTuningCfg) {
+    for (const auto& cfg : mTuningCfg) {
         string aiqbName = cfg.aiqbName;
         aiqbName.append(".aiqb");
 
@@ -229,7 +229,7 @@ int AiqInitData::findConfigFile(const std::string& camCfgDir, std::string* cpfPa
         return NAME_NOT_FOUND;
     }
 
-    *cpfPathName = cpfFile;
+    *cpfPathName =  std::move(cpfFile);
     LOG1("@%s:CPF file found %s", __func__, cpfPathName->c_str());
     return OK;
 }

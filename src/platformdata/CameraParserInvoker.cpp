@@ -80,7 +80,7 @@ void CameraParserInvoker::chooseAvailableJsonFile(
     }
 }
 
-std::string CameraParserInvoker::getJsonFileFullName(std::string fileName) {
+std::string CameraParserInvoker::getJsonFileFullName(const std::string& fileName) {
     std::string curFolderFileName = std::string("./") + fileName;
     std::string sysFolderFileName = PlatformData::getCameraCfgPath() + fileName;
     const std::vector<const char*> profiles = {curFolderFileName.c_str(),

@@ -119,7 +119,7 @@ void CameraSchedulerPolicy::parseExecutorsObject(const Json::Value& node,
                 exe.nodeList.push_back(ele["nodes"][j].asString());
         }
 
-        desc->exeList.push_back(exe);
+        desc->exeList.push_back(std::move(exe));
     }
 }
 
@@ -150,7 +150,7 @@ bool CameraSchedulerPolicy::run(const std::string& filename) {
                 parseExecutorsObject(ele["pipe_executors"], &desc);
             }
 
-            mPolicyConfigs.push_back(desc);
+            mPolicyConfigs.push_back(std::move(desc));
         }
     }
 

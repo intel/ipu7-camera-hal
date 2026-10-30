@@ -962,13 +962,15 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
     if (icvs) {
         for (uint32_t i = 0; i < icvs->numLinks; ++i) {
             if (icvs->links[i].sink->entity == icvs) {
-               MediaEntity* sensor = icvs->links[i].source->entity;
+                MediaEntity* sensor = icvs->links[i].source->entity;
                 int sensor_entity_id = sensor->info.id;
                 LOG1("@%s, found %s -> %s", __func__, sensor->info.name, icvsName.c_str());
                 for (McLink& link : mc->links) {
-                    if (link.srcEntity == sensor_entity_id && link.sinkEntity != static_cast<int>(icvs->info.id)) {
-                        LOG1("@%s, skip %s, link %s -> %s", __func__, link.srcEntityName.c_str(),
-                             icvsName.c_str(), link.sinkEntityName.c_str());
+                    if (link.srcEntity == sensor_entity_id &&
+                        link.sinkEntity != static_cast<int>(icvs->info.id)) {
+                        LOG1("@%s, redirect link %s -> %s to start from %s", __func__,
+                             link.srcEntityName.c_str(), link.sinkEntityName.c_str(),
+                             icvsName.c_str());
                         link.srcEntity = icvs->info.id;
                         link.srcEntityName = icvsName;
                         for (uint32_t j = 0; j < icvs->info.pads; ++j) {
@@ -984,7 +986,6 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
             }
         }
     }
-
 
     /* Set link in format Configuration */
     ret = setMediaMcLink(mc->links);
@@ -1123,10 +1124,10 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
         for (int i = 0; i < linksCount; i++) {
             if (strcmp(links[i].sink->entity->info.name, sinkEntityName.c_str()) == 0) {
                 entityName = entity.info.name;
-		  if (strcmp(entityName, icvsName.c_str()) == 0) {
+                // Sensor is behind CVS; resolve through CVS (guard avoids endless recursion)
+                if (sinkEntityName != icvsName && strcmp(entityName, icvsName.c_str()) == 0) {
                     return getI2CBusAddress(sensorEntityName, icvsName, i2cBus);
                 }
-
                 break;
             }
         }

@@ -42,7 +42,7 @@ class CameraParserInvoker {
     void dumpSensorInfo(void);
     void chooseAvailableJsonFile(const std::vector<const char*>& availableJsonFiles,
                                  std::string* jsonFile) const;
-    std::string getJsonFileFullName(std::string fileName);
+    std::string getJsonFileFullName(const std::string& fileName);
 
  private:
     DISALLOW_COPY_AND_ASSIGN(CameraParserInvoker);

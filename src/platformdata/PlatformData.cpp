@@ -774,7 +774,7 @@ int PlatformData::getDevNameByType(int cameraId, VideoNodeType videoNodeType, st
             string tmpDevName;
             CameraUtils::getDeviceName(nd.name.c_str(), tmpDevName, isSubDev);
             if (!tmpDevName.empty()) {
-                devName = tmpDevName;
+                devName = std::move(tmpDevName);
                 LOG2("@%s, Found DevName. cameraId: %d, get video node: %s, devname: %s", __func__,
                      cameraId, nd.name.c_str(), devName.c_str());
                 return OK;
