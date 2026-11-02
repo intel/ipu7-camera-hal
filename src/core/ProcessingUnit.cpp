@@ -178,8 +178,20 @@ void ProcessingUnit::stop() {
 
     mProcessThread->wait();
 
+#ifdef LINUX_PRIVACY_MODE
+    {
+        AutoMutex l(mBufferMapLock);
+        mRawBufferMap.clear();
+        // Thread is not running. It is safe to clear the Queue
+    }
+    {
+        AutoMutex l(mBufferQueueLock);
+        mSequencesInflight.clear();
+    }
+#else
     mRawBufferMap.clear();
     // Thread is not running. It is safe to clear the Queue
+#endif
     BufferQueue::clearBufferQueues();
 }
 
@@ -316,11 +328,20 @@ bool ProcessingUnit::needSkipOutputFrame(int64_t sequence) {
  * be skipped.
  */
 bool ProcessingUnit::needExecutePipe(int64_t settingSequence, int64_t inputSequence) const {
+#ifdef LINUX_PRIVACY_MODE
+    // In live camera streaming with privacy shutter transitions, every captured sensor frame
+    // must be processed immediately with the next available output buffer.
+    // Stalling the pipeline and dropping input frames because settingSequence > inputSequence
+    // causes request backlog, out-of-order queue delivery, and intermediate buffer collisions
+    // (ghosting artifacts).
+    return true;
+#else
     if ((settingSequence == -1) || (inputSequence >= settingSequence)) {
         return true;
     }
 
     return false;
+#endif
 }
 
 /**
@@ -332,11 +353,20 @@ bool ProcessingUnit::needExecutePipe(int64_t settingSequence, int64_t inputSeque
  * may be required by following output buffer, so it may be reused later.
  */
 bool ProcessingUnit::needHoldOnInputFrame(int64_t settingSequence, int64_t inputSequence) const {
+#ifdef LINUX_PRIVACY_MODE
+    // In continuous live streaming with privacy shutter transitions, sensor input
+    // frames must not be held and reused across multiple requests when inputSequence
+    // advances past settingSequence. Holding sensor frames leads to duplicate PSYS task
+    // dispatches (causing ghosting artifacts) and prevents returning buffers to CaptureUnit
+    // (causing V4L2 queue starvation and stream freeze).
+    return false;
+#else
     if ((settingSequence == -1) || (inputSequence <= settingSequence)) {
         return false;
     }
 
     return true;
+#endif
 }
 
 // ProcessingUnit ThreadLoop
@@ -389,6 +419,17 @@ int ProcessingUnit::processNewFrame() {
             if (outputQueue.empty()) {
                 taskReady = false;
                 LOG3("<id%d>@%s, port %d, output buffer not ready", mCameraId, __func__, port);
+#ifdef LINUX_PRIVACY_MODE
+                // An input frame is waiting for an output buffer: wait for qbuf(), a new input
+                // or stop() instead of spinning on the queues.
+                if (!srcBuffers.empty()) {
+                    (void)mFrameAvailableSignal.wait_for(lock,
+                                                         std::chrono::nanoseconds(kQueueTimeout));
+                    if (!this->mThreadRunning) {
+                        return -1;  // Already stopped
+                    }
+                }
+#endif
                 break;
             }
             dstBuffers[port] = outputQueue.front();

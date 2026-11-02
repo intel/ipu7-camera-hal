@@ -63,9 +63,25 @@ class DeviceBase : public EventSource {
     int queueBuffer(int64_t sequence);
     int dequeueBuffer();
 
+#ifdef LINUX_PRIVACY_MODE
+    // A privacy switch changes the consumers while the poll thread can read them.
+    void addFrameListener(BufferConsumer* listener) {
+        AutoMutex l(mConsumerLock);
+        mConsumers.insert(listener);
+    }
+    void removeFrameListener(BufferConsumer* listener) {
+        AutoMutex l(mConsumerLock);
+        mConsumers.erase(listener);
+    }
+    void removeAllFrameListeners() {
+        AutoMutex l(mConsumerLock);
+        mConsumers.clear();
+    }
+#else
     void addFrameListener(BufferConsumer* listener) { mConsumers.insert(listener); }
     void removeFrameListener(BufferConsumer* listener) { mConsumers.erase(listener); }
     void removeAllFrameListeners() { mConsumers.clear(); }
+#endif
 
     bool hasPendingBuffer();
     void addPendingBuffer(const std::shared_ptr<CameraBuffer>& buffer);
@@ -126,6 +142,9 @@ class DeviceBase : public EventSource {
     bool mNeedSkipFrame;     // True if the frame/buffer needs to be skipped.
     int mFrameSkipNum;       // How many frames need to be skipped after stream on.
     DeviceCallback* mDeviceCB;
+#ifdef LINUX_PRIVACY_MODE
+    Mutex mConsumerLock;
+#endif
     std::set<BufferConsumer*> mConsumers;
 
     /* Queried V4L2 buffer info from driver when Calling SetupBuffers */

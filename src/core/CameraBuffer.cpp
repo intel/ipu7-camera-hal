@@ -339,8 +339,15 @@ void CameraBuffer::updateUserBuffer(void) {
     mU->timestamp = TIMEVAL2NSECS(getTimestamp());
     mU->s.field = getField();
 
+#ifdef LINUX_PRIVACY_MODE
+    // Report the frame's own sequence. After a privacy switch the request sequence can lag
+    // the restarted frame sequence, which would repeat sequence numbers. Sequences restart
+    // at 0 on every switch.
+    mU->sequence = getSequence();
+#else
     // Use valid setting sequence to align shutter/parameter with buffer
     mU->sequence = (mSettingSequence < 0) ? getSequence() : static_cast<uint32_t>(mSettingSequence);
+#endif
 }
 
 void CameraBuffer::updateFlags(void) {
