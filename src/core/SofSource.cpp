@@ -222,8 +222,13 @@ int SofSource::poll() {
 #ifdef LINUX_PRIVACY_MODE
     // Woken only by the flush pipe: do not block in DequeueEvent without a pending event.
     if (readyDevices.empty()) {
-        char readBuf;
-        (void)read(mFlushFd[0], reinterpret_cast<void*>(&readBuf), sizeof(char));
+        if (mFlushFd[0] != -1) {
+            // Drain the flush byte so the next poll does not wake up again.
+            char readBuf;
+            const ssize_t readSize =
+                read(mFlushFd[0], reinterpret_cast<void*>(&readBuf), sizeof(char));
+            LOG2("%s: woken by flush, readSize %zd", __func__, readSize);
+        }
         return 0;
     }
 #endif
