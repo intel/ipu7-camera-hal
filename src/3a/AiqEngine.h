@@ -139,4 +139,3 @@ class AiqEngine : public EventListener {
 };
 
 } /* namespace icamera */
-

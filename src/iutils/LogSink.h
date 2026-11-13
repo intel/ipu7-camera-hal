@@ -41,6 +41,7 @@ class LibcameraLogSink : public LogOutputSink {
 #else
 
 #endif
+
 #ifdef CAMERA_TRACE
 class FtraceLogSink : public LogOutputSink {
  public:

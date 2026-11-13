@@ -18,6 +18,8 @@
 
 #include "src/platformdata/gc/GraphConfig.h"
 
+#include <cmath>
+
 #include "PlatformData.h"
 #include "iutils/CameraLog.h"
 #include "GraphUtils.h"
@@ -48,7 +50,10 @@ static bool isSameRatio(const HalStream* s1, float ratio) {
 Mutex GraphConfig::sLock;
 std::map<int32_t, StaticReaderBinaryData> GraphConfig::mGraphConfigBinaries;
 
-GraphConfig::GraphConfig(int32_t camId, ConfigMode mode) : mCameraId(camId), mSensorRatio(0.0f) {
+GraphConfig::GraphConfig(int32_t camId, ConfigMode mode, float targetFps)
+    : mCameraId(camId),
+      mTargetFps(targetFps > 0.0f ? targetFps : 30.0f),
+      mSensorRatio(0.0f) {
     AutoMutex l(sLock);
     CheckAndLogError(mGraphConfigBinaries.find(mCameraId) == mGraphConfigBinaries.end(), VOID_VALUE,
                      "<id%d>No graph bin loaded", mCameraId);
@@ -58,7 +63,7 @@ GraphConfig::GraphConfig(int32_t camId, ConfigMode mode) : mCameraId(camId), mSe
                       "%s: failed to init graph reader", __func__);
 }
 
-GraphConfig::GraphConfig() : mCameraId(-1), mSensorRatio(0.0f) { }
+GraphConfig::GraphConfig() : mCameraId(-1), mTargetFps(30.0f), mSensorRatio(0.0f) { }
 
 GraphConfig::~GraphConfig() {
     for (auto& graph : mStaticGraphs) graph.second.clear();
@@ -95,8 +100,10 @@ status_t GraphConfig::queryGraphSettings(const vector<HalStream*>& outStreams) {
 
     GraphConfigurationKey queryVideoKey = {};
     GraphConfigurationKey queryStillKey = {};
-    // TODO: depends config mode/sensor type/......?
-    queryVideoKey.fps = 30;
+    const uint32_t targetFps = static_cast<uint32_t>(std::round(mTargetFps));
+    // Baseline static graph topology is typically 30fps for <= 30fps (e.g. 15fps, 30fps).
+    // For high speed modes (e.g. > 30fps like 50fps, 60fps, 120fps), try matching the high speed fps first.
+    queryVideoKey.fps = (targetFps > 30) ? targetFps : 30;
     queryStillKey.fps = 30;
     int32_t videoCount = 0;
     int32_t stillCount = 0;
@@ -139,8 +146,14 @@ status_t GraphConfig::queryGraphSettings(const vector<HalStream*>& outStreams) {
 
     if (videoCount) {
         IStaticGraphConfig* staticGraph = nullptr;
-        const StaticGraphStatus sRet =
+        StaticGraphStatus sRet =
                     mGraphReader.GetStaticGraphConfig(queryVideoKey, &staticGraph);
+        if (sRet != StaticGraphStatus::SG_OK && queryVideoKey.fps != 30) {
+            LOGW("%s: no graph for video with fps %d, fallback to 30fps base graph",
+                 __func__, queryVideoKey.fps);
+            queryVideoKey.fps = 30;
+            sRet = mGraphReader.GetStaticGraphConfig(queryVideoKey, &staticGraph);
+        }
         CheckAndLogError(sRet != StaticGraphStatus::SG_OK, NO_ENTRY, "%s: no graph for video",
                          __func__);
         mStaticGraphs[VIDEO_STREAM_ID].staticGraph = staticGraph;

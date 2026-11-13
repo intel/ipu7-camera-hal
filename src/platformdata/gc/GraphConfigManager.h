@@ -56,7 +56,8 @@ class GraphConfigManager {
     // Public APIs in GraphConfigManager
     status_t configStreams(const stream_config_t* streamList,
                            std::map<ConfigMode, std::shared_ptr<GraphConfig> >& gcs,
-                           const stream_t* extraStream = nullptr);
+                           const stream_t* extraStream = nullptr,
+                           float targetFps = 30.0f);
     int getSelectedMcId() {
         return mMcId;
     }

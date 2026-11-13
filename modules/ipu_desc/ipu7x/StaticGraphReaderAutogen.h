@@ -78,4 +78,3 @@ private:
     int8_t* _configurationData = nullptr;
     ZoomKeyResolutions _zoomKeyResolutions;
 };
-

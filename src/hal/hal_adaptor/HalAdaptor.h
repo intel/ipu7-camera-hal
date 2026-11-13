@@ -48,4 +48,3 @@ struct HalApiHandle {
 };
 }  // namespace icamera
 }  // extern "C"
-

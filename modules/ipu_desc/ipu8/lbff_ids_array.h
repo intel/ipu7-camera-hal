@@ -165,4 +165,3 @@ static int lbff_id_to_uuid_tag[80] = {
     ia_pal_uuid_isp_b2i_ds_output_1_1,            /* hwid=78 */
     ia_pal_uuid_isp_odr_ofs_dp_1_4                /* hwid=79 */
 };
-

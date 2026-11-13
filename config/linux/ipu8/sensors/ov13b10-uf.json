@@ -280,7 +280,6 @@
         "skipFrameV4L2Error": true,
         "isISYSCompression": false,
         "isPSACompression": false,
-        "unregisterExtDmaBuf": true,
         "usingMockPSys": false,
       }
     ]

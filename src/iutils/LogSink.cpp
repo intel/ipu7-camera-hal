@@ -65,6 +65,7 @@ void LibcameraLogSink::sendOffLog(LogItem logItem) {
 #else
 
 #endif
+
 void StdconLogSink::sendOffLog(LogItem logItem) {
     char timeInfo[TIME_BUF_SIZE];
     LogOutputSink::setLogTime(timeInfo);

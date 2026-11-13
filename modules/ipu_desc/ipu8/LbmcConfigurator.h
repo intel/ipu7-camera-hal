@@ -129,6 +129,7 @@ private:
 class LbmcConfig
 {
 public:
+    const double MAX_ALLOWED_TOTAL_BLEED = 2;
     MatlabVector stripe_width;
     MatlabVector max_motion_grid_size;
     MatlabVector bpp_out;
@@ -199,7 +200,8 @@ public:
             static_cast<uint32_t>(std::min(floor(static_cast<double>(outputStartX) / mu_stripe_width_val), static_cast<double>(mu_stripe_lookahead)));
         uint32_t mu_stripe_bleed_right =
             static_cast<uint32_t>(std::min(floor(static_cast<double>(hist_tnr_output_width - (outputStartX + kernelFragment->fragmentOutputWidth)) / mu_stripe_width_val), static_cast<double>(mu_stripe_lookahead)));
-        uint32_t max_bleed = static_cast<uint32_t>(floor((internal_memory_width[mu_stripe_width_idx] - kernelFragment->fragmentOutputWidth) / mu_stripe_width_val));
+
+        uint32_t max_bleed = static_cast<uint32_t>(std::min(floor((internal_memory_width[mu_stripe_width_idx] - kernelFragment->fragmentOutputWidth) / mu_stripe_width_val), MAX_ALLOWED_TOTAL_BLEED));
 
         while (mu_stripe_bleed_left + mu_stripe_bleed_right > max_bleed)
         {

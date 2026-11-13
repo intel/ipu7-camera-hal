@@ -70,6 +70,8 @@ enum class NodeResourceId : uint8_t {
     SwImv = 8,
     SwRemosaic = 9,
     SwAinr = 10,
+    SwFlip = 11,
+    SwFlipUpscale = 12,
 };
 
 enum class StaticGraphStatus : uint8_t
@@ -251,9 +253,8 @@ struct StaticGraphKernelSystemApiB2iDs {
 };
 static_assert(sizeof(StaticGraphKernelSystemApiB2iDs) == 8, "b2i_ds system API size mismatch");
 
-   
-
 #endif
+
 struct StaticGraphKernelBppConfiguration {
     uint8_t input_bpp = 0;
     uint8_t output_bpp = 0;
@@ -395,6 +396,7 @@ struct StaticGraphNodeKernels
 };
 
 #endif
+
 struct HwBitmaps {
     uint32_t rbm[4] = {};
     uint32_t deb[4] = {};
@@ -475,6 +477,10 @@ enum class GraphElementType : uint32_t {
     SwB2b,
 
     SwAinr,
+
+    SwFlip,
+
+    SwFlipUpscale,
 
     LbffBayerPdaf2NoGmvNoTnrNoSap,
 

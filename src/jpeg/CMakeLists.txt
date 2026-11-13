@@ -13,17 +13,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-if (SW_JPEG_ENCODE)
-    set(JPEG_SRCS
-        ${JPEG_DIR}/sw/SWJpegEncoder.cpp
-        CACHE INTERNAL "jpeg sources"
-       )
-else ()
-    set(JPEG_SRCS
-        ${JPEG_DIR}/chrome/JpegEncoderCore.cpp
-        CACHE INTERNAL "jpeg sources"
-        )
-endif()
+set(JPEG_SRCS
+    ${JPEG_DIR}/sw/SWJpegEncoder.cpp
+    CACHE INTERNAL "jpeg sources"
+   )
 
 set(JPEG_SRCS
     ${JPEG_SRCS}

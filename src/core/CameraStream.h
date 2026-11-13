@@ -103,4 +103,3 @@ class CameraStream : public BufferConsumer, public EventSource {
 };
 
 }  // namespace icamera
-
