@@ -41,4 +41,3 @@ static int BBPS_id_to_uuid_tag[18] = {
     ia_pal_uuid_isp_outputscaler_2_0_a,                      /* hwid=16 */
     ia_pal_uuid_isp_ofs_dp_bodr_regs_1_3                     /* hwid=17 */
 };
-

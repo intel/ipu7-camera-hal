@@ -226,6 +226,7 @@ struct StaticGraphNodeKernels
 };
 
 #endif
+
 struct HwBitmaps {
     uint32_t rbm[4] = {};
     uint32_t deb[4] = {};
@@ -357,4 +358,3 @@ enum class FormatType : uint8_t {
     YUV420_8_SP_P_T16,
     META_8_T16,
 };
-

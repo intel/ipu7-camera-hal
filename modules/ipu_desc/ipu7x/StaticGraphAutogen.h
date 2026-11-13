@@ -1409,4 +1409,3 @@ private:
     // All graph links
     GraphLink _graphLinks[4];
 };
-

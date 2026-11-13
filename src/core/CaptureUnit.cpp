@@ -110,6 +110,7 @@ int CaptureUnit::createDevices() {
     // the port is provided by the consumer.
     vector<uuid> targetPorts;
     targetPorts.push_back(MAIN_INPUT_PORT_UID);
+
     // Configure has checked the main port is valid.
     mDevices.push_back(new MainDevice(mCameraId, VIDEO_GENERIC, this));
 

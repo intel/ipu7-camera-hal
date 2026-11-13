@@ -99,14 +99,6 @@ int get_camera_info(int camera_id, camera_info_t& info) {
 int camera_hal_init() {
     HAL_TRACE_CALL(1);
 
-#ifndef LINUX_BUILD
-    if (gCameraHal) {
-        LOGW("camera hal is initialized multiple times.");
-        return 0;
-    }
-    gCameraHal = new CameraHal;
-#endif
-
     CheckAndLogError(gCameraHal == nullptr, INVALID_OPERATION, "camera hal is NULL.");
     return gCameraHal->init();
 }
@@ -121,11 +113,6 @@ int camera_hal_deinit() {
 
     CheckAndLogError(gCameraHal == nullptr, INVALID_OPERATION, "camera hal is NULL.");
     const int ret = gCameraHal->deinit();
-
-#ifndef LINUX_BUILD
-    delete gCameraHal;
-    gCameraHal = nullptr;
-#endif
 
     return ret;
 }

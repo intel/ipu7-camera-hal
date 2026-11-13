@@ -15,4 +15,3 @@ if(CODE_COVERAGE)
     link_libraries(gcov)
   endif()
 endif()
-

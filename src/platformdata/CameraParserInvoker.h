@@ -49,4 +49,3 @@ class CameraParserInvoker {
 };
 
 }  // namespace icamera
-

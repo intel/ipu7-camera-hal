@@ -101,6 +101,7 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
     kernelUuids.push_back(61146);  // gmv_statistics_1_0
     kernelUuids.push_back(32160);  // odr_gmv_match_1_3
     kernelUuids.push_back(55924);  // odr_gmv_feature_1_3
+    kernelUuids.push_back(62409);  // ifd_gmv_1_3
     kernelUuids.push_back(25579);  // slim_tnr_sp_bc_bifd_yuv4nm1_regs_1_3
     kernelUuids.push_back(48987);  // tnr7_ims_1_1
     kernelUuids.push_back(42936);  // tnr_fp_blend_bifd_rs4n_regs_1_3
@@ -125,4 +126,3 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelDownscalerSystemApiUuid(
 {
     return 51813;
 }
-

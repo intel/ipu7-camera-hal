@@ -210,4 +210,3 @@ class ScopedTrace {
 };
 
 }  // namespace icamera
-

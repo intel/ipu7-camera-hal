@@ -44,7 +44,7 @@ namespace icamera {
 class GraphConfig {
  public:
     GraphConfig();
-    GraphConfig(int32_t camId, ConfigMode mode);
+    GraphConfig(int32_t camId, ConfigMode mode, float targetFps = 30.0f);
     ~GraphConfig();
     void releaseGraphNodes();
 
@@ -202,6 +202,7 @@ class GraphConfig {
 
  private:
     int32_t mCameraId;
+    float mTargetFps;
 
     // <camera id, binary>
     // TODO: Save different bin data (depends on use case, ...) for one camera?

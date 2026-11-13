@@ -916,7 +916,7 @@ int MediaControl::setVideoNodeFormat(struct V4L2VideoNode* device, const stream_
     v4l2fmt.fmt.pix.width = config->width;
     v4l2fmt.fmt.pix.height = config->height;
     v4l2fmt.fmt.pix.pixelformat = config->format;
-    v4l2fmt.fmt.pix.bytesperline = config->width;
+    v4l2fmt.fmt.pix.bytesperline = CameraUtils::getStride(config->format, config->width);
     v4l2fmt.fmt.pix.sizeimage = 0;
 
     v4l2fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -1009,7 +1009,7 @@ int MediaControl::mediaCtlSetup(int cameraId, MediaCtlConf* mc, int width, int h
     if (icvs) {
         for (uint32_t i = 0; i < icvs->numLinks; ++i) {
             if (icvs->links[i].sink->entity == icvs) {
-                MediaEntity* sensor = icvs->links[i].source->entity;
+               MediaEntity* sensor = icvs->links[i].source->entity;
                 int sensor_entity_id = sensor->info.id;
                 LOG1("@%s, found %s -> %s", __func__, sensor->info.name, icvsName.c_str());
                 for (McLink& link : mc->links) {
@@ -1171,6 +1171,15 @@ int MediaControl::getI2CBusAddress(const string& sensorEntityName, const string&
     MediaEntity* sinkEntity = getEntityByName(sinkEntityName);
     if (!sinkEntity) {
         return UNKNOWN_ERROR;
+    }
+
+    // Sensor reaches the sink through the Intel CVS entity; resolve via the CVS sink.
+    for (unsigned int i = 0U; i < sinkEntity->numLinks; ++i) {
+        const MediaEntity* upstream = sinkEntity->links[i].source->entity;
+        if (sinkEntity->links[i].sink->entity == sinkEntity &&
+            strcmp(upstream->info.name, icvsName.c_str()) == 0) {
+            return getI2CBusAddress(sensorEntityName, icvsName, i2cBus);
+        }
     }
 
     MediaEntity* sensorEntity = getEntityByName(sensorEntityName);

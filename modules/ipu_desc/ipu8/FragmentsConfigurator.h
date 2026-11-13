@@ -27,6 +27,7 @@
 #pragma once
 #include "GraphResolutionConfiguratorInclude.h"
 #include <map>
+#include <vector>
 
 class Gen2FragmentsConfigurator
 {
@@ -35,6 +36,8 @@ public:
     static const int32_t MIN_STRIPE_WIDTH_AFTER_TNR = 64;
     // b2i_ds HW/PAL minimum non-vanished stripe output width (matches Resolutionary validation).
     static const int32_t B2I_DS_MIN_STRIPE_OUTPUT_WIDTH = 64;
+    // Minimum non-vanished stripe output width (ESPA cropper, upscaler, output drainers)
+    static const int32_t MIN_STRIPE_OUTPUT_WIDTH = 8;
     static const int32_t UPSCALER_MAX_OUTPUT_WIDTH = 4672;
 
     Gen2FragmentsConfigurator(IStaticGraphConfig* staticGraph, OuterNode* node, uint8_t numberOfFragments);
@@ -42,8 +45,10 @@ public:
 
     StaticGraphStatus configureFragments(std::vector<SmurfKernelInfo*>& smurfKernels);
 
-    // True if the last configureFragments() failed due to an illegal (< 64px) b2i_ds stripe
-    // output width, as opposed to some other failure.
+    // True if the last configureFragments() failed because a non-vanished stripe
+    // cannot be programmed: b2i_ds output below 64px, or a stripe output below
+    // MIN_STRIPE_OUTPUT_WIDTH. updateStaticGraphConfig uses this to search
+    // for a nearby ROI instead of keeping the illegal stripe.
     bool hadStripeWidthViolation() const { return _hadStripeWidthViolation; }
 
 protected:
@@ -52,6 +57,8 @@ protected:
     StaticGraphStatus configFragmentsDownscaler(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments, bool isOutputScaler);
     StaticGraphStatus configFragmentsCropper(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments, bool beforeTnr);
     StaticGraphStatus configFragmentsUpscaler(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments);
+    StaticGraphStatus configUpscalerStripe(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint8_t stripe,
+        uint8_t leftNonVanishedStripe, uint8_t rightNonVanishedStripe, double scaleFactorFixed, uint32_t upscalerWidthGranularity, uint16_t inputUnits);
     StaticGraphStatus configFragmentsOutput(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments, bool isTnr);
     StaticGraphStatus configFragmentsTnrScaler(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* prevKernelFragments);
     StaticGraphStatus configFragmentsTnrFeeder(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, GraphResolutionConfiguratorKernelRole kernelRole);
@@ -67,9 +74,13 @@ protected:
 
     StaticGraphStatus copyFragments(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* prevKernelFragments, uint32_t prevKernelUuid, StaticGraphFragmentDesc* kernelFragments);
     void vanishStripe(uint8_t stripe, uint32_t runKerenlUuid, StaticGraphFragmentDesc* kernelFragments, VanishOption vanishOption);
+    // Non-vanished stripes must output at least MIN_STRIPE_OUTPUT_WIDTH. Less is
+    // recoverable by choosing a different ROI, same as a b2i_ds stripe that is
+    // below the minimum output width.
+    StaticGraphStatus rejectStripeOutputBelowMin(int32_t outputWidth);
     uint32_t getPlaneStartAddress(uint32_t sumOfPrevWidths, FormatType formatType, uint8_t plane);
     uint16_t alignToFormatRestrictions(uint16_t size, FormatType bufferFormat);
-    bool validateDownscalerConstraints(StaticGraphFragmentDesc* stripe, int32_t stripeIndex, double scaleFactor, StaticGraphRunKernel* runKernel);
+    bool validateDownscalerConstraints(StaticGraphFragmentDesc* stripe, int32_t stripeIndex, int32_t scalingRatio, StaticGraphRunKernel* runKernel);
     uint32_t calculateGcd(uint32_t a, uint32_t b);
 
     OuterNode* _node = nullptr;
@@ -78,6 +89,16 @@ protected:
     bool _hadStripeWidthViolation = false;
 
     std::map<uint32_t, std::vector<uint16_t>> _outputStartX;
+
+    // Output range of one stripe before the upscaler zoom crop, in upscaler
+    // output pixels. endExclusive is the first column that is not part of the stripe.
+    // Overlap removal uses this so a zoom crop cannot move the good-pixel boundary.
+    struct StripeOutputExtent
+    {
+        int32_t start = 0;
+        int32_t endExclusive = 0;
+    };
+    std::map<uint32_t, std::vector<StripeOutputExtent>> _stripeExtentBeforeZoomCrop;
 
     StaticGraphFragmentDesc* _tnrScalerFragments = nullptr;
     StaticGraphRunKernel* _tnrScalerRunKernel = nullptr;
@@ -103,4 +124,3 @@ protected:
     bool enforceUpscalerAspectRatioConstraints() const override { return false; }
     StaticGraphStatus configFragmentsTnrMcFeeder(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments, GraphResolutionConfiguratorKernelRole kernelRole);
 };
-

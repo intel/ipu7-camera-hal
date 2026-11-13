@@ -314,6 +314,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         {
                             return 23692; // imv;
                         }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -333,6 +343,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
                             return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
                         }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -354,6 +374,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         {
                             return 23692; // imv;
                         }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -373,6 +403,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
                             return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
                         }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -394,6 +434,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         {
                             return 23692; // imv;
                         }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -413,6 +463,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
                             return 23692; // imv;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
                         }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
@@ -434,6 +494,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         {
                             return 23692; // imv;
                         }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -454,6 +524,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                         {
                             return 23692; // imv;
                         }
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -469,6 +549,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200008:    // Bayer_WithPdaf2_NoGmv_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -484,6 +574,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200009:    // Bayer_WithPdaf2_WithDvs_NoTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -499,6 +599,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200010:    // Bayer_WithPdaf2_NoGmv_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -514,6 +624,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200011:    // Bayer_WithPdaf2_WithDvs_WithTnr
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -529,6 +649,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200012:    // Bayer_WithPdaf2_NoGmv_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -544,6 +674,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200013:    // Bayer_WithPdaf2_WithDvs_NoTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -559,6 +699,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200014:    // Bayer_WithPdaf2_NoGmv_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -574,6 +724,16 @@ uint32_t GraphResolutionConfiguratorHelper::getRunKernelUuidOfOutput(HwSink hwSi
                 case 200015:    // Bayer_WithPdaf2_WithDvs_WithTnr_WithSap
                     for (int i = 0; i < numberOfLinks; ++i)
                     {
+                        if (links[i]->src == GraphElementType::SwFlipUpscale &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
+                        if (links[i]->src == GraphElementType::SwFlip &&
+                            links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
+                        {
+                            return 19706; // sw_scaler;
+                        }
                         if (links[i]->src == GraphElementType::SwNntm &&
                             links[i]->dest == GraphElementType::ProcessedMain && links[i]->isActive)
                         {
@@ -1091,10 +1251,14 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getRunKernelUuidForResHisto
         kernelUuids.push_back(40280);  // gmv_statistics_1_1
         kernelUuids.push_back(7416);  // odr_gmv_feature_1_4
         kernelUuids.push_back(41148);  // odr_gmv_match_1_4
+        kernelUuids.push_back(51073);  // ifd_gmv_1_4
         kernelUuids.push_back(2495);  // tnr7_spatial_1_1
         kernelUuids.push_back(20119);  // tnr7_blend_1_1
         kernelUuids.push_back(65437);  // odr_tnr_scale_fp_yuv4n_1_4
         kernelUuids.push_back(23639);  // tnr7_ims_1_2
+        kernelUuids.push_back(62054);  // ifd_tnr_sp_bc_rs4nm1_1_4
+        kernelUuids.push_back(7357);  // ifd_tnr_sp_bc_yuv4nm1_1_4
+        kernelUuids.push_back(16295);  // ifd_tnr_fp_blend_yuvnm1_1_4
         kernelUuids.push_back(1502);  // tnr7_bc_1_2
     }
     else if (startUuid == 28787) // Upscaler
@@ -1214,4 +1378,3 @@ StaticGraphStatus GraphResolutionConfiguratorHelper::getSmurfRunKernelUuid(std::
 
     return StaticGraphStatus::SG_OK;
 }
-

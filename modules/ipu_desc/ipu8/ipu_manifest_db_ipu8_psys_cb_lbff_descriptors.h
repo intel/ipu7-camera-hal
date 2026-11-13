@@ -123,7 +123,7 @@ static payload_descriptor_t lbff_0_descriptors = {
 		{LBFF_DEVICE_ID_BGB_1_0, 0x0U, 0x4U, 0x7f20U},
 		{LBFF_DEVICE_ID_B2I_DS_output_1_1, 0x0U, 0x8U, 0x7f24U},
 		{LBFF_DEVICE_ID_B2I_DS_output_1_1, 0x1cU, 0x208U, 0x7f2cU},
-		
+
 	}
 
 };
@@ -174,7 +174,7 @@ static payload_descriptor_t lbff_1_descriptors = {
 		{LBFF_DEVICE_ID_bgmap_upscaler_1_1, 0x4U, 0x18U, 0x45cU},
 		{LBFF_DEVICE_ID_bgmap_upscaler_1_1, 0x1010U, 0xcU, 0x474U},
 		{LBFF_DEVICE_ID_B2I_DS_output_1_1, 0x8U, 0x10U, 0x480U},
-		
+
 	}
 
 };
@@ -218,7 +218,7 @@ static payload_descriptor_t lbff_2_descriptors = {
 		{LBFF_DEVICE_ID_ifd_bg_yuv_1_4, 0x0U, 0xc4U, 0x17dcU},
 		{LBFF_DEVICE_ID_odr_ofs_mp_1_4, 0x0U, 0xc4U, 0x18a0U},
 		{LBFF_DEVICE_ID_odr_ofs_dp_1_4, 0x0U, 0xc4U, 0x1964U},
-		
+
 	}
 
 };
@@ -232,7 +232,7 @@ static payload_descriptor_t lbff_3_descriptors = {
 		{LBFF_DEVICE_ID_TNR7_Spatial_1_1, 0x10U, 0x20U, 0x600U},
 		{LBFF_DEVICE_ID_TNR7_Spatial_1_1, 0x5cU, 0x4U, 0x800U},
 		{LBFF_DEVICE_ID_CAS_1_1, 0x20U, 0x20U, 0xa00U},
-		
+
 	}
 
 };
