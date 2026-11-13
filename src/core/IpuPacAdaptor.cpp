@@ -285,7 +285,12 @@ void IpuPacAdaptor::applyMediaFormat(const AiqResult* aiqResult,
     auto cameraContext = CameraContext::getInstance(mCameraId);
     auto dataContext = cameraContext->getDataContextBySeq(sequence);
 
-    *mediaFormat = media_format_legacy;
+    // Honor the requested YUV range: reduced range needs the narrow variant,
+    // otherwise the ISP always emits full-range data.
+    *mediaFormat =
+        (dataContext->mAiqParams.yuvColorRangeMode == CAMERA_REDUCED_MODE_YUV_COLOR_RANGE)
+            ? media_format_legacy_narrow
+            : media_format_legacy;
     if (dataContext->mAiqParams.tonemapMode == TONEMAP_MODE_GAMMA_VALUE) {
         const float gamma = dataContext->mAiqParams.tonemapGamma;
         if (std::fabs(gamma - 1.0F) < std::numeric_limits<float>::epsilon()) {
