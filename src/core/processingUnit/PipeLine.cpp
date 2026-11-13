@@ -54,6 +54,7 @@ void PipeLine::deinit() {
 }
 
 void PipeLine::updateIspTuningMode(TuningMode tuningMode) {
+    mUseDefaultIspTuning = false;
     if (!PlatformData::supportUpdateTuning(mCameraId)) {
         return;
     }
@@ -75,8 +76,22 @@ void PipeLine::updateIspTuningMode(TuningMode tuningMode) {
     CheckAndLogError(!intelCca, VOID_VALUE, "Failed to get IntelCca");
 
     ia_err iaErr = intelCca->updateTuning(cca::CCA_LARD_ISP, lardParam, tmpNvm, mStreamId);
-    CheckAndLogError(iaErr != ia_err_none, VOID_VALUE, "Failed to update tuning %u",
-                     ispTuningMode);
+    if (iaErr != ia_err_none) {
+        // The graph asks for an ISP tuning mode the tuning file does not carry (the
+        // OV08X40 PTL tuning ships DFLT, LMOD 1 and LMOD 2 while its graph asks for 4).
+        // Without a fallback the generic AIC finds no tunings for the mode, and every
+        // ISP kernel it tunes (noise reduction, TNR, sharpening, ...) runs on library
+        // defaults. Load the default ISP tuning and look it up as mode 0 instead.
+        LOGW("No ISP tuning for mode %u, falling back to the default tuning", ispTuningMode);
+        lardParam.isp_mode_index = IA_MKN_CHTOUL('D', 'F', 'L', 'T');
+        iaErr = intelCca->updateTuning(cca::CCA_LARD_ISP, lardParam, tmpNvm, mStreamId);
+        if (iaErr != ia_err_none) {
+            // The default ISP tuning loaded at init is still in place.
+            LOGW("Failed to reload the default ISP tuning (%d)", iaErr);
+        }
+        mUseDefaultIspTuning = true;
+        return;
+    }
 
     LOG1("Update isp tuning mode %u, streamId %d", ispTuningMode, mStreamId);
 }
@@ -292,6 +307,10 @@ status_t PipeLine::configurePipeStages() {
         }
         CheckAndLogError(!pNode, UNKNOWN_ERROR, "No PSys node for psys contextId %d",
                          unit.psysContextId);
+
+        if (mUseDefaultIspTuning) {
+            unit.node->nodeKernels.operationMode = 0;
+        }
 
         std::unordered_map<uint8_t, TerminalConfig> terminalConfig;
         ret = unit.ipuStage->configure(unit.node->nodeKernels,
