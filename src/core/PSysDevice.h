@@ -144,4 +144,3 @@ class PSysDevice {
 };  /* PSysDevice */
 
 } /* namespace icamera */
-

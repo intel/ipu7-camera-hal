@@ -117,7 +117,8 @@ int GraphConfigManager::createHalStreamVector(ConfigMode configMode,
  */
 int32_t GraphConfigManager::configStreams(const stream_config_t* streamList,
                                           std::map<ConfigMode, std::shared_ptr<GraphConfig> >& gcs,
-                                          const stream_t* extraStream) {
+                                          const stream_t* extraStream,
+                                          float targetFps) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL1);
     CheckAndLogError(!streamList, BAD_VALUE, "%s: Null streamList configured", __func__);
 
@@ -148,7 +149,8 @@ int32_t GraphConfigManager::configStreams(const stream_config_t* streamList,
     for (auto mode : configModes) {
         LOG1("Mapping the operationMode %d to ConfigMode %d", streamList->operation_mode, mode);
 
-        std::shared_ptr<GraphConfig> graphConfig = std::make_shared<GraphConfig>(mCameraId, mode);
+        std::shared_ptr<GraphConfig> graphConfig =
+            std::make_shared<GraphConfig>(mCameraId, mode, targetFps);
         CheckAndLogError(!graphConfig, UNKNOWN_ERROR, "%s, Failed to create graphConfig", __func__);
         configuredNum = graphConfig->configStreams(mHalStreams, extraOutHalStreams);
         CheckWarning(configuredNum <= 0, ret, "%s, Failed to configure graph: real ConfigMode %x",

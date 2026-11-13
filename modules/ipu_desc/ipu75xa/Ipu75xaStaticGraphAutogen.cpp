@@ -176,14 +176,16 @@ StaticGraphStatus GraphTopology::configInnerNodes(SubGraphInnerNodeConfiguration
 InnerNodeOptionsFlags GraphTopology::GetInnerOptions(SubGraphPublicInnerNodeConfiguration* publicInnerOptions)
 {
     InnerNodeOptionsFlags res = None;
+    SubGraphPublicInnerNodeConfiguration innerOptions;
 
     if (publicInnerOptions)
     {
-        res |= noGmv & (publicInnerOptions->noGmv ? -1 : 0);
-        res |= no3A & (publicInnerOptions->no3A ? -1 : 0);
-        res |= noMp & (publicInnerOptions->noMp ? -1 : 0);
-        res |= noDp & (publicInnerOptions->noDp ? -1 : 0);
+        innerOptions = *publicInnerOptions;
     }
+    res |= noGmv & (innerOptions.noGmv ? -1 : 0);
+    res |= no3A & (innerOptions.no3A ? -1 : 0);
+    res |= noMp & (innerOptions.noMp ? -1 : 0);
+    res |= noDp & (innerOptions.noDp ? -1 : 0);
 
     return res;
 }
@@ -10355,7 +10357,7 @@ StaticGraph100000::StaticGraph100000(GraphConfiguration100000** selectedGraphCon
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -10449,17 +10451,16 @@ StaticGraphStatus imageSubGraphTopology100000::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[8]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[9]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -10727,7 +10728,7 @@ StaticGraph100001::StaticGraph100001(GraphConfiguration100001** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -10805,11 +10806,11 @@ StaticGraphStatus imageSubGraphTopology100001::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -10817,11 +10818,11 @@ StaticGraphStatus imageSubGraphTopology100001::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -10844,25 +10845,24 @@ StaticGraphStatus imageSubGraphTopology100001::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerWithGmvInnerOptions & noGmv); // lbff_Bayer_WithGmv:terminal_connect_gmv_feature_output -> lbff_Bayer_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[8]->isActive = !(lbffBayerWithGmvInnerOptions & noGmv); // lbff_Bayer_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -11072,7 +11072,7 @@ StaticGraph100002::StaticGraph100002(GraphConfiguration100002** selectedGraphCon
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -11165,17 +11165,16 @@ StaticGraphStatus imageSubGraphTopology100002::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[13]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -11431,7 +11430,7 @@ StaticGraph100003::StaticGraph100003(GraphConfiguration100003** selectedGraphCon
     _imageSubGraph.lbffBayerWithGmvOuterNode = &_lbffBayerWithGmvOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -11503,11 +11502,11 @@ StaticGraphStatus imageSubGraphTopology100003::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -11515,11 +11514,11 @@ StaticGraphStatus imageSubGraphTopology100003::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -11542,25 +11541,24 @@ StaticGraphStatus imageSubGraphTopology100003::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerWithGmvInnerOptions & no3A); // lbff_Bayer_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerWithGmvInnerOptions & noGmv); // lbff_Bayer_WithGmv:terminal_connect_gmv_feature_output -> lbff_Bayer_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[8]->isActive = !(lbffBayerWithGmvInnerOptions & noGmv); // lbff_Bayer_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -11821,7 +11819,7 @@ StaticGraph100005::StaticGraph100005(GraphConfiguration100005** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -11899,11 +11897,11 @@ StaticGraphStatus imageSubGraphTopology100005::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[13]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 15 && 
-        (subGraphLinks[15]->src == subGraphLinks[13]->src && 
-        subGraphLinks[15]->srcTerminalId == subGraphLinks[13]->srcTerminalId && 
-        subGraphLinks[15]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[15]->src != subGraphLinks[13]->src || 
+        (numOfLinks > 15 &&
+        (subGraphLinks[15]->src == subGraphLinks[13]->src &&
+        subGraphLinks[15]->srcTerminalId == subGraphLinks[13]->srcTerminalId &&
+        subGraphLinks[15]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[15]->src != subGraphLinks[13]->src ||
         subGraphLinks[15]->srcTerminalId != subGraphLinks[13]->srcTerminalId)) &&
         true)
     {
@@ -11911,11 +11909,11 @@ StaticGraphStatus imageSubGraphTopology100005::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -11938,21 +11936,20 @@ StaticGraphStatus imageSubGraphTopology100005::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[13]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -12388,7 +12385,7 @@ StaticGraph100006::StaticGraph100006(GraphConfiguration100006** selectedGraphCon
     _image_irSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _image_irSubGraph.lbffIrNoGmvIrStreamOuterNode = &_lbffIrNoGmvIrStreamOuterNode;
     _image_irSubGraph.bbpsIrWithTnrOuterNode = &_bbpsIrWithTnrOuterNode;
-    
+
     // choose the selected sub graph
     if (
         // image sink group
@@ -12560,19 +12557,18 @@ StaticGraphStatus imageSubGraphTopology100006::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -12661,25 +12657,24 @@ StaticGraphStatus irSubGraphTopology100006::configInnerNodes(SubGraphInnerNodeCo
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[8]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[10]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_ae_output -> ir_ae_out
-    
+
     subGraphLinks[11]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_af_std_output -> ir_af_std_out
-    
+
     subGraphLinks[12]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_std_output -> ir_awb_std_out
-    
+
     subGraphLinks[13]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_sat_output -> ir_awb_sat_out
-    
+
     subGraphLinks[20]->isActive = !(bbpsIrWithTnrInnerOptions & noMp); // bbps_Ir_WithTnr:bbps_ofs_mp_yuvn_odr -> ir_mp
-    
 
     /*
      * Link enablement by private inner options
@@ -12789,29 +12784,28 @@ StaticGraphStatus image_irSubGraphTopology100006::configInnerNodes(SubGraphInner
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[18]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_ae_output -> ir_ae_out
-    
+
     subGraphLinks[19]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_af_std_output -> ir_af_std_out
-    
+
     subGraphLinks[20]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_std_output -> ir_awb_std_out
-    
+
     subGraphLinks[21]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_sat_output -> ir_awb_sat_out
-    
+
     subGraphLinks[28]->isActive = !(bbpsIrWithTnrInnerOptions & noMp); // bbps_Ir_WithTnr:bbps_ofs_mp_yuvn_odr -> ir_mp
-    
 
     /*
      * Link enablement by private inner options
@@ -12923,7 +12917,7 @@ StaticGraph100007::StaticGraph100007(GraphConfiguration100007** selectedGraphCon
     // add nodes for sub graph
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffBayerBurstOutNo3AOuterNode = &_lbffBayerBurstOutNo3AOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -13289,7 +13283,7 @@ StaticGraph100008::StaticGraph100008(GraphConfiguration100008** selectedGraphCon
     _image_irSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
     _image_irSubGraph.lbffIrNoGmvIrStreamOuterNode = &_lbffIrNoGmvIrStreamOuterNode;
     _image_irSubGraph.bbpsIrNoTnrOuterNode = &_bbpsIrNoTnrOuterNode;
-    
+
     // choose the selected sub graph
     if (
         // image sink group
@@ -13460,19 +13454,18 @@ StaticGraphStatus imageSubGraphTopology100008::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[10]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -13553,25 +13546,24 @@ StaticGraphStatus irSubGraphTopology100008::configInnerNodes(SubGraphInnerNodeCo
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[8]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[10]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_ae_output -> ir_ae_out
-    
+
     subGraphLinks[11]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_af_std_output -> ir_af_std_out
-    
+
     subGraphLinks[12]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_std_output -> ir_awb_std_out
-    
+
     subGraphLinks[13]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_sat_output -> ir_awb_sat_out
-    
+
     subGraphLinks[15]->isActive = !(bbpsIrNoTnrInnerOptions & noMp); // bbps_Ir_NoTnr:bbps_ofs_mp_yuvn_odr -> ir_mp
-    
 
     /*
      * Link enablement by private inner options
@@ -13674,29 +13666,28 @@ StaticGraphStatus image_irSubGraphTopology100008::configInnerNodes(SubGraphInner
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrInnerOptions & no3A); // lbff_RgbIr:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[10]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[13]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_ae_output -> ir_ae_out
-    
+
     subGraphLinks[14]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_af_std_output -> ir_af_std_out
-    
+
     subGraphLinks[15]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_std_output -> ir_awb_std_out
-    
+
     subGraphLinks[16]->isActive = !(lbffIrNoGmvIrStreamInnerOptions & no3A); // lbff_Ir_NoGmv_IrStream:terminal_connect_awb_sat_output -> ir_awb_sat_out
-    
+
     subGraphLinks[18]->isActive = !(bbpsIrNoTnrInnerOptions & noMp); // bbps_Ir_NoTnr:bbps_ofs_mp_yuvn_odr -> ir_mp
-    
 
     /*
      * Link enablement by private inner options
@@ -13836,7 +13827,7 @@ StaticGraph100015::StaticGraph100015(GraphConfiguration100015** selectedGraphCon
     // add nodes for sub graph
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -13911,13 +13902,12 @@ StaticGraphStatus imageSubGraphTopology100015::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
 
     /*
      * Link enablement by private inner options
@@ -14007,7 +13997,7 @@ StaticGraph100016::StaticGraph100016(GraphConfiguration100016** selectedGraphCon
     }
     // add nodes for sub graph
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -14073,9 +14063,8 @@ StaticGraphStatus imageSubGraphTopology100016::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[1]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[2]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Disable links with zero buffer size
@@ -14222,7 +14211,7 @@ StaticGraph100025::StaticGraph100025(GraphConfiguration100025** selectedGraphCon
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffIrNoGmvOuterNode = &_lbffIrNoGmvOuterNode;
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -14316,17 +14305,16 @@ StaticGraphStatus imageSubGraphTopology100025::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffIrNoGmvInnerOptions & no3A); // lbff_Ir_NoGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffIrNoGmvInnerOptions & no3A); // lbff_Ir_NoGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffIrNoGmvInnerOptions & no3A); // lbff_Ir_NoGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffIrNoGmvInnerOptions & no3A); // lbff_Ir_NoGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[8]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[9]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -14408,7 +14396,7 @@ StaticGraph100026::StaticGraph100026(GraphConfiguration100026** selectedGraphCon
     }
     // add nodes for sub graph
     _rawSubGraph.isysOuterNode = &_isysOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_rawSubGraph;
 
@@ -14585,7 +14573,7 @@ StaticGraph100027::StaticGraph100027(GraphConfiguration100027** selectedGraphCon
     _imageSubGraph.isysPdaf2OuterNode = &_isysPdaf2OuterNode;
     _imageSubGraph.lbffBayerPdaf2OuterNode = &_lbffBayerPdaf2OuterNode;
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -14679,17 +14667,16 @@ StaticGraphStatus imageSubGraphTopology100027::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[11]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[12]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -14849,7 +14836,7 @@ StaticGraph100028::StaticGraph100028(GraphConfiguration100028** selectedGraphCon
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffBayerPdaf3OuterNode = &_lbffBayerPdaf3OuterNode;
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -14943,17 +14930,16 @@ StaticGraphStatus imageSubGraphTopology100028::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[10]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -15177,7 +15163,7 @@ StaticGraph100029::StaticGraph100029(GraphConfiguration100029** selectedGraphCon
     _imageSubGraph.isysPdaf2OuterNode = &_isysPdaf2OuterNode;
     _imageSubGraph.lbffBayerPdaf2OuterNode = &_lbffBayerPdaf2OuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -15270,17 +15256,16 @@ StaticGraphStatus imageSubGraphTopology100029::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffBayerPdaf2InnerOptions & no3A); // lbff_Bayer_Pdaf2:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -15497,7 +15482,7 @@ StaticGraph100030::StaticGraph100030(GraphConfiguration100030** selectedGraphCon
     _imageSubGraph.isysOuterNode = &_isysOuterNode;
     _imageSubGraph.lbffBayerPdaf3OuterNode = &_lbffBayerPdaf3OuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -15590,17 +15575,16 @@ StaticGraphStatus imageSubGraphTopology100030::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -15836,7 +15820,7 @@ StaticGraph100031::StaticGraph100031(GraphConfiguration100031** selectedGraphCon
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -15916,11 +15900,11 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[11]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 13 && 
-        (subGraphLinks[13]->src == subGraphLinks[11]->src && 
-        subGraphLinks[13]->srcTerminalId == subGraphLinks[11]->srcTerminalId && 
-        subGraphLinks[13]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[13]->src != subGraphLinks[11]->src || 
+        (numOfLinks > 13 &&
+        (subGraphLinks[13]->src == subGraphLinks[11]->src &&
+        subGraphLinks[13]->srcTerminalId == subGraphLinks[11]->srcTerminalId &&
+        subGraphLinks[13]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[13]->src != subGraphLinks[11]->src ||
         subGraphLinks[13]->srcTerminalId != subGraphLinks[11]->srcTerminalId)) &&
         true)
     {
@@ -15928,11 +15912,11 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[12]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 14 && 
-        (subGraphLinks[14]->src == subGraphLinks[12]->src && 
-        subGraphLinks[14]->srcTerminalId == subGraphLinks[12]->srcTerminalId && 
-        subGraphLinks[14]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[14]->src != subGraphLinks[12]->src || 
+        (numOfLinks > 14 &&
+        (subGraphLinks[14]->src == subGraphLinks[12]->src &&
+        subGraphLinks[14]->srcTerminalId == subGraphLinks[12]->srcTerminalId &&
+        subGraphLinks[14]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[14]->src != subGraphLinks[12]->src ||
         subGraphLinks[14]->srcTerminalId != subGraphLinks[12]->srcTerminalId)) &&
         true)
     {
@@ -15954,23 +15938,22 @@ StaticGraphStatus imageSubGraphTopology100031::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[11]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[13]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[12]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[14]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -16244,7 +16227,7 @@ StaticGraph100032::StaticGraph100032(GraphConfiguration100032** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -16322,11 +16305,11 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -16334,11 +16317,11 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[17]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 19 && 
-        (subGraphLinks[19]->src == subGraphLinks[17]->src && 
-        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId && 
-        subGraphLinks[19]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[19]->src != subGraphLinks[17]->src || 
+        (numOfLinks > 19 &&
+        (subGraphLinks[19]->src == subGraphLinks[17]->src &&
+        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId &&
+        subGraphLinks[19]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[19]->src != subGraphLinks[17]->src ||
         subGraphLinks[19]->srcTerminalId != subGraphLinks[17]->srcTerminalId)) &&
         true)
     {
@@ -16361,23 +16344,22 @@ StaticGraphStatus imageSubGraphTopology100032::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol2InputsInnerOptions & no3A); // lbff_Dol2Inputs:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -16635,7 +16617,7 @@ StaticGraph100033::StaticGraph100033(GraphConfiguration100033** selectedGraphCon
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -16721,11 +16703,11 @@ StaticGraphStatus imageSubGraphTopology100033::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[13]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 15 && 
-        (subGraphLinks[15]->src == subGraphLinks[13]->src && 
-        subGraphLinks[15]->srcTerminalId == subGraphLinks[13]->srcTerminalId && 
-        subGraphLinks[15]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[15]->src != subGraphLinks[13]->src || 
+        (numOfLinks > 15 &&
+        (subGraphLinks[15]->src == subGraphLinks[13]->src &&
+        subGraphLinks[15]->srcTerminalId == subGraphLinks[13]->srcTerminalId &&
+        subGraphLinks[15]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[15]->src != subGraphLinks[13]->src ||
         subGraphLinks[15]->srcTerminalId != subGraphLinks[13]->srcTerminalId)) &&
         true)
     {
@@ -16733,11 +16715,11 @@ StaticGraphStatus imageSubGraphTopology100033::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -16759,23 +16741,22 @@ StaticGraphStatus imageSubGraphTopology100033::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[7]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[11]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[13]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[14]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[16]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -17072,7 +17053,7 @@ StaticGraph100034::StaticGraph100034(GraphConfiguration100034** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -17156,11 +17137,11 @@ StaticGraphStatus imageSubGraphTopology100034::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[18]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 20 && 
-        (subGraphLinks[20]->src == subGraphLinks[18]->src && 
-        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId && 
-        subGraphLinks[20]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[20]->src != subGraphLinks[18]->src || 
+        (numOfLinks > 20 &&
+        (subGraphLinks[20]->src == subGraphLinks[18]->src &&
+        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId &&
+        subGraphLinks[20]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[20]->src != subGraphLinks[18]->src ||
         subGraphLinks[20]->srcTerminalId != subGraphLinks[18]->srcTerminalId)) &&
         true)
     {
@@ -17168,11 +17149,11 @@ StaticGraphStatus imageSubGraphTopology100034::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[19]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 21 && 
-        (subGraphLinks[21]->src == subGraphLinks[19]->src && 
-        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId && 
-        subGraphLinks[21]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[21]->src != subGraphLinks[19]->src || 
+        (numOfLinks > 21 &&
+        (subGraphLinks[21]->src == subGraphLinks[19]->src &&
+        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId &&
+        subGraphLinks[21]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[21]->src != subGraphLinks[19]->src ||
         subGraphLinks[21]->srcTerminalId != subGraphLinks[19]->srcTerminalId)) &&
         true)
     {
@@ -17195,23 +17176,22 @@ StaticGraphStatus imageSubGraphTopology100034::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[7]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[11]->isActive = !(lbffDol3InputsInnerOptions & no3A); // lbff_Dol3Inputs:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[21]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -17316,7 +17296,7 @@ StaticGraph100035::StaticGraph100035(GraphConfiguration100035** selectedGraphCon
     }
     // add nodes for sub graph
     _rawSubGraph.isysDolOuterNode = &_isysDolOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_rawSubGraph;
 
@@ -17414,7 +17394,7 @@ StaticGraph100036::StaticGraph100036(GraphConfiguration100036** selectedGraphCon
     }
     // add nodes for sub graph
     _rawSubGraph.isysPdaf2OuterNode = &_isysPdaf2OuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_rawSubGraph;
 
@@ -17686,7 +17666,7 @@ StaticGraph100037::StaticGraph100037(GraphConfiguration100037** selectedGraphCon
     _imageSubGraph.lbffBayerPdaf2WithGmvOuterNode = &_lbffBayerPdaf2WithGmvOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -17758,11 +17738,11 @@ StaticGraphStatus imageSubGraphTopology100037::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[18]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 20 && 
-        (subGraphLinks[20]->src == subGraphLinks[18]->src && 
-        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId && 
-        subGraphLinks[20]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[20]->src != subGraphLinks[18]->src || 
+        (numOfLinks > 20 &&
+        (subGraphLinks[20]->src == subGraphLinks[18]->src &&
+        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId &&
+        subGraphLinks[20]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[20]->src != subGraphLinks[18]->src ||
         subGraphLinks[20]->srcTerminalId != subGraphLinks[18]->srcTerminalId)) &&
         true)
     {
@@ -17770,11 +17750,11 @@ StaticGraphStatus imageSubGraphTopology100037::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[19]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 21 && 
-        (subGraphLinks[21]->src == subGraphLinks[19]->src && 
-        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId && 
-        subGraphLinks[21]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[21]->src != subGraphLinks[19]->src || 
+        (numOfLinks > 21 &&
+        (subGraphLinks[21]->src == subGraphLinks[19]->src &&
+        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId &&
+        subGraphLinks[21]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[21]->src != subGraphLinks[19]->src ||
         subGraphLinks[21]->srcTerminalId != subGraphLinks[19]->srcTerminalId)) &&
         true)
     {
@@ -17797,25 +17777,24 @@ StaticGraphStatus imageSubGraphTopology100037::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffBayerPdaf2WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf2_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerPdaf2WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf2_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerPdaf2WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf2_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffBayerPdaf2WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf2_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[10]->isActive = !(lbffBayerPdaf2WithGmvInnerOptions & noGmv); // lbff_Bayer_Pdaf2_WithGmv:terminal_connect_gmv_feature_output -> lbff_Bayer_Pdaf2_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[11]->isActive = !(lbffBayerPdaf2WithGmvInnerOptions & noGmv); // lbff_Bayer_Pdaf2_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[21]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -18080,7 +18059,7 @@ StaticGraph100038::StaticGraph100038(GraphConfiguration100038** selectedGraphCon
     _imageSubGraph.lbffBayerPdaf3WithGmvOuterNode = &_lbffBayerPdaf3WithGmvOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -18152,11 +18131,11 @@ StaticGraphStatus imageSubGraphTopology100038::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -18164,11 +18143,11 @@ StaticGraphStatus imageSubGraphTopology100038::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[17]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 19 && 
-        (subGraphLinks[19]->src == subGraphLinks[17]->src && 
-        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId && 
-        subGraphLinks[19]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[19]->src != subGraphLinks[17]->src || 
+        (numOfLinks > 19 &&
+        (subGraphLinks[19]->src == subGraphLinks[17]->src &&
+        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId &&
+        subGraphLinks[19]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[19]->src != subGraphLinks[17]->src ||
         subGraphLinks[19]->srcTerminalId != subGraphLinks[17]->srcTerminalId)) &&
         true)
     {
@@ -18191,25 +18170,24 @@ StaticGraphStatus imageSubGraphTopology100038::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerPdaf3WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf3_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerPdaf3WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf3_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerPdaf3WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf3_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerPdaf3WithGmvInnerOptions & no3A); // lbff_Bayer_Pdaf3_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[8]->isActive = !(lbffBayerPdaf3WithGmvInnerOptions & noGmv); // lbff_Bayer_Pdaf3_WithGmv:terminal_connect_gmv_feature_output -> lbff_Bayer_Pdaf3_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[9]->isActive = !(lbffBayerPdaf3WithGmvInnerOptions & noGmv); // lbff_Bayer_Pdaf3_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -18712,7 +18690,7 @@ StaticGraph100039::StaticGraph100039(GraphConfiguration100039** selectedGraphCon
     _image_irSubGraph.swGdcOuterNode = &_swGdcOuterNode;
     _image_irSubGraph.lbffIrWithGmvIrStreamOuterNode = &_lbffIrWithGmvIrStreamOuterNode;
     _image_irSubGraph.bbpsIrWithTnrOuterNode = &_bbpsIrWithTnrOuterNode;
-    
+
     // choose the selected sub graph
     if (
         // image sink group
@@ -18864,11 +18842,11 @@ StaticGraphStatus imageSubGraphTopology100039::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -18876,11 +18854,11 @@ StaticGraphStatus imageSubGraphTopology100039::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[17]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 19 && 
-        (subGraphLinks[19]->src == subGraphLinks[17]->src && 
-        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId && 
-        subGraphLinks[19]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[19]->src != subGraphLinks[17]->src || 
+        (numOfLinks > 19 &&
+        (subGraphLinks[19]->src == subGraphLinks[17]->src &&
+        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId &&
+        subGraphLinks[19]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[19]->src != subGraphLinks[17]->src ||
         subGraphLinks[19]->srcTerminalId != subGraphLinks[17]->srcTerminalId)) &&
         true)
     {
@@ -18903,27 +18881,26 @@ StaticGraphStatus imageSubGraphTopology100039::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[8]->isActive = !(lbffRgbIrWithGmvInnerOptions & noGmv); // lbff_RgbIr_WithGmv:terminal_connect_gmv_feature_output -> lbff_RgbIr_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[9]->isActive = !(lbffRgbIrWithGmvInnerOptions & noGmv); // lbff_RgbIr_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -19013,29 +18990,28 @@ StaticGraphStatus irSubGraphTopology100039::configInnerNodes(SubGraphInnerNodeCo
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[8]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[9]->isActive = !(lbffRgbIrWithGmvInnerOptions & noGmv); // lbff_RgbIr_WithGmv:terminal_connect_gmv_feature_output -> lbff_RgbIr_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[10]->isActive = !(lbffRgbIrWithGmvInnerOptions & noGmv); // lbff_RgbIr_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[12]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_ae_output -> ir_ae_out
-    
+
     subGraphLinks[13]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_af_std_output -> ir_af_std_out
-    
+
     subGraphLinks[14]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_awb_std_output -> ir_awb_std_out
-    
+
     subGraphLinks[15]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_awb_sat_output -> ir_awb_sat_out
-    
+
     subGraphLinks[22]->isActive = !(bbpsIrWithTnrInnerOptions & noMp); // bbps_Ir_WithTnr:bbps_ofs_mp_yuvn_odr -> ir_mp
-    
 
     /*
      * Link enablement by private inner options
@@ -19092,11 +19068,11 @@ StaticGraphStatus image_irSubGraphTopology100039::configInnerNodes(SubGraphInner
     // active public options according to sink mapping
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -19104,11 +19080,11 @@ StaticGraphStatus image_irSubGraphTopology100039::configInnerNodes(SubGraphInner
     }
     if (
         (subGraphLinks[17]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 19 && 
-        (subGraphLinks[19]->src == subGraphLinks[17]->src && 
-        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId && 
-        subGraphLinks[19]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[19]->src != subGraphLinks[17]->src || 
+        (numOfLinks > 19 &&
+        (subGraphLinks[19]->src == subGraphLinks[17]->src &&
+        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId &&
+        subGraphLinks[19]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[19]->src != subGraphLinks[17]->src ||
         subGraphLinks[19]->srcTerminalId != subGraphLinks[17]->srcTerminalId)) &&
         true)
     {
@@ -19158,37 +19134,36 @@ StaticGraphStatus image_irSubGraphTopology100039::configInnerNodes(SubGraphInner
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[7]->isActive = !(lbffRgbIrWithGmvInnerOptions & no3A); // lbff_RgbIr_WithGmv:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[8]->isActive = !(lbffRgbIrWithGmvInnerOptions & noGmv); // lbff_RgbIr_WithGmv:terminal_connect_gmv_feature_output -> lbff_RgbIr_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[9]->isActive = !(lbffRgbIrWithGmvInnerOptions & noGmv); // lbff_RgbIr_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[23]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_ae_output -> ir_ae_out
-    
+
     subGraphLinks[24]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_af_std_output -> ir_af_std_out
-    
+
     subGraphLinks[25]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_awb_std_output -> ir_awb_std_out
-    
+
     subGraphLinks[26]->isActive = !(lbffIrWithGmvIrStreamInnerOptions & no3A); // lbff_Ir_WithGmv_IrStream:terminal_connect_awb_sat_output -> ir_awb_sat_out
-    
+
     subGraphLinks[33]->isActive = !(bbpsIrWithTnrInnerOptions & noMp); // bbps_Ir_WithTnr:bbps_ofs_mp_yuvn_odr -> ir_mp
-    
 
     /*
      * Link enablement by private inner options
@@ -19475,7 +19450,7 @@ StaticGraph100040::StaticGraph100040(GraphConfiguration100040** selectedGraphCon
     _imageSubGraph.lbffDol2InputsWithGmvOuterNode = &_lbffDol2InputsWithGmvOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -19547,11 +19522,11 @@ StaticGraphStatus imageSubGraphTopology100040::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[18]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 20 && 
-        (subGraphLinks[20]->src == subGraphLinks[18]->src && 
-        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId && 
-        subGraphLinks[20]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[20]->src != subGraphLinks[18]->src || 
+        (numOfLinks > 20 &&
+        (subGraphLinks[20]->src == subGraphLinks[18]->src &&
+        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId &&
+        subGraphLinks[20]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[20]->src != subGraphLinks[18]->src ||
         subGraphLinks[20]->srcTerminalId != subGraphLinks[18]->srcTerminalId)) &&
         true)
     {
@@ -19559,11 +19534,11 @@ StaticGraphStatus imageSubGraphTopology100040::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[19]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 21 && 
-        (subGraphLinks[21]->src == subGraphLinks[19]->src && 
-        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId && 
-        subGraphLinks[21]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[21]->src != subGraphLinks[19]->src || 
+        (numOfLinks > 21 &&
+        (subGraphLinks[21]->src == subGraphLinks[19]->src &&
+        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId &&
+        subGraphLinks[21]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[21]->src != subGraphLinks[19]->src ||
         subGraphLinks[21]->srcTerminalId != subGraphLinks[19]->srcTerminalId)) &&
         true)
     {
@@ -19586,27 +19561,26 @@ StaticGraphStatus imageSubGraphTopology100040::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffDol2InputsWithGmvInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffDol2InputsWithGmvInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffDol2InputsWithGmvInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol2InputsWithGmvInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol2InputsWithGmvInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol2InputsWithGmvInnerOptions & noGmv); // lbff_Dol2Inputs_WithGmv:terminal_connect_gmv_feature_output -> lbff_Dol2Inputs_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[11]->isActive = !(lbffDol2InputsWithGmvInnerOptions & noGmv); // lbff_Dol2Inputs_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[21]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -19909,7 +19883,7 @@ StaticGraph100041::StaticGraph100041(GraphConfiguration100041** selectedGraphCon
     _imageSubGraph.lbffDol3InputsWithGmvOuterNode = &_lbffDol3InputsWithGmvOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -19987,11 +19961,11 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[20]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 22 && 
-        (subGraphLinks[22]->src == subGraphLinks[20]->src && 
-        subGraphLinks[22]->srcTerminalId == subGraphLinks[20]->srcTerminalId && 
-        subGraphLinks[22]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[22]->src != subGraphLinks[20]->src || 
+        (numOfLinks > 22 &&
+        (subGraphLinks[22]->src == subGraphLinks[20]->src &&
+        subGraphLinks[22]->srcTerminalId == subGraphLinks[20]->srcTerminalId &&
+        subGraphLinks[22]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[22]->src != subGraphLinks[20]->src ||
         subGraphLinks[22]->srcTerminalId != subGraphLinks[20]->srcTerminalId)) &&
         true)
     {
@@ -19999,11 +19973,11 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[21]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 23 && 
-        (subGraphLinks[23]->src == subGraphLinks[21]->src && 
-        subGraphLinks[23]->srcTerminalId == subGraphLinks[21]->srcTerminalId && 
-        subGraphLinks[23]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[23]->src != subGraphLinks[21]->src || 
+        (numOfLinks > 23 &&
+        (subGraphLinks[23]->src == subGraphLinks[21]->src &&
+        subGraphLinks[23]->srcTerminalId == subGraphLinks[21]->srcTerminalId &&
+        subGraphLinks[23]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[23]->src != subGraphLinks[21]->src ||
         subGraphLinks[23]->srcTerminalId != subGraphLinks[21]->srcTerminalId)) &&
         true)
     {
@@ -20026,27 +20000,26 @@ StaticGraphStatus imageSubGraphTopology100041::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[7]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[11]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[12]->isActive = !(lbffDol3InputsWithGmvInnerOptions & noGmv); // lbff_Dol3Inputs_WithGmv:terminal_connect_gmv_feature_output -> lbff_Dol3Inputs_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[13]->isActive = !(lbffDol3InputsWithGmvInnerOptions & noGmv); // lbff_Dol3Inputs_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[22]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[21]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[23]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -20314,7 +20287,7 @@ StaticGraph100042::StaticGraph100042(GraphConfiguration100042** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -20392,11 +20365,11 @@ StaticGraphStatus imageSubGraphTopology100042::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -20404,11 +20377,11 @@ StaticGraphStatus imageSubGraphTopology100042::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -20431,21 +20404,20 @@ StaticGraphStatus imageSubGraphTopology100042::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[3]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[4]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerPdaf3InnerOptions & no3A); // lbff_Bayer_Pdaf3:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -20729,7 +20701,7 @@ StaticGraph100044::StaticGraph100044(GraphConfiguration100044** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swImvOuterNode = &_swImvOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -20813,11 +20785,11 @@ StaticGraphStatus imageSubGraphTopology100044::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -20825,11 +20797,11 @@ StaticGraphStatus imageSubGraphTopology100044::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -20852,21 +20824,20 @@ StaticGraphStatus imageSubGraphTopology100044::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -21126,7 +21097,7 @@ StaticGraph100050::StaticGraph100050(GraphConfiguration100050** selectedGraphCon
     _imageSubGraph.swRemosaicOuterNode = &_swRemosaicOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swImvOuterNode = &_swImvOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -21204,11 +21175,11 @@ StaticGraphStatus imageSubGraphTopology100050::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -21216,11 +21187,11 @@ StaticGraphStatus imageSubGraphTopology100050::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -21243,21 +21214,20 @@ StaticGraphStatus imageSubGraphTopology100050::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_imv:terminal_connect_input
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_imv:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -21531,7 +21501,7 @@ StaticGraph100051::StaticGraph100051(GraphConfiguration100051** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swImvOuterNode = &_swImvOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -21615,11 +21585,11 @@ StaticGraphStatus imageSubGraphTopology100051::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -21627,11 +21597,11 @@ StaticGraphStatus imageSubGraphTopology100051::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -21654,21 +21624,20 @@ StaticGraphStatus imageSubGraphTopology100051::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -21891,7 +21860,7 @@ StaticGraph100058::StaticGraph100058(GraphConfiguration100058** selectedGraphCon
     _imageSubGraph.swB2bOuterNode = &_swB2bOuterNode;
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -21990,17 +21959,16 @@ StaticGraphStatus imageSubGraphTopology100058::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -22274,7 +22242,7 @@ StaticGraph100059::StaticGraph100059(GraphConfiguration100059** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -22358,11 +22326,11 @@ StaticGraphStatus imageSubGraphTopology100059::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -22370,11 +22338,11 @@ StaticGraphStatus imageSubGraphTopology100059::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -22397,21 +22365,20 @@ StaticGraphStatus imageSubGraphTopology100059::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -22634,7 +22601,7 @@ StaticGraph100060::StaticGraph100060(GraphConfiguration100060** selectedGraphCon
     _imageSubGraph.swAinrOuterNode = &_swAinrOuterNode;
     _imageSubGraph.lbffBayerOuterNode = &_lbffBayerOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -22733,17 +22700,16 @@ StaticGraphStatus imageSubGraphTopology100060::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
 
     /*
      * Link enablement by private inner options
@@ -23017,7 +22983,7 @@ StaticGraph100061::StaticGraph100061(GraphConfiguration100061** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -23101,11 +23067,11 @@ StaticGraphStatus imageSubGraphTopology100061::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -23113,11 +23079,11 @@ StaticGraphStatus imageSubGraphTopology100061::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[15]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 17 && 
-        (subGraphLinks[17]->src == subGraphLinks[15]->src && 
-        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId && 
-        subGraphLinks[17]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[17]->src != subGraphLinks[15]->src || 
+        (numOfLinks > 17 &&
+        (subGraphLinks[17]->src == subGraphLinks[15]->src &&
+        subGraphLinks[17]->srcTerminalId == subGraphLinks[15]->srcTerminalId &&
+        subGraphLinks[17]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[17]->src != subGraphLinks[15]->src ||
         subGraphLinks[17]->srcTerminalId != subGraphLinks[15]->srcTerminalId)) &&
         true)
     {
@@ -23140,21 +23106,20 @@ StaticGraphStatus imageSubGraphTopology100061::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[4]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[5]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[6]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffBayerInnerOptions & no3A); // lbff_Bayer:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[14]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[15]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -23389,7 +23354,7 @@ StaticGraph100052::StaticGraph100052(GraphConfiguration100052** selectedGraphCon
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -23469,11 +23434,11 @@ StaticGraphStatus imageSubGraphTopology100052::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[11]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 13 && 
-        (subGraphLinks[13]->src == subGraphLinks[11]->src && 
-        subGraphLinks[13]->srcTerminalId == subGraphLinks[11]->srcTerminalId && 
-        subGraphLinks[13]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[13]->src != subGraphLinks[11]->src || 
+        (numOfLinks > 13 &&
+        (subGraphLinks[13]->src == subGraphLinks[11]->src &&
+        subGraphLinks[13]->srcTerminalId == subGraphLinks[11]->srcTerminalId &&
+        subGraphLinks[13]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[13]->src != subGraphLinks[11]->src ||
         subGraphLinks[13]->srcTerminalId != subGraphLinks[11]->srcTerminalId)) &&
         true)
     {
@@ -23481,11 +23446,11 @@ StaticGraphStatus imageSubGraphTopology100052::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[12]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 14 && 
-        (subGraphLinks[14]->src == subGraphLinks[12]->src && 
-        subGraphLinks[14]->srcTerminalId == subGraphLinks[12]->srcTerminalId && 
-        subGraphLinks[14]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[14]->src != subGraphLinks[12]->src || 
+        (numOfLinks > 14 &&
+        (subGraphLinks[14]->src == subGraphLinks[12]->src &&
+        subGraphLinks[14]->srcTerminalId == subGraphLinks[12]->srcTerminalId &&
+        subGraphLinks[14]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[14]->src != subGraphLinks[12]->src ||
         subGraphLinks[14]->srcTerminalId != subGraphLinks[12]->srcTerminalId)) &&
         true)
     {
@@ -23507,23 +23472,22 @@ StaticGraphStatus imageSubGraphTopology100052::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[11]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[13]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[12]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[14]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -23797,7 +23761,7 @@ StaticGraph100053::StaticGraph100053(GraphConfiguration100053** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -23875,11 +23839,11 @@ StaticGraphStatus imageSubGraphTopology100053::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[16]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 18 && 
-        (subGraphLinks[18]->src == subGraphLinks[16]->src && 
-        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId && 
-        subGraphLinks[18]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[18]->src != subGraphLinks[16]->src || 
+        (numOfLinks > 18 &&
+        (subGraphLinks[18]->src == subGraphLinks[16]->src &&
+        subGraphLinks[18]->srcTerminalId == subGraphLinks[16]->srcTerminalId &&
+        subGraphLinks[18]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[18]->src != subGraphLinks[16]->src ||
         subGraphLinks[18]->srcTerminalId != subGraphLinks[16]->srcTerminalId)) &&
         true)
     {
@@ -23887,11 +23851,11 @@ StaticGraphStatus imageSubGraphTopology100053::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[17]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 19 && 
-        (subGraphLinks[19]->src == subGraphLinks[17]->src && 
-        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId && 
-        subGraphLinks[19]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[19]->src != subGraphLinks[17]->src || 
+        (numOfLinks > 19 &&
+        (subGraphLinks[19]->src == subGraphLinks[17]->src &&
+        subGraphLinks[19]->srcTerminalId == subGraphLinks[17]->srcTerminalId &&
+        subGraphLinks[19]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[19]->src != subGraphLinks[17]->src ||
         subGraphLinks[19]->srcTerminalId != subGraphLinks[17]->srcTerminalId)) &&
         true)
     {
@@ -23914,23 +23878,22 @@ StaticGraphStatus imageSubGraphTopology100053::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol2InputsBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_BayerStat:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[16]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[17]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -24188,7 +24151,7 @@ StaticGraph100054::StaticGraph100054(GraphConfiguration100054** selectedGraphCon
     _imageSubGraph.bbpsNoTnrOuterNode = &_bbpsNoTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -24274,11 +24237,11 @@ StaticGraphStatus imageSubGraphTopology100054::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[13]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 15 && 
-        (subGraphLinks[15]->src == subGraphLinks[13]->src && 
-        subGraphLinks[15]->srcTerminalId == subGraphLinks[13]->srcTerminalId && 
-        subGraphLinks[15]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[15]->src != subGraphLinks[13]->src || 
+        (numOfLinks > 15 &&
+        (subGraphLinks[15]->src == subGraphLinks[13]->src &&
+        subGraphLinks[15]->srcTerminalId == subGraphLinks[13]->srcTerminalId &&
+        subGraphLinks[15]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[15]->src != subGraphLinks[13]->src ||
         subGraphLinks[15]->srcTerminalId != subGraphLinks[13]->srcTerminalId)) &&
         true)
     {
@@ -24286,11 +24249,11 @@ StaticGraphStatus imageSubGraphTopology100054::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[14]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 16 && 
-        (subGraphLinks[16]->src == subGraphLinks[14]->src && 
-        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId && 
-        subGraphLinks[16]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[16]->src != subGraphLinks[14]->src || 
+        (numOfLinks > 16 &&
+        (subGraphLinks[16]->src == subGraphLinks[14]->src &&
+        subGraphLinks[16]->srcTerminalId == subGraphLinks[14]->srcTerminalId &&
+        subGraphLinks[16]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[16]->src != subGraphLinks[14]->src ||
         subGraphLinks[16]->srcTerminalId != subGraphLinks[14]->srcTerminalId)) &&
         true)
     {
@@ -24312,23 +24275,22 @@ StaticGraphStatus imageSubGraphTopology100054::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[7]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[11]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[13]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[15]->isActive = !(bbpsNoTnrInnerOptions & noMp); // bbps_NoTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[14]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[16]->isActive = !(bbpsNoTnrInnerOptions & noDp); // bbps_NoTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -24625,7 +24587,7 @@ StaticGraph100055::StaticGraph100055(GraphConfiguration100055** selectedGraphCon
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swNntmOuterNode = &_swNntmOuterNode;
     _imageSubGraph.swScalerOuterNode = &_swScalerOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -24709,11 +24671,11 @@ StaticGraphStatus imageSubGraphTopology100055::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[18]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 20 && 
-        (subGraphLinks[20]->src == subGraphLinks[18]->src && 
-        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId && 
-        subGraphLinks[20]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[20]->src != subGraphLinks[18]->src || 
+        (numOfLinks > 20 &&
+        (subGraphLinks[20]->src == subGraphLinks[18]->src &&
+        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId &&
+        subGraphLinks[20]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[20]->src != subGraphLinks[18]->src ||
         subGraphLinks[20]->srcTerminalId != subGraphLinks[18]->srcTerminalId)) &&
         true)
     {
@@ -24721,11 +24683,11 @@ StaticGraphStatus imageSubGraphTopology100055::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[19]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 21 && 
-        (subGraphLinks[21]->src == subGraphLinks[19]->src && 
-        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId && 
-        subGraphLinks[21]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[21]->src != subGraphLinks[19]->src || 
+        (numOfLinks > 21 &&
+        (subGraphLinks[21]->src == subGraphLinks[19]->src &&
+        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId &&
+        subGraphLinks[21]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[21]->src != subGraphLinks[19]->src ||
         subGraphLinks[21]->srcTerminalId != subGraphLinks[19]->srcTerminalId)) &&
         true)
     {
@@ -24748,23 +24710,22 @@ StaticGraphStatus imageSubGraphTopology100055::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[7]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[11]->isActive = !(lbffDol3InputsBayerStatInnerOptions & no3A); // lbff_Dol3Inputs_BayerStat:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[21]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_nntm:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -25043,7 +25004,7 @@ StaticGraph100056::StaticGraph100056(GraphConfiguration100056** selectedGraphCon
     _imageSubGraph.lbffDol2InputsWithGmvBayerStatOuterNode = &_lbffDol2InputsWithGmvBayerStatOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -25115,11 +25076,11 @@ StaticGraphStatus imageSubGraphTopology100056::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[18]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 20 && 
-        (subGraphLinks[20]->src == subGraphLinks[18]->src && 
-        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId && 
-        subGraphLinks[20]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[20]->src != subGraphLinks[18]->src || 
+        (numOfLinks > 20 &&
+        (subGraphLinks[20]->src == subGraphLinks[18]->src &&
+        subGraphLinks[20]->srcTerminalId == subGraphLinks[18]->srcTerminalId &&
+        subGraphLinks[20]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[20]->src != subGraphLinks[18]->src ||
         subGraphLinks[20]->srcTerminalId != subGraphLinks[18]->srcTerminalId)) &&
         true)
     {
@@ -25127,11 +25088,11 @@ StaticGraphStatus imageSubGraphTopology100056::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[19]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 21 && 
-        (subGraphLinks[21]->src == subGraphLinks[19]->src && 
-        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId && 
-        subGraphLinks[21]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[21]->src != subGraphLinks[19]->src || 
+        (numOfLinks > 21 &&
+        (subGraphLinks[21]->src == subGraphLinks[19]->src &&
+        subGraphLinks[21]->srcTerminalId == subGraphLinks[19]->srcTerminalId &&
+        subGraphLinks[21]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[21]->src != subGraphLinks[19]->src ||
         subGraphLinks[21]->srcTerminalId != subGraphLinks[19]->srcTerminalId)) &&
         true)
     {
@@ -25154,27 +25115,26 @@ StaticGraphStatus imageSubGraphTopology100056::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[5]->isActive = !(lbffDol2InputsWithGmvBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[6]->isActive = !(lbffDol2InputsWithGmvBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[7]->isActive = !(lbffDol2InputsWithGmvBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol2InputsWithGmvBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol2InputsWithGmvBayerStatInnerOptions & no3A); // lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol2InputsWithGmvBayerStatInnerOptions & noGmv); // lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_gmv_feature_output -> lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_gmv_input
-    
+
     subGraphLinks[11]->isActive = !(lbffDol2InputsWithGmvBayerStatInnerOptions & noGmv); // lbff_Dol2Inputs_WithGmv_BayerStat:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[18]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[19]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[21]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -25477,7 +25437,7 @@ StaticGraph100057::StaticGraph100057(GraphConfiguration100057** selectedGraphCon
     _imageSubGraph.lbffDol3InputsWithGmvOuterNode = &_lbffDol3InputsWithGmvOuterNode;
     _imageSubGraph.bbpsWithTnrOuterNode = &_bbpsWithTnrOuterNode;
     _imageSubGraph.swGdcOuterNode = &_swGdcOuterNode;
-    
+
     // choose the selected sub graph
     _selectedGraphTopology = &_imageSubGraph;
 
@@ -25555,11 +25515,11 @@ StaticGraphStatus imageSubGraphTopology100057::configInnerNodes(SubGraphInnerNod
     // active public options according to sink mapping
     if (
         (subGraphLinks[20]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 22 && 
-        (subGraphLinks[22]->src == subGraphLinks[20]->src && 
-        subGraphLinks[22]->srcTerminalId == subGraphLinks[20]->srcTerminalId && 
-        subGraphLinks[22]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[22]->src != subGraphLinks[20]->src || 
+        (numOfLinks > 22 &&
+        (subGraphLinks[22]->src == subGraphLinks[20]->src &&
+        subGraphLinks[22]->srcTerminalId == subGraphLinks[20]->srcTerminalId &&
+        subGraphLinks[22]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[22]->src != subGraphLinks[20]->src ||
         subGraphLinks[22]->srcTerminalId != subGraphLinks[20]->srcTerminalId)) &&
         true)
     {
@@ -25567,11 +25527,11 @@ StaticGraphStatus imageSubGraphTopology100057::configInnerNodes(SubGraphInnerNod
     }
     if (
         (subGraphLinks[21]->linkConfiguration->bufferSize == 0) &&
-        (numOfLinks > 23 && 
-        (subGraphLinks[23]->src == subGraphLinks[21]->src && 
-        subGraphLinks[23]->srcTerminalId == subGraphLinks[21]->srcTerminalId && 
-        subGraphLinks[23]->linkConfiguration->bufferSize == 0) || 
-        (subGraphLinks[23]->src != subGraphLinks[21]->src || 
+        (numOfLinks > 23 &&
+        (subGraphLinks[23]->src == subGraphLinks[21]->src &&
+        subGraphLinks[23]->srcTerminalId == subGraphLinks[21]->srcTerminalId &&
+        subGraphLinks[23]->linkConfiguration->bufferSize == 0) ||
+        (subGraphLinks[23]->src != subGraphLinks[21]->src ||
         subGraphLinks[23]->srcTerminalId != subGraphLinks[21]->srcTerminalId)) &&
         true)
     {
@@ -25594,27 +25554,26 @@ StaticGraphStatus imageSubGraphTopology100057::configInnerNodes(SubGraphInnerNod
      * Link enablement by public inner options
      */
     subGraphLinks[7]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_ae_output -> ae_out
-    
+
     subGraphLinks[8]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_af_std_output -> af_std_out
-    
+
     subGraphLinks[9]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_awb_std_output -> awb_std_out
-    
+
     subGraphLinks[10]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_awb_sat_output -> awb_sat_out
-    
+
     subGraphLinks[11]->isActive = !(lbffDol3InputsWithGmvInnerOptions & no3A); // lbff_Dol3Inputs_WithGmv:terminal_connect_awb_sve_output -> awb_sve_out
-    
+
     subGraphLinks[12]->isActive = !(lbffDol3InputsWithGmvInnerOptions & noGmv); // lbff_Dol3Inputs_WithGmv:terminal_connect_gmv_feature_output -> lbff_Dol3Inputs_WithGmv:terminal_connect_gmv_input
-    
+
     subGraphLinks[13]->isActive = !(lbffDol3InputsWithGmvInnerOptions & noGmv); // lbff_Dol3Inputs_WithGmv:terminal_connect_gmv_match_output -> gmv_match_out
-    
+
     subGraphLinks[20]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> image_mp
-    
+
     subGraphLinks[22]->isActive = !(bbpsWithTnrInnerOptions & noMp); // bbps_WithTnr:bbps_ofs_mp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
+
     subGraphLinks[21]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> image_dp
-    
+
     subGraphLinks[23]->isActive = !(bbpsWithTnrInnerOptions & noDp); // bbps_WithTnr:bbps_ofs_dp_yuvn_odr -> sw_gdc:terminal_connect_input
-    
 
     /*
      * Link enablement by private inner options
@@ -25645,4 +25604,3 @@ StaticGraphStatus imageSubGraphTopology100057::configInnerNodes(SubGraphInnerNod
 
     return StaticGraphStatus::SG_OK;
 }
-

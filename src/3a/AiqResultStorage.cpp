@@ -155,4 +155,3 @@ FaceDetectionResult* AiqResultStorage::getFaceResult() {
 }
 
 } //namespace icamera
-

@@ -22,7 +22,7 @@ set(METADATA_SRCS
     CACHE INTERNAL "metadata sources"
     )
 
-    set(METADATA_SRCS
-        ${METADATA_SRCS}
-        CACHE INTERNAL "metadata sources"
-        )
+set(METADATA_SRCS
+    ${METADATA_SRCS}
+    CACHE INTERNAL "metadata sources"
+    )

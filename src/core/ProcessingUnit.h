@@ -139,4 +139,3 @@ class ProcessingUnit : public IProcessingUnit, public PipeManagerCallback {
 };  // End of class ProcessingUnit
 
 }  // namespace icamera
-

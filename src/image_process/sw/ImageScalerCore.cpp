@@ -959,4 +959,3 @@ void ImageScalerCore::cropComposeUpscaleNV12_bl(
 }
 
 } // namespace icamera
-

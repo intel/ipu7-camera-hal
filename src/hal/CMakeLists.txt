@@ -20,4 +20,3 @@ set(HAL_SRCS
     ${HAL_DIR}/ParameterConvert.cpp
     CACHE INTERNAL "hal sources"
     )
-

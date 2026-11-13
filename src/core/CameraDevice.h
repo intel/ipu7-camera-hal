@@ -268,4 +268,3 @@ class CameraDevice : public EventListener {
 };
 
 }  // namespace icamera
-

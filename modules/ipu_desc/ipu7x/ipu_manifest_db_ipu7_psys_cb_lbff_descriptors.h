@@ -92,7 +92,7 @@ static payload_descriptor_t lbff_0_descriptors = {
 		{LBFF_DEVICE_ID_TNR_Scale_LB, 0x0U, 0x4U, 0x6d3cU},
 		{LBFF_DEVICE_ID_TNR_Scale_LB, 0x40U, 0x2cU, 0x6d40U},
 		{LBFF_DEVICE_ID_GMV_Statistics_1_0, 0x0U, 0x1cU, 0x6d6cU},
-		
+
 	}
 
 };
@@ -125,7 +125,7 @@ static payload_descriptor_t lbff_1_descriptors = {
 		{LBFF_DEVICE_ID_B2I_DS_1_0_1, 0x8U, 0x10U, 0x33cU},
 		{LBFF_DEVICE_ID_UpScaler_1_0, 0x4U, 0x10U, 0x34cU},
 		{LBFF_DEVICE_ID_UpScaler_1_0, 0x1010U, 0xcU, 0x35cU},
-		
+
 	}
 
 };
@@ -152,7 +152,7 @@ static payload_descriptor_t lbff_2_descriptors = {
 		{LBFF_DEVICE_ID_ifd_gmv_1_1, 0x0U, 0x9cU, 0x8a8U},
 		{LBFF_DEVICE_ID_odr_gmv_feature_1_1, 0x0U, 0x9cU, 0x944U},
 		{LBFF_DEVICE_ID_odr_gmv_match_1_1, 0x0U, 0x9cU, 0x9e0U},
-		
+
 	}
 
 };

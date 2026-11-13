@@ -80,9 +80,10 @@ int V4L2Subdevice::SetFormat(const struct v4l2_subdev_format& format) {
 
     int ret = ::ioctl(fd_, VIDIOC_SUBDEV_S_FMT, &format);
     if (ret < 0) {
-        LOGE("%s: Device node %s IOCTL VIDIOC_SUBDEV_S_FMT error: %s", __func__, name_.c_str(),
-             strerror(errno));
-        return -EINVAL;
+        int error = errno;
+        LOGW("%s: Device node %s IOCTL VIDIOC_SUBDEV_S_FMT error: %s", __func__, name_.c_str(),
+             strerror(error));
+        return error != EBUSY ? ret : 0;
     }
 
     state_ = SubdevState::CONFIGURED;

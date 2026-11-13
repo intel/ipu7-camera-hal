@@ -44,4 +44,3 @@ struct IspSettings {
 };
 
 } // namespace icamera
-

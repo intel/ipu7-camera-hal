@@ -50,4 +50,3 @@ class SofSource : public EventSource {
 };
 
 }  // namespace icamera
-

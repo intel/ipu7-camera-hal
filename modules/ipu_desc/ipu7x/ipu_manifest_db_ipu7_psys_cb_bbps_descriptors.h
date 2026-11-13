@@ -57,7 +57,7 @@ static payload_descriptor_t BBPS_0_descriptors = {
 		{BBPS_DEVICE_ID_OutputScaler_2_0_B, 0x0U, 0x8U, 0x860U},
 		{BBPS_DEVICE_ID_OutputScaler_2_0_B, 0x20U, 0x204U, 0x868U},
 		{BBPS_DEVICE_ID_OutputScaler_2_0_B, 0x22cU, 0x204U, 0xa6cU},
-		
+
 	}
 
 };
@@ -68,7 +68,7 @@ static payload_descriptor_t BBPS_1_descriptors = {
 		{BBPS_DEVICE_ID_CAS_1_0, 0xcU, 0x4U, 0x0U},
 		{BBPS_DEVICE_ID_OutputScaler_2_0_A, 0x8U, 0x18U, 0x4U},
 		{BBPS_DEVICE_ID_OutputScaler_2_0_B, 0x8U, 0x18U, 0x1cU},
-		
+
 	}
 
 };
@@ -88,7 +88,7 @@ static payload_descriptor_t BBPS_2_descriptors = {
 		{BBPS_DEVICE_ID_ofs_mp_bodr_regs_1_1, 0x0U, 0x9cU, 0x57cU},
 		{BBPS_DEVICE_ID_ofs_dp_bodr_regs_1_1, 0x0U, 0x9cU, 0x618U},
 		{BBPS_DEVICE_ID_ofs_pp_bodr_regs_1_1, 0x0U, 0x9cU, 0x6b4U},
-		
+
 	}
 
 };
@@ -102,7 +102,7 @@ static payload_descriptor_t BBPS_3_descriptors = {
 		{BBPS_DEVICE_ID_TNR7_Spatial_1_0, 0x10U, 0x20U, 0x600U},
 		{BBPS_DEVICE_ID_TNR7_Spatial_1_0, 0x5cU, 0x4U, 0x800U},
 		{BBPS_DEVICE_ID_CAS_1_0, 0x20U, 0x20U, 0xa00U},
-		
+
 	}
 
 };

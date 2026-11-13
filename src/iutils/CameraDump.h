@@ -154,4 +154,3 @@ void dumpBinary(int cameraId, const void* data, int size, BinParam_t* binParam);
 }  // namespace CameraDump
 
 }  // namespace icamera
-
