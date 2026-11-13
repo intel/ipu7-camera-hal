@@ -134,6 +134,9 @@ class PipeLine {
     std::map<uuid, TerminalInfo> mTerminalsDesc;
 
     TuningMode mTuningMode;
+    // The tuning has no ISP container for the graph's tuning mode, so the default
+    // (DFLT) ISP tuning is loaded and looked up as mode 0.
+    bool mUseDefaultIspTuning = false;
 
     PSysDevice* mPSysDevice;
     PSysGraph mPSysGraph;
