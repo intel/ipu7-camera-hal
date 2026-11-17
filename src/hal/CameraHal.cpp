@@ -24,6 +24,7 @@
 #include "Parameters.h"
 #include "PlatformData.h"
 #include "ParameterConvert.h"
+#include "ParameterHelper.h"
 #include "iutils/CameraLog.h"
 
 namespace icamera {
@@ -156,6 +157,14 @@ int CameraHal::deviceOpen(int cameraId, int vcNum) {
 
     if (mCameraShm.CameraDeviceOpen(cameraId) != OK) {
         return INVALID_OPERATION;
+    }
+
+    // Drop the previous session's flip override without resetting other parameters.
+    CameraMetadata metadata(ParameterHelper::getMetadata(mParameters[cameraId]));
+    if (metadata.exists(INTEL_CONTROL_FLIP_MODE) && metadata.erase(INTEL_CONTROL_FLIP_MODE) == OK) {
+        Parameters parameters;
+        ParameterHelper::merge(metadata, &parameters);
+        mParameters[cameraId] = parameters;
     }
 
     mCameraDevices[cameraId] = new CameraDevice(cameraId);

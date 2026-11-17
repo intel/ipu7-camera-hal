@@ -1416,11 +1416,13 @@ int PlatformData::getMsOfPsysAlignWithSystem(int cameraId) {
 }
 
 void PlatformData::setSensorOrientation(int cameraId, int orientation) {
-    getInstance()->mStaticCfg.mCameras[cameraId].mSensorOrientation = orientation;
+    getInstance()->mStaticCfg.mCameras[cameraId].mStaticMetadata.mInt32Metadata["sensor.orientation"] =
+        {orientation};
 }
 
 int PlatformData::getSensorOrientation(int cameraId) {
-    return getInstance()->mStaticCfg.mCameras[cameraId].mSensorOrientation;
+    const auto orientation = getInt32StaticMetadata(cameraId, "sensor.orientation");
+    return orientation.size() == 1 ? orientation[0] : ORIENTATION_0;
 }
 
 bool PlatformData::isDummyStillSink(int cameraId) {

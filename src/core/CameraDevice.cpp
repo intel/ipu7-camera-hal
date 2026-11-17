@@ -449,6 +449,12 @@ int CameraDevice::configure(stream_config_t* streamList) {
     ret = mProducer->configure(producerConfigs);
     CheckAndLogError(ret < 0, BAD_VALUE, "@%s Device Configure failed", __func__);
 
+    // Media setup may overwrite controls, so restore an explicit API override last.
+    if (mDataContext->hasFlipMode) {
+        ret = mSensorCtrl->setFlipMode(mDataContext->mAiqParams.flipMode);
+        CheckAndLogError(ret != OK, ret, "Failed to restore requested sensor flip mode");
+    }
+
 #ifdef LINUX_PRIVACY_MODE
     int eventType = PlatformData::getPrivacyShutterEventType(mCameraId);
     int eventCode = PlatformData::getPrivacyShutterEventCode(mCameraId);
@@ -979,6 +985,13 @@ int CameraDevice::setParameters(const DataContext& dataContext) {
     LOG2("<id%d>@%s", mCameraId, __func__);
     AutoMutex m(mDeviceLock);
     int ret = OK;
+
+    if (dataContext.hasFlipMode &&
+        (!mDataContext->hasFlipMode ||
+         dataContext.mAiqParams.flipMode != mDataContext->mAiqParams.flipMode)) {
+        ret = mSensorCtrl->setFlipMode(dataContext.mAiqParams.flipMode);
+        CheckAndLogError(ret != OK, ret, "Failed to apply requested sensor flip mode");
+    }
 
     // Set test pattern mode
     const camera_test_pattern_mode_t testPatternMode = dataContext.mAiqParams.testPatternMode;
