@@ -123,7 +123,7 @@ void ParameterConvert::setAiqSettings(const Parameters& param, DataContext* data
     param.getVideoStabilizationMode(dataContext->mAiqParams.videoStabilizationMode);
     param.getLdcMode(dataContext->mAiqParams.ldcMode);
     param.getRscMode(dataContext->mAiqParams.rscMode);
-    param.getFlipMode(dataContext->mAiqParams.flipMode);
+    dataContext->hasFlipMode = param.getFlipMode(dataContext->mAiqParams.flipMode) == OK;
     param.getDigitalZoomRatio(dataContext->mAiqParams.digitalZoomRatio);
 
     param.getShadingMode(dataContext->mAiqParams.shadingMode);

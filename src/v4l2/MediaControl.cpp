@@ -1355,24 +1355,32 @@ void MediaControl::dumpEntityTopology(bool dot) {
 void MediaControl::setSensorOrientation(int cameraId) {
     int orientation = icamera::PlatformData::getSensorOrientation(cameraId);
 
-    if (orientation != ORIENTATION_180) {
-        LOG1("@%s, orientation %d do not supported currently", __func__, orientation);
-        return;
+    if (orientation != ORIENTATION_0 && orientation != ORIENTATION_180) {
+        LOGW("camera %d: sensor orientation %d cannot be applied with HFLIP/VFLIP",
+             cameraId, orientation);
     }
 
     std::string subDevName;
     const int ret = PlatformData::getDevNameByType(cameraId, VIDEO_PIXEL_ARRAY, subDevName);
-    if (ret != OK) {
+    if (ret != OK || subDevName.empty()) {
         LOGE("@%s, failed to get device name for VIDEO_PIXEL_ARRAY, cameraId: %d", __func__, cameraId);
         return;
     }
     LOG1("@%s, sub-dev name is %s", __func__, subDevName.c_str());
     V4L2Subdevice* subDev = V4l2DeviceFactory::getSubDev(cameraId, subDevName);
-    if ((subDev->SetControl(V4L2_CID_HFLIP, 1) == OK) &&
-        (subDev->SetControl(V4L2_CID_VFLIP, 1) == OK)) {
-        LOG1("@%s, IOCTL V4L2_CID_HFLIP/VFLIP OK", __func__);
+    if (!subDev) {
+        LOGE("camera %d: sensor subdevice %s is unavailable", cameraId, subDevName.c_str());
+        return;
+    }
+    const int flip = orientation == ORIENTATION_180 ? 1 : 0;
+    const int hflipRet = subDev->SetControl(V4L2_CID_HFLIP, flip);
+    const int vflipRet = subDev->SetControl(V4L2_CID_VFLIP, flip);
+    if (hflipRet == OK && vflipRet == OK) {
+        LOGI("camera %d: sensor.orientation=%d on %s (HFLIP=%d VFLIP=%d)",
+             cameraId, orientation, subDevName.c_str(), flip, flip);
     } else {
-        LOGE("Cannot set sensor orientation to %d.", orientation);
+        LOGE("camera %d: sensor.orientation=%d failed on %s (HFLIP=%d VFLIP=%d)",
+             cameraId, orientation, subDevName.c_str(), hflipRet, vflipRet);
     }
 }
 

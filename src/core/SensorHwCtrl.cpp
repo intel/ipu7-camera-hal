@@ -108,6 +108,22 @@ int SensorHwCtrl::getPixelRate(int& pixelRate) {
     return ret;
 }
 
+int SensorHwCtrl::setFlipMode(camera_flip_mode_t mode) {
+    CheckAndLogError(mPixelArraySubdev == nullptr, NO_INIT, "sensor flip controls are unavailable");
+    CheckAndLogError(mode < FLIP_MODE_NONE || mode > FLIP_MODE_VHFLIP, BAD_VALUE,
+                     "Invalid sensor flip mode %d", mode);
+
+    const int hflip = mode == FLIP_MODE_HFLIP || mode == FLIP_MODE_VHFLIP;
+    const int vflip = mode == FLIP_MODE_VFLIP || mode == FLIP_MODE_VHFLIP;
+    int ret = mPixelArraySubdev->SetControl(V4L2_CID_HFLIP, hflip);
+    CheckAndLogError(ret != OK, ret, "camera %d: sensor HFLIP=%d failed", mCameraId, hflip);
+    ret = mPixelArraySubdev->SetControl(V4L2_CID_VFLIP, vflip);
+    CheckAndLogError(ret != OK, ret, "camera %d: sensor VFLIP=%d failed", mCameraId, vflip);
+    LOGI("camera %d: applied sensor flip mode %d (HFLIP=%d VFLIP=%d)",
+         mCameraId, mode, hflip, vflip);
+    return OK;
+}
+
 int SensorHwCtrl::setTestPatternMode(int32_t testPatternMode) {
     HAL_TRACE_CALL(CAMERA_DEBUG_LOG_LEVEL2);
     CheckAndLogError(mPixelArraySubdev == nullptr, NO_INIT, "pixel array sub device is not set");

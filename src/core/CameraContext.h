@@ -55,6 +55,8 @@ class DataContext {
     int64_t mCcaId;  // Used for CCA algo
 
     uint8_t mFaceDetectMode;
+    // An omitted flip mode preserves JSON settings; explicit NONE clears both flips.
+    bool hasFlipMode = false;
     camera_mono_downscale_mode_t monoDsMode;
     camera_deinterlace_mode_t deinterlaceMode;
 
@@ -71,6 +73,7 @@ class DataContext {
     void reset();
     DataContext& operator=(const DataContext& other) {
         mFaceDetectMode = other.mFaceDetectMode;
+        hasFlipMode = other.hasFlipMode;
         monoDsMode = other.monoDsMode;
         deinterlaceMode = other.deinterlaceMode;
         cropRegion = other.cropRegion;

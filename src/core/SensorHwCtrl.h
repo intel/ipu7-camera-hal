@@ -18,6 +18,7 @@
 #include <vector>
 
 #include <v4l2_device.h>
+#include "ParamDataType.h"
 #include "iutils/Errors.h"
 #include "iutils/Utils.h"
 
@@ -32,6 +33,7 @@ class SensorHwCtrl {
     SensorHwCtrl(int cameraId, V4L2Subdevice* pixelArraySubdev, V4L2Subdevice* sensorOutputSubdev);
     virtual ~SensorHwCtrl() {}
 
+    virtual int setFlipMode(camera_flip_mode_t mode);
     virtual int setTestPatternMode(int32_t testPatternMode);
     virtual int getPixelRate(int& pixelRate);
     virtual int setExposure(const std::vector<int>& coarseExposures,

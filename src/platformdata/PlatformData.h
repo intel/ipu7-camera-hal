@@ -222,7 +222,6 @@ class PlatformData {
                       mUseCrlModule(true),
                       mFacing(FACING_BACK),
                       mOrientation(ORIENTATION_0),
-                      mSensorOrientation(ORIENTATION_0),
                       mUseSensorDigitalGain(false),
                       mUseIspDigitalGain(false),
                       mNeedPreRegisterBuffers(false),
@@ -316,7 +315,6 @@ class PlatformData {
             bool mUseCrlModule;
             int mFacing;
             int mOrientation;
-            int mSensorOrientation;
             bool mUseSensorDigitalGain;
             bool mUseIspDigitalGain;
             bool mNeedPreRegisterBuffers;
