@@ -32,4 +32,3 @@ struct AiqStatistics {
                       mInUse(false) {}
 };
 } /* namespace icamera */
-

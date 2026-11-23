@@ -102,7 +102,7 @@ GraphConfigurationKey* StaticGraphReader::GetFdGraphConfigurationKey(GraphConfig
 {
     for (uint32_t i = 0; i < _binaryHeader.numberOfResolutions; i++)
     {
-        if (settingsKey.attributes == _graphConfigurationHeaders[i].settingsKey.attributes && 
+        if (settingsKey.attributes == _graphConfigurationHeaders[i].settingsKey.attributes &&
             (((settingsKey.preview.width != 0 && _graphConfigurationHeaders[i].settingsKey.preview.width == settingsKey.preview.width && _graphConfigurationHeaders[i].settingsKey.preview.height == settingsKey.preview.height) ||
             (settingsKey.video.width != 0 && _graphConfigurationHeaders[i].settingsKey.video.width == settingsKey.video.width && _graphConfigurationHeaders[i].settingsKey.video.height == settingsKey.video.height)) &&
             _graphConfigurationHeaders[i].settingsKey.postProcessingVideo.width != 0))

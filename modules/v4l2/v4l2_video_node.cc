@@ -538,9 +538,10 @@ int V4L2VideoNode::SetFormat(const V4L2Format& format) {
 
     int ret = ::ioctl(fd_, VIDIOC_S_FMT, fmt.Get());
     if (ret < 0) {
-        LOGE("%s: Device node %s IOCTL VIDIOC_S_FMT error: %s", __func__, name_.c_str(),
-             strerror(errno));
-        return ret;
+        int error = errno;
+        LOGW("%s: Device node %s IOCTL VIDIOC_S_FMT error: %s", __func__, name_.c_str(),
+             strerror(error));
+        return error != EBUSY ? ret : 0;
     }
 
     // Update current configuration with the new one

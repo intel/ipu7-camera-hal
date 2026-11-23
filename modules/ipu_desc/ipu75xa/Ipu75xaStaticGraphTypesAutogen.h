@@ -145,6 +145,7 @@ struct StaticGraphKernelRes {
 };
 
 #endif
+
 struct StaticGraphKernelBppConfiguration {
     uint8_t input_bpp = 0;
     uint8_t output_bpp = 0;
@@ -263,6 +264,7 @@ struct StaticGraphNodeKernels
 };
 
 #endif
+
 struct HwBitmaps {
     uint32_t rbm[4] = {};
     uint32_t deb[4] = {};

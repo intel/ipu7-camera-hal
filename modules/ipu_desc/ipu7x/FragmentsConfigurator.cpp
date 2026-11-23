@@ -37,6 +37,7 @@ Gen2FragmentsConfigurator::Gen2FragmentsConfigurator(IStaticGraphConfig* staticG
 StaticGraphStatus Gen2FragmentsConfigurator::configureFragments(std::vector<SmurfKernelInfo*>& smurfKernels)
 {
     _hadStripeWidthViolation = false;
+    _stripeExtentBeforeZoomCrop.clear();
 
     if (_staticGraph == nullptr || _node == nullptr || _numberOfFragments < 1)
     {
@@ -53,7 +54,7 @@ StaticGraphStatus Gen2FragmentsConfigurator::configureFragments(std::vector<Smur
 
     const uint16_t* kenelConfigOrder = _node->getRunKernelConfigOrder();
 
-    for (uint16_t i = 0; i < _node->nodeKernels.kernelCount; i++)
+    for (uint16_t i = 0; i < (uint16_t)_node->nodeKernels.kernelCount; i++)
     {
         uint16_t j = kenelConfigOrder[i];
         StaticGraphRunKernel* runKernel = &_node->nodeKernels.kernelList[j].run_kernel;
@@ -301,6 +302,9 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsDownscaler(StaticGra
         }
     }
 
+    // The adjusted factor for PAL
+    int32_t adjusted_scaling_ratio = static_cast<int32_t>(adjusted_scaling_ratio_f * ratio_prec);
+
     if (runKernel->enable == 1)
     {
         for (int32_t stripe = leftNonVanishedStripe; stripe <= rightNonVanishedStripe; stripe++)
@@ -311,7 +315,7 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsDownscaler(StaticGra
                 return StaticGraphStatus::SG_ERROR;
             }
 
-            if (!validateDownscalerConstraints(&(kernelFragments[stripe]), stripe, (1 / adjusted_scaling_ratio_f), runKernel))
+            if (!validateDownscalerConstraints(&(kernelFragments[stripe]), stripe, adjusted_scaling_ratio, runKernel))
             {
                 return StaticGraphStatus::SG_ERROR;
             }
@@ -326,8 +330,21 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsDownscaler(StaticGra
         _outputStartX[runKernel->kernel_uuid][stripe] = static_cast<uint16_t>(ceil(value)) * 2;
     }
 
-    // Set the adjusted factor for PAL
-	int32_t adjusted_scaling_ratio = static_cast<int32_t>(adjusted_scaling_ratio_f * ratio_prec);
+    // Extents copied from the upscaler are in this kernel's input space. The drainers
+    // after this scaler split overlaps in its output space.
+    const auto extentIt = _stripeExtentBeforeZoomCrop.find(runKernel->kernel_uuid);
+    if (extentIt != _stripeExtentBeforeZoomCrop.end())
+    {
+        for (StripeOutputExtent& extent : extentIt->second)
+        {
+            if (extent.endExclusive <= extent.start)
+            {
+                continue;
+            }
+            extent.start = static_cast<int32_t>(ceil(extent.start / adjusted_scaling_ratio_f / 2)) * 2;
+            extent.endExclusive = static_cast<int32_t>(floor(extent.endExclusive / adjusted_scaling_ratio_f / 2)) * 2;
+        }
+    }
 
     auto systemApiHeader = static_cast<SystemApiRecordHeader*>(runKernel->system_api.data);
     if (systemApiHeader->systemApiUuid != GraphResolutionConfiguratorHelper::getRunKernelDownscalerSystemApiUuid())
@@ -344,11 +361,9 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsDownscaler(StaticGra
     return StaticGraphStatus::SG_OK;
 }
 
-bool Gen2FragmentsConfigurator::validateDownscalerConstraints(StaticGraphFragmentDesc* stripe, int32_t stripeIndex, double scaleFactor, StaticGraphRunKernel* runKernel)
+bool Gen2FragmentsConfigurator::validateDownscalerConstraints(StaticGraphFragmentDesc* stripe, int32_t stripeIndex, int32_t scalingRatio, StaticGraphRunKernel* runKernel)
 {
-    int scaling_ratio = (int)ceil((1 / scaleFactor) * (double)(1U << GraphResolutionConfigurator::SCALE_PREC));
-
-    int32_t offset_common = ((scaling_ratio - (static_cast<uint32_t>(1U) << GraphResolutionConfigurator::SCALE_PREC)) >> 1);
+    int32_t offset_common = ((scalingRatio - (static_cast<uint32_t>(1U) << GraphResolutionConfigurator::SCALE_PREC)) >> 1);
 
     uint32_t orig_horizontal_offset;
     if (stripeIndex == 0)
@@ -363,7 +378,7 @@ bool Gen2FragmentsConfigurator::validateDownscalerConstraints(StaticGraphFragmen
     // uncomment these lines in order to check if constraints are actually met.
     //
     // const double ratio_prec = 1U << GraphResolutionConfigurator::SCALE_PREC;
-    // const double scaling_ratio_f = static_cast<double>(scaling_ratio) / ratio_prec;
+    // const double scaling_ratio_f = static_cast<double>(scalingRatio) / ratio_prec;
     // const uint16_t fragment_start_x = stripe->fragmentStartX;
     // const double calc = ceil((static_cast<double>(fragment_start_x) / scaling_ratio_f / 2.0)) * 2.0; //2 * ceil(x/2) means round up to a closest even number
     // double horizontal_offset = (static_cast<double>(orig_horizontal_offset) / ratio_prec) + static_cast<double>(scaling_ratio_f * calc - static_cast<double>(fragment_start_x));
@@ -374,19 +389,30 @@ bool Gen2FragmentsConfigurator::validateDownscalerConstraints(StaticGraphFragmen
 
     //1
     int32_t horizontal_offset_min = 0;
-    int32_t horizontal_offset_max = ((5 * scaling_ratio) - (1U << GraphResolutionConfigurator::SCALE_PREC)) / 2;
+    int32_t horizontal_offset_max = ((5 * scalingRatio) - (1U << GraphResolutionConfigurator::SCALE_PREC)) / 2;
 
     //2
-    horizontal_offset_min = std::max((58982 * fragment_input_width) - (fragment_output_width * scaling_ratio), horizontal_offset_min);
-    horizontal_offset_max = std::min((72089 * fragment_input_width) - (fragment_output_width * scaling_ratio), horizontal_offset_max);
+    horizontal_offset_min = std::max((58982 * fragment_input_width) - (fragment_output_width * scalingRatio), horizontal_offset_min);
+    horizontal_offset_max = std::min((72089 * fragment_input_width) - (fragment_output_width * scalingRatio), horizontal_offset_max);
 
     //3
-    horizontal_offset_max = std::min(fragment_input_width * (1 << GraphResolutionConfigurator::SCALE_PREC) + (int32_t)(scaling_ratio * (1 + 1.0 / 128) - fragment_output_width * scaling_ratio), horizontal_offset_max);
+    horizontal_offset_max = std::min(fragment_input_width * (1 << GraphResolutionConfigurator::SCALE_PREC) + (int32_t)(scalingRatio * (1 + 1.0 / 128) - fragment_output_width * scalingRatio), horizontal_offset_max);
 
     //return (horizontal_offset_fxp >= horizontal_offset_min && horizontal_offset_fxp <= horizontal_offset_max);
 
     // return true if constraints can be met. (PAL will chomp)
     return (horizontal_offset_min <= horizontal_offset_max);
+}
+
+StaticGraphStatus Gen2FragmentsConfigurator::rejectStripeOutputBelowMin(int32_t outputWidth)
+{
+    if (outputWidth >= MIN_STRIPE_OUTPUT_WIDTH)
+    {
+        return StaticGraphStatus::SG_OK;
+    }
+
+    _hadStripeWidthViolation = true;
+    return StaticGraphStatus::SG_ERROR;
 }
 
 void Gen2FragmentsConfigurator::vanishStripe(uint8_t stripe, uint32_t runKerenlUuid, StaticGraphFragmentDesc* kernelFragments, VanishOption vanishOption)
@@ -474,8 +500,10 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsCropper(StaticGraphR
         int32_t stripeZoomCrop = leftCrop + rightCrop;
 
         int outputWidth = (int)kernelFragments[stripe].fragmentOutputWidth - stripeZoomCrop;
-        if (outputWidth < 0)
+        if (rejectStripeOutputBelowMin(outputWidth) != StaticGraphStatus::SG_OK)
         {
+            // The ROI crops this whole stripe. A non-vanished stripe cannot emit
+            // an output below the minimum width; ask for a different ROI.
             return StaticGraphStatus::SG_ERROR;
         }
 
@@ -494,6 +522,11 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsCropper(StaticGraphR
             xOffset[stripe] += pixelsToAdd;
         }
 
+        if (rejectStripeOutputBelowMin(outputWidth) != StaticGraphStatus::SG_OK)
+        {
+            return StaticGraphStatus::SG_ERROR;
+        }
+
         if (outputWidth % granularityAfter != 0)
         {
             uint16_t pixelsToCrop = outputWidth % granularityAfter;
@@ -507,6 +540,12 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsCropper(StaticGraphR
                 outputStartX += pixelsToCrop;
                 xOffset[stripe] += pixelsToCrop;
             }
+        }
+
+        if (rejectStripeOutputBelowMin(outputWidth) != StaticGraphStatus::SG_OK)
+        {
+            // Alignment cropped away the remaining pixels.
+            return StaticGraphStatus::SG_ERROR;
         }
 
         _outputStartX[runKernel->kernel_uuid][stripe] = outputStartX;
@@ -559,7 +598,8 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsUpscaler(StaticGraph
         runKernel->resolution_info->input_crop.top == 0 &&
         runKernel->resolution_info->input_crop.bottom == 0)
     {
-        // Upscaler bypassed
+        // Upscaler bypassed. Extents copied from the previous kernel stay valid:
+        // this kernel does not scale or crop.
         return StaticGraphStatus::SG_OK;
     }
 
@@ -567,10 +607,12 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsUpscaler(StaticGraph
 
     auto resInfo = runKernel->resolution_info;
 
-    auto scaleFactorW = static_cast<double>(resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right) / resInfo->output_width;
-    auto scaleFactorH = static_cast<double>(resInfo->input_height - resInfo->input_crop.top - resInfo->input_crop.bottom) / resInfo->output_height;
-    auto scaleFactor = std::min(scaleFactorW, scaleFactorH);
-    auto scaleFactorFixed = static_cast<double>(static_cast<int32_t>(scaleFactor * static_cast<double>(1 << 16))) / static_cast<double>(1 << 16);
+    // Must be the ratio the PAL programs: integer horizontal and vertical ratios, then the minimum
+    const uint32_t croppedInputWidthForRatio = static_cast<uint32_t>(resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right);
+    const uint32_t croppedInputHeightForRatio = static_cast<uint32_t>(resInfo->input_height - resInfo->input_crop.top - resInfo->input_crop.bottom);
+    const uint32_t horizontalRatio = (croppedInputWidthForRatio << GraphResolutionConfigurator::SCALE_PREC) / static_cast<uint32_t>(resInfo->output_width);
+    const uint32_t verticalRatio = (croppedInputHeightForRatio << GraphResolutionConfigurator::SCALE_PREC) / static_cast<uint32_t>(resInfo->output_height);
+    const double scaleFactorFixed = static_cast<double>(std::min(horizontalRatio, verticalRatio)) / static_cast<double>(1U << GraphResolutionConfigurator::SCALE_PREC);
 
     uint32_t upscalerWidthGranularity = 2;
     uint16_t inputUnits = 1;
@@ -630,128 +672,260 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsUpscaler(StaticGraph
         break;
     }
 
+    // Full stripe output range, before this upscaler's zoom crop shortens it.
+    // The output drainer splits stripe overlap on these edges.
+    _stripeExtentBeforeZoomCrop[runKernel->kernel_uuid] =
+        std::vector<StripeOutputExtent>(_numberOfFragments);
+
     for (uint8_t stripe = leftNonVanishedStripe; stripe <= rightNonVanishedStripe; stripe++)
     {
-        int32_t leftCrop = resInfo->input_crop.left > kernelFragments[stripe].fragmentStartX ?
-            resInfo->input_crop.left - kernelFragments[stripe].fragmentStartX : 0;
-        int32_t rightCrop = resInfo->input_crop.right > (resInfo->input_width - kernelFragments[stripe].fragmentStartX - kernelFragments[stripe].fragmentInputWidth) ?
-            resInfo->input_crop.right - (resInfo->input_width - kernelFragments[stripe].fragmentStartX - kernelFragments[stripe].fragmentInputWidth) : 0;
-
-        int32_t stripeZoomCrop = leftCrop + rightCrop;
-
-        // Calculate the step, proportional to the part of input to upscaler that this stripe is working on
-        uint16_t inputWidthAfterZoomCrop = static_cast<uint16_t>(kernelFragments[stripe].fragmentInputWidth - stripeZoomCrop);
-
-        uint16_t pixelsToCrop = 0;
-        uint16_t maxInputWidth = static_cast<uint16_t>(UPSCALER_MAX_OUTPUT_WIDTH * scaleFactorFixed);
-        if (inputWidthAfterZoomCrop > maxInputWidth)
+        if (configUpscalerStripe(runKernel, kernelFragments, stripe, leftNonVanishedStripe, rightNonVanishedStripe,
+            scaleFactorFixed, upscalerWidthGranularity, inputUnits) != StaticGraphStatus::SG_OK)
         {
-            pixelsToCrop = inputWidthAfterZoomCrop - maxInputWidth;
-            inputWidthAfterZoomCrop = maxInputWidth;
+            return StaticGraphStatus::SG_ERROR;
         }
+    }
 
-        uint16_t inputWidthAfterTotalCrop = inputWidthAfterZoomCrop;
-
-        if (enforceUpscalerAspectRatioConstraints())
+    // A stripe with fewer good pixels than the minimum output width (its output is on the bad side of
+    // the overlap) should be vanished, as long as its neighbor already reaches its frame edge.
+    const std::vector<StripeOutputExtent>& extents = _stripeExtentBeforeZoomCrop[runKernel->kernel_uuid];
+    bool stripeVanishedAtBoundary = false;
+    for (uint8_t stripe = static_cast<uint8_t>(leftNonVanishedStripe + 1); stripe <= rightNonVanishedStripe; stripe++)
+    {
+        if (extents[stripe - 1].endExclusive <= extents[stripe - 1].start)
         {
-            uint16_t stripeStepW = GRA_ROUND_DOWN(static_cast<uint16_t>(static_cast<double>(inputWidthAfterZoomCrop) / (resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right) * upscalerWidthGranularity), 2);
-            inputWidthAfterTotalCrop = stripeStepW * inputUnits;
-        }
-
-        if (inputWidthAfterTotalCrop < 16)
-        {
-            // Too little left after cropping, vanish this stripe
-            vanishStripe(stripe, runKernel->kernel_uuid, kernelFragments, VanishOption::AfterTnr);
             continue;
         }
 
-        pixelsToCrop += (inputWidthAfterZoomCrop - inputWidthAfterTotalCrop);
+        const int32_t boundary = (extents[stripe - 1].endExclusive + extents[stripe].start) / 4 * 2;
+        const int32_t prevOutStart = static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe - 1]);
+        const int32_t prevOutEnd = prevOutStart + static_cast<int32_t>(kernelFragments[stripe - 1].fragmentOutputWidth);
+        const int32_t thisOutStart = static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe]);
+        const int32_t thisOutEnd = thisOutStart + static_cast<int32_t>(kernelFragments[stripe].fragmentOutputWidth);
+        const int32_t thisGoodWidth = thisOutEnd - std::max(boundary, thisOutStart);
+        const int32_t prevGoodWidth = std::min(boundary, prevOutEnd) - prevOutStart;
 
-        // Estimated output width, used only to validate aspect-ratio consistency below; the actual
-        // output width assigned to this stripe is derived below from the exact per-stripe output
-        // start/end columns (see the "Upscaler_1_2 fix" block).
-        uint16_t estimatedOutputWidth = static_cast<uint16_t>(2 * GRA_ROUND(static_cast<double>(inputWidthAfterTotalCrop) / scaleFactorFixed / 2.0));
-
-        // Validate output width
-        if (enforceUpscalerAspectRatioConstraints() &&
-            static_cast<double>(inputWidthAfterTotalCrop) / estimatedOutputWidth !=
-            static_cast<double>(resInfo->input_height - resInfo->input_crop.top - resInfo->input_crop.bottom) / resInfo->output_height)
+        if (thisOutEnd > thisOutStart && thisGoodWidth < MIN_STRIPE_OUTPUT_WIDTH && prevOutEnd >= thisOutEnd)
         {
-            // Output width is not valid, return error
-            return StaticGraphStatus::SG_ERROR;
+            vanishStripe(stripe, runKernel->kernel_uuid, kernelFragments, VanishOption::AfterTnr);
+            rightNonVanishedStripe = static_cast<uint8_t>(stripe - 1);
+            stripeVanishedAtBoundary = true;
         }
-
-        if (stripe == leftNonVanishedStripe && stripe != rightNonVanishedStripe)
+        else if (prevOutEnd > prevOutStart && prevGoodWidth < MIN_STRIPE_OUTPUT_WIDTH && thisOutStart <= prevOutStart)
         {
-            // Crop on the right
-            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = 0;
-            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropRight = pixelsToCrop;
+            vanishStripe(static_cast<uint8_t>(stripe - 1), runKernel->kernel_uuid, kernelFragments, VanishOption::AfterTnr);
+            leftNonVanishedStripe = stripe;
+            stripeVanishedAtBoundary = true;
         }
-        else if (stripe == rightNonVanishedStripe && stripe != leftNonVanishedStripe)
+    }
+
+    if (stripeVanishedAtBoundary)
+    {
+        // A stripe next to a dropped one is now an edge stripe, which changes its crops
+        // and its output clamp. Configure the remaining stripes again for the new edges.
+        _stripeExtentBeforeZoomCrop[runKernel->kernel_uuid] = std::vector<StripeOutputExtent>(_numberOfFragments);
+        for (uint8_t stripe = leftNonVanishedStripe; stripe <= rightNonVanishedStripe; stripe++)
         {
-            // Crop on the left
-            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = pixelsToCrop;
-            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropRight = 0;
-        }
-        else
-        {
-            // Crop both sides
-            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = GRA_ROUND_DOWN(static_cast<uint16_t>(pixelsToCrop / 2), 2);
-            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropRight = pixelsToCrop - kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft;
-        }
-
-        uint16_t stripeStart = static_cast<uint16_t>(kernelFragments[stripe].fragmentStartX > resInfo->input_crop.left ?
-            kernelFragments[stripe].fragmentStartX - resInfo->input_crop.left : 0);
-
-        stripeStart += kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft;
-
-        double widthIn = static_cast<double>(resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right);
-        double widthOut = 2.0F * GRA_ROUND(static_cast<double>(widthIn) / scaleFactorFixed / 2.0F);
-
-        double horizontalOffset = (static_cast<double>(widthIn) - static_cast<double>(scaleFactorFixed) * (static_cast<double>(widthOut) - 1.0F)) / 2.0F;
-
-        // ---- Upscaler_1_2 fix ----
-        // Find the stripe's exact output start column (outputStartCol): the smallest even output
-        // column whose corresponding input column (horizontalOffset + outputStartCol * scaleFactorFixed,
-        // floored) also lands on an even input column. If the natural start does not land on an even
-        // input column, extend the left crop (stripeStart) until it does. The right edge
-        // (stripeRightAfterCrop) is fixed by the crop already computed above and does not move.
-        double stripeRightAfterCrop = static_cast<double>(stripeStart) + static_cast<double>(inputWidthAfterTotalCrop);
-
-        double naturalOutputStartCol = std::ceil((static_cast<double>(stripeStart) - horizontalOffset) / scaleFactorFixed);
-        int32_t outputStartCol = static_cast<int32_t>(2 * std::ceil(naturalOutputStartCol / 2.0));
-
-        // Bounded: parity settles within a couple of iterations for realistic scale factors.
-        for (int32_t guard = 0; guard < 4 &&
-             static_cast<int32_t>(std::floor(horizontalOffset + outputStartCol * scaleFactorFixed)) % 2 != 0; guard++)
-        {
-            outputStartCol += 2;
-        }
-
-        int32_t inputStartAfterCrop = static_cast<int32_t>(std::floor(horizontalOffset + outputStartCol * scaleFactorFixed));
-        int32_t leftExtraCrop = inputStartAfterCrop - static_cast<int32_t>(stripeStart);
-        if (leftExtraCrop > 0)
-        {
-            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = static_cast<uint16_t>(
-                kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft + leftExtraCrop);
-            stripeStart = static_cast<uint16_t>(inputStartAfterCrop);
-        }
-
-        int32_t lastOutputCol = static_cast<int32_t>(std::floor((stripeRightAfterCrop - horizontalOffset) / scaleFactorFixed));
-        uint16_t outputWidth = static_cast<uint16_t>(GRA_ROUND_DOWN(lastOutputCol - outputStartCol + 1, 2));
-
-        if (stripe == rightNonVanishedStripe)
-        {
-            // Do not create more pixels that required
-            if (outputStartCol + outputWidth > resInfo->output_width)
+            if (configUpscalerStripe(runKernel, kernelFragments, stripe, leftNonVanishedStripe, rightNonVanishedStripe,
+                scaleFactorFixed, upscalerWidthGranularity, inputUnits) != StaticGraphStatus::SG_OK)
             {
-				outputWidth = static_cast<uint16_t>(resInfo->output_width - outputStartCol);
+                return StaticGraphStatus::SG_ERROR;
             }
         }
-
-        kernelFragments[stripe].fragmentOutputWidth = outputWidth;
-        _outputStartX[runKernel->kernel_uuid][stripe] = static_cast<uint16_t>(outputStartCol);
     }
+
+    return StaticGraphStatus::SG_OK;
+}
+
+StaticGraphStatus Gen2FragmentsConfigurator::configUpscalerStripe(StaticGraphRunKernel* runKernel, StaticGraphFragmentDesc* kernelFragments,
+    uint8_t stripe, uint8_t leftNonVanishedStripe, uint8_t rightNonVanishedStripe,
+    double scaleFactorFixed, uint32_t upscalerWidthGranularity, uint16_t inputUnits)
+{
+    auto resInfo = runKernel->resolution_info;
+
+    int32_t leftCrop = resInfo->input_crop.left > kernelFragments[stripe].fragmentStartX ?
+        resInfo->input_crop.left - kernelFragments[stripe].fragmentStartX : 0;
+    int32_t rightCrop = resInfo->input_crop.right > (resInfo->input_width - kernelFragments[stripe].fragmentStartX - kernelFragments[stripe].fragmentInputWidth) ?
+        resInfo->input_crop.right - (resInfo->input_width - kernelFragments[stripe].fragmentStartX - kernelFragments[stripe].fragmentInputWidth) : 0;
+
+    int32_t stripeZoomCrop = leftCrop + rightCrop;
+
+    // Calculate the step, proportional to the part of input to upscaler that this stripe is working on
+    uint16_t inputWidthAfterZoomCrop = static_cast<uint16_t>(kernelFragments[stripe].fragmentInputWidth - stripeZoomCrop);
+
+    uint16_t pixelsToCrop = 0;
+    uint16_t maxInputWidth = static_cast<uint16_t>(UPSCALER_MAX_OUTPUT_WIDTH * scaleFactorFixed);
+    if (inputWidthAfterZoomCrop > maxInputWidth)
+    {
+        pixelsToCrop = inputWidthAfterZoomCrop - maxInputWidth;
+        inputWidthAfterZoomCrop = maxInputWidth;
+    }
+
+    uint16_t inputWidthAfterTotalCrop = inputWidthAfterZoomCrop;
+
+    if (enforceUpscalerAspectRatioConstraints())
+    {
+        uint16_t stripeStepW = GRA_ROUND_DOWN(static_cast<uint16_t>(static_cast<double>(inputWidthAfterZoomCrop) / (resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right) * upscalerWidthGranularity), 2);
+        inputWidthAfterTotalCrop = stripeStepW * inputUnits;
+    }
+
+    if (inputWidthAfterTotalCrop < 16)
+    {
+        // Too little left after cropping, vanish this stripe
+        vanishStripe(stripe, runKernel->kernel_uuid, kernelFragments, VanishOption::AfterTnr);
+        return StaticGraphStatus::SG_OK;
+    }
+
+    pixelsToCrop += (inputWidthAfterZoomCrop - inputWidthAfterTotalCrop);
+
+    // Estimated output width, used only to validate aspect-ratio consistency below; the actual
+    // output width assigned to this stripe is derived below from the exact per-stripe output
+    // start/end columns (see the "Upscaler_1_2 fix" block).
+    uint16_t estimatedOutputWidth = static_cast<uint16_t>(2 * GRA_ROUND(static_cast<double>(inputWidthAfterTotalCrop) / scaleFactorFixed / 2.0));
+
+    // Validate output width
+    if (enforceUpscalerAspectRatioConstraints() &&
+        static_cast<double>(inputWidthAfterTotalCrop) / estimatedOutputWidth !=
+        static_cast<double>(resInfo->input_height - resInfo->input_crop.top - resInfo->input_crop.bottom) / resInfo->output_height)
+    {
+        // Output width is not valid, return error
+        return StaticGraphStatus::SG_ERROR;
+    }
+
+    if (stripe == leftNonVanishedStripe && stripe != rightNonVanishedStripe)
+    {
+        // Crop on the right
+        kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = 0;
+        kernelFragments[stripe].upscalerFragDesc.fragmentInputCropRight = pixelsToCrop;
+    }
+    else if (stripe == rightNonVanishedStripe && stripe != leftNonVanishedStripe)
+    {
+        // Crop on the left
+        kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = pixelsToCrop;
+        kernelFragments[stripe].upscalerFragDesc.fragmentInputCropRight = 0;
+    }
+    else
+    {
+        // Crop both sides
+        kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = GRA_ROUND_DOWN(static_cast<uint16_t>(pixelsToCrop / 2), 2);
+        kernelFragments[stripe].upscalerFragDesc.fragmentInputCropRight = pixelsToCrop - kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft;
+    }
+
+    uint16_t stripeStart = static_cast<uint16_t>(kernelFragments[stripe].fragmentStartX > resInfo->input_crop.left ?
+        kernelFragments[stripe].fragmentStartX - resInfo->input_crop.left : 0);
+
+    stripeStart += kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft;
+
+    double widthIn = static_cast<double>(resInfo->input_width - resInfo->input_crop.left - resInfo->input_crop.right);
+    double widthOut = 2.0F * GRA_ROUND(static_cast<double>(widthIn) / scaleFactorFixed / 2.0F);
+
+    double horizontalOffset = (static_cast<double>(widthIn) - static_cast<double>(scaleFactorFixed) * (static_cast<double>(widthOut) - 1.0F)) / 2.0F;
+
+    // ---- Upscaler_1_2 fix ----
+    // Find the smallest even output column whose source input column is also even, and pull that
+    // alignment into an extra left crop. The crop has to stay inside the overlap with the
+    // previous stripe. The left stripe has no previous overlap.
+    int32_t inputOverlap = 0;
+    if (stripe != leftNonVanishedStripe)
+    {
+        const StaticGraphFragmentDesc& prevFragment = kernelFragments[stripe - 1];
+        inputOverlap = static_cast<int32_t>(prevFragment.fragmentStartX) +
+            static_cast<int32_t>(prevFragment.fragmentInputWidth) -
+            static_cast<int32_t>(prevFragment.upscalerFragDesc.fragmentInputCropRight) -
+            static_cast<int32_t>(kernelFragments[stripe].fragmentStartX) -
+            static_cast<int32_t>(kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft);
+    }
+
+    // Same overlap in output columns. scaleFactorFixed is input pixels per output pixel.
+    int32_t outputOverlap = static_cast<int32_t>(static_cast<double>(inputOverlap) / scaleFactorFixed);
+
+    double naturalOutputStartCol = std::ceil((static_cast<double>(stripeStart) - horizontalOffset) / scaleFactorFixed);
+    int32_t outputStartCol = static_cast<int32_t>(2 * std::ceil(naturalOutputStartCol / 2.0));
+    // Output start used when no acceptable extra left crop is found.
+    int32_t outputStartColNoExtraCrop = outputStartCol;
+
+    // Each step moves 2 output columns. Do not search past the output overlap.
+    int32_t parityScanLimit = outputOverlap / 2;
+
+    for (int32_t guard = 0; guard < parityScanLimit &&
+         static_cast<int32_t>(std::floor(horizontalOffset + outputStartCol * scaleFactorFixed)) % 2 != 0; guard++)
+    {
+        outputStartCol += 2;
+    }
+
+    int32_t inputStartAfterCrop = static_cast<int32_t>(std::floor(horizontalOffset + outputStartCol * scaleFactorFixed));
+    int32_t leftExtraCrop = inputStartAfterCrop - static_cast<int32_t>(stripeStart);
+    bool foundEvenInputCol = (inputStartAfterCrop % 2) == 0;
+
+    if (foundEvenInputCol && leftExtraCrop > 0 && leftExtraCrop < inputOverlap)
+    {
+        kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft = static_cast<uint16_t>(
+            kernelFragments[stripe].upscalerFragDesc.fragmentInputCropLeft + leftExtraCrop);
+        stripeStart = static_cast<uint16_t>(inputStartAfterCrop);
+    }
+    else
+    {
+        // No positive crop inside the overlap. A failed search also drops the scanned output column.
+        if (!foundEvenInputCol || leftExtraCrop > 0)
+        {
+            outputStartCol = outputStartColNoExtraCrop;
+        }
+        leftExtraCrop = 0;
+    }
+
+    // inputWidthAfterTotalCrop already excludes the frame right crop and the fragment crops above.
+    int32_t consumedInputWidth = static_cast<int32_t>(inputWidthAfterTotalCrop) - leftExtraCrop;
+    double stripeRightAfterCrop = static_cast<double>(stripeStart) + static_cast<double>(consumedInputWidth);
+    int32_t lastOutputCol = static_cast<int32_t>(std::floor((stripeRightAfterCrop - horizontalOffset) / scaleFactorFixed));
+    int32_t outputSpan = lastOutputCol - outputStartCol + 1;
+    if (outputSpan < 0)
+    {
+        outputSpan = 0;
+    }
+    uint16_t outputWidth = static_cast<uint16_t>(GRA_ROUND_DOWN(outputSpan, 2));
+
+    if (stripe == rightNonVanishedStripe)
+    {
+        // Do not create more pixels than required
+        if (outputStartCol + outputWidth > resInfo->output_width)
+        {
+            outputWidth = static_cast<uint16_t>(resInfo->output_width - outputStartCol);
+        }
+    }
+
+    kernelFragments[stripe].fragmentOutputWidth = outputWidth;
+    _outputStartX[runKernel->kernel_uuid][stripe] = static_cast<uint16_t>(outputStartCol);
+
+    // Restore the edges the zoom crop removed. Alignment crops stay in the
+    // actual output start/end, so a crop of 0 leaves this range unchanged.
+    StripeOutputExtent extent;
+    extent.start = outputStartCol;
+    extent.endExclusive = outputStartCol + static_cast<int32_t>(outputWidth);
+    if (leftCrop > 0)
+    {
+        const double uncroppedStripeStart = static_cast<double>(stripeStart) - static_cast<double>(leftCrop);
+        const double naturalStart = std::ceil((uncroppedStripeStart - horizontalOffset) / scaleFactorFixed);
+        extent.start = static_cast<int32_t>(2.0 * std::ceil(naturalStart / 2.0));
+    }
+    if (rightCrop > 0)
+    {
+        const double uncroppedRight = stripeRightAfterCrop + static_cast<double>(rightCrop);
+        const int32_t uncroppedLastCol = static_cast<int32_t>(
+            std::floor((uncroppedRight - horizontalOffset) / scaleFactorFixed));
+        int32_t uncroppedEnd = uncroppedLastCol + 1;
+        if (uncroppedEnd < 0)
+        {
+            uncroppedEnd = 0;
+        }
+        uncroppedEnd = static_cast<int32_t>(GRA_ROUND_DOWN(uncroppedEnd, 2));
+        const int32_t croppedEnd = outputStartCol + static_cast<int32_t>(outputWidth);
+        if (uncroppedEnd < croppedEnd)
+        {
+            uncroppedEnd = croppedEnd;
+        }
+        extent.endExclusive = uncroppedEnd;
+    }
+    _stripeExtentBeforeZoomCrop[runKernel->kernel_uuid][stripe] = extent;
 
     return StaticGraphStatus::SG_OK;
 }
@@ -791,6 +965,33 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsOutput(StaticGraphRu
         }
     }
 
+	// Perform resolution changes if needed
+    for (int16_t stripe = leftNonVanishedStripe; stripe <= rightNonVanishedStripe; stripe++)
+    {
+        int32_t leftCrop = runKernel->resolution_info->input_crop.left > kernelFragments[stripe].fragmentStartX ?
+            runKernel->resolution_info->input_crop.left - kernelFragments[stripe].fragmentStartX : 0;
+
+        int32_t rightCrop = runKernel->resolution_info->input_crop.right > (runKernel->resolution_info->input_width - kernelFragments[stripe].fragmentStartX - kernelFragments[stripe].fragmentInputWidth) ?
+            runKernel->resolution_info->input_crop.right - (runKernel->resolution_info->input_width - kernelFragments[stripe].fragmentStartX - kernelFragments[stripe].fragmentInputWidth) : 0;
+
+        int32_t stripeZoomCrop = leftCrop + rightCrop;
+
+        if (rejectStripeOutputBelowMin(
+                static_cast<int32_t>(kernelFragments[stripe].fragmentOutputWidth) - stripeZoomCrop)
+            != StaticGraphStatus::SG_OK)
+        {
+            // Cropping would leave this stripe below the minimum output width.
+            return StaticGraphStatus::SG_ERROR;
+        }
+
+        kernelFragments[stripe].fragmentOutputWidth = static_cast<uint16_t>(
+            kernelFragments[stripe].fragmentOutputWidth - stripeZoomCrop);
+
+        // For start point, we need to remove the left cropping only for stripes 1 and on
+        _outputStartX[runKernel->kernel_uuid][stripe] = static_cast<uint16_t>(kernelFragments[stripe].fragmentStartX > runKernel->resolution_info->input_crop.left) ?
+            static_cast<uint16_t>(kernelFragments[stripe].fragmentStartX - runKernel->resolution_info->input_crop.left) : 0;
+    }
+
     // Get the Sys Api structure
     if (runKernel->system_api.size != ((GRA_ROUND_UP(sizeof(SystemApiRecordHeader), 4)) + (sizeof(StaticGraphKernelSystemApiIoBuffer))))
     {
@@ -813,8 +1014,14 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsOutput(StaticGraphRu
 
     FormatType bufferFormat = GraphResolutionConfiguratorHelper::getFormatForDrainer(runKernel->kernel_uuid, precision);
 
-    // Remove overlaps between stripes
+    // Remove overlaps between stripes.
+    // The split is the center of the overlap from before the zoom crop.
+    // Splitting whatever overlap is left would keep edge pixels from the stripe
+    // that was not the good source for those columns.
     std::vector<uint16_t> newOutputStartX = std::vector<uint16_t>(_numberOfFragments, 0);
+    const auto extentIt = _stripeExtentBeforeZoomCrop.find(runKernel->kernel_uuid);
+    const bool haveExtents = extentIt != _stripeExtentBeforeZoomCrop.end()
+        && extentIt->second.size() == _numberOfFragments;
 
     for (int16_t stripe = leftNonVanishedStripe; stripe <= rightNonVanishedStripe; stripe++)
     {
@@ -824,32 +1031,89 @@ StaticGraphStatus Gen2FragmentsConfigurator::configFragmentsOutput(StaticGraphRu
         }
         else //middle or last stripe
         {
-            newOutputStartX[stripe] =
-                (_outputStartX[runKernel->kernel_uuid][stripe] + _outputStartX[runKernel->kernel_uuid][stripe-1] + kernelFragments[stripe-1].fragmentOutputWidth) / 4 * 2;
+            const int32_t croppedStart = static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe]);
+            const int32_t croppedPrevEnd = static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe - 1])
+                + static_cast<int32_t>(kernelFragments[stripe - 1].fragmentOutputWidth);
+            int32_t boundary = (croppedStart + croppedPrevEnd) / 4 * 2;
+
+            if (haveExtents && extentIt->second[stripe - 1].endExclusive > extentIt->second[stripe - 1].start)
+            {
+                const int32_t frameLeft = runKernel->resolution_info->input_crop.left;
+                const int32_t prevEnd = extentIt->second[stripe - 1].endExclusive - frameLeft;
+                const int32_t thisStart = extentIt->second[stripe].start - frameLeft;
+                const int32_t inputWidth = static_cast<int32_t>(runKernel->resolution_info->input_width);
+                // A scaler between the upscaler and this drainer moves the extents into
+                // its output space. Extents that still do not fit this drainer's input
+                // fall back to the post-crop split.
+                if (thisStart < inputWidth && prevEnd > 0)
+                {
+                    int32_t restored = (thisStart + prevEnd) / 4 * 2;
+
+                    // Pull the pre-crop boundary back onto pixels these stripes still
+                    // have. Without this, a stripe is asked for columns the crop removed.
+                    int32_t latest = croppedPrevEnd;
+                    const int32_t outputWidth = static_cast<int32_t>(runKernel->resolution_info->output_width);
+                    if (latest > outputWidth)
+                    {
+                        latest = outputWidth;
+                    }
+                    if (croppedStart <= latest)
+                    {
+                        if (restored < croppedStart)
+                        {
+                            restored = croppedStart;
+                        }
+                        if (restored > latest)
+                        {
+                            restored = latest;
+                        }
+                        if (restored < static_cast<int32_t>(newOutputStartX[stripe - 1]))
+                        {
+                            restored = static_cast<int32_t>(newOutputStartX[stripe - 1]);
+                        }
+                        boundary = (restored / 2) * 2;
+                    }
+                }
+            }
 
             // Align to format restrictions if TNR drainer & data is 10-bit packed
-            newOutputStartX[stripe] = alignToFormatRestrictions(newOutputStartX[stripe], bufferFormat);
+            newOutputStartX[stripe] = alignToFormatRestrictions(static_cast<uint16_t>(boundary), bufferFormat);
         }
     }
 
     _outputStartX[runKernel->kernel_uuid] = newOutputStartX;
 
-    // Data Width is calculated according to data starts
+    // Data Width is calculated according to data starts.
     for (int16_t stripe = leftNonVanishedStripe; stripe <= rightNonVanishedStripe; stripe++)
     {
+        int32_t width = 0;
         if (stripe == rightNonVanishedStripe) // last stripe
         {
-            kernelFragments[stripe].fragmentOutputWidth = static_cast<uint16_t>(runKernel->resolution_info->output_width - _outputStartX[runKernel->kernel_uuid][stripe]);
+            width = static_cast<int32_t>(runKernel->resolution_info->output_width)
+                - static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe]);
         }
         else // first or middle stripe
         {
-            if (_outputStartX[runKernel->kernel_uuid][stripe + 1] <= _outputStartX[runKernel->kernel_uuid][stripe])
-            {
-                return StaticGraphStatus::SG_ERROR;
-            }
-
-            kernelFragments[stripe].fragmentOutputWidth = static_cast<uint16_t>(_outputStartX[runKernel->kernel_uuid][stripe+1] - _outputStartX[runKernel->kernel_uuid][stripe]);
+            width = static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe + 1])
+                - static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe]);
         }
+
+        if (rejectStripeOutputBelowMin(width) != StaticGraphStatus::SG_OK)
+        {
+            return StaticGraphStatus::SG_ERROR;
+        }
+
+        // The drainer cannot pad: the stripe's output columns must come from pixels it received
+        const int32_t outputStartInInput = static_cast<int32_t>(_outputStartX[runKernel->kernel_uuid][stripe])
+            + runKernel->resolution_info->input_crop.left;
+        const int32_t inputStart = static_cast<int32_t>(kernelFragments[stripe].fragmentStartX);
+        const int32_t inputEnd = inputStart + static_cast<int32_t>(kernelFragments[stripe].fragmentInputWidth);
+        if (outputStartInInput < inputStart || outputStartInInput + width > inputEnd)
+        {
+            return StaticGraphStatus::SG_ERROR;
+        }
+
+        kernelFragments[stripe].fragmentOutputWidth = static_cast<uint16_t>(width);
     }
 
     // Update system API offsets
@@ -1258,6 +1522,12 @@ StaticGraphStatus Gen2FragmentsConfigurator::copyFragments(StaticGraphRunKernel*
         _outputStartX[runKernel->kernel_uuid][i] = kernelFragments[i].fragmentStartX;
     }
 
+    const auto extentIt = _stripeExtentBeforeZoomCrop.find(prevKernelUuid);
+    if (extentIt != _stripeExtentBeforeZoomCrop.end())
+    {
+        _stripeExtentBeforeZoomCrop[runKernel->kernel_uuid] = extentIt->second;
+    }
+
     return StaticGraphStatus::SG_OK;
 }
 
@@ -1399,4 +1669,3 @@ StaticGraphStatus Ipu9FragmentsConfigurator::configFragmentsTnrMcFeeder(StaticGr
 
 }
 #endif
-

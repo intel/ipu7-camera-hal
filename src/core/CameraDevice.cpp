@@ -403,8 +403,13 @@ int CameraDevice::configure(stream_config_t* streamList) {
         std::map<ConfigMode, std::shared_ptr<GraphConfig> > gcs;
         // Clear old gcs
         CameraContext::getInstance(mCameraId)->storeGraphConfig(gcs);
+        float targetFps = 30.0f;
+        if (mDataContext && mDataContext->mAiqParams.fps > 0.0f) {
+            targetFps = mDataContext->mAiqParams.fps;
+        }
         totalStream = mGcMgr->configStreams(streamList, gcs,
-                                           (preStreamIdForFace >= 0) ? &mFdStream : nullptr);
+                                           (preStreamIdForFace >= 0) ? &mFdStream : nullptr,
+                                           targetFps);
         CheckAndLogError(totalStream < 0, INVALID_OPERATION, "No matching graph config found");
         CameraContext::getInstance(mCameraId)->storeGraphConfig(gcs);
         mcId = mGcMgr->getSelectedMcId();

@@ -480,7 +480,7 @@ TerminalDescriptor SW_GDCTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        0, // 
+        0, //
     },
     {
         SW_GDC_TERMINAL_CONNECT_OUTPUT_2,
@@ -489,7 +489,7 @@ TerminalDescriptor SW_GDCTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        0, // 
+        0, //
     },
 };
 
@@ -533,7 +533,7 @@ TerminalDescriptor SW_NNTMTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        0, // 
+        0, //
     },
     {
         SW_NNTM_TERMINAL_CONNECT_OUTPUT_2,
@@ -542,7 +542,7 @@ TerminalDescriptor SW_NNTMTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        0, // 
+        0, //
     },
 };
 
@@ -564,7 +564,7 @@ TerminalDescriptor SW_IMVTerminalDesc[] =
         PAC_BUFFER_TYPE_NONE,
         TERMINAL_BUFFER_TYPE_DATA,
         TERMINAL_DIR_OUT,
-        0, // 
+        0, //
     },
     {
         SW_IMV_TERMINAL_CONNECT_OUTPUT_2,

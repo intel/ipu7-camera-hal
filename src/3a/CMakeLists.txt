@@ -19,19 +19,18 @@ set(3A_SRCS
     CACHE INTERNAL "3A sources"
     )
 
-    set(3A_SRCS
-        ${3A_SRCS}
-        ${3A_DIR}/AiqUtils.cpp
-        ${3A_DIR}/intel3a/Intel3AParameter.cpp
-        ${3A_DIR}/AiqResult.cpp
-        ${3A_DIR}/AiqResultStorage.cpp
-        ${3A_DIR}/SensorManager.cpp
-        ${3A_DIR}/LensManager.cpp
-        ${3A_DIR}/AiqCore.cpp
-        ${3A_DIR}/AiqEngine.cpp
-        ${3A_DIR}/AiqSetting.cpp
-        ${3A_DIR}/AiqUnit.cpp
-        ${3A_DIR}/MakerNote.cpp
-        CACHE INTERNAL "3A sources"
-        )
-
+set(3A_SRCS
+    ${3A_SRCS}
+    ${3A_DIR}/AiqUtils.cpp
+    ${3A_DIR}/intel3a/Intel3AParameter.cpp
+    ${3A_DIR}/AiqResult.cpp
+    ${3A_DIR}/AiqResultStorage.cpp
+    ${3A_DIR}/SensorManager.cpp
+    ${3A_DIR}/LensManager.cpp
+    ${3A_DIR}/AiqCore.cpp
+    ${3A_DIR}/AiqEngine.cpp
+    ${3A_DIR}/AiqSetting.cpp
+    ${3A_DIR}/AiqUnit.cpp
+    ${3A_DIR}/MakerNote.cpp
+    CACHE INTERNAL "3A sources"
+    )

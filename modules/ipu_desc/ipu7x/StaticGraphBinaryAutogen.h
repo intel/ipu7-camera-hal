@@ -99,4 +99,3 @@ struct ZoomKeyResolutions {
 };
 
 #pragma pack(pop)
-

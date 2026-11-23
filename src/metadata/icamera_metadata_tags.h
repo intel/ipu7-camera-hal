@@ -333,7 +333,7 @@ typedef enum icamera_metadata_tag {
     CAMERA_STATISTICS_LENS_SHADING_MAP_MODE,          // enum         | public
     CAMERA_STATISTICS_END,
 
-    CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES = 
+    CAMERA_STATISTICS_INFO_AVAILABLE_FACE_DETECT_MODES =
                                                       // byte[]       | public
             CAMERA_STATISTICS_INFO_START,
     CAMERA_STATISTICS_INFO_HISTOGRAM_BUCKET_COUNT,    // int32        | system
@@ -996,4 +996,3 @@ typedef enum icamera_metadata_enum_intel_control_mono_downscale {
     INTEL_CONTROL_MONO_DOWNSCALE_OFF,
     INTEL_CONTROL_MONO_DOWNSCALE_ON,
 } icamera_metadata_enum_intel_control_mono_downscale_t;
-

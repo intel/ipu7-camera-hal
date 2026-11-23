@@ -143,4 +143,3 @@ class DummySensor : public SensorHwCtrl {
 };
 
 }  // namespace icamera
-

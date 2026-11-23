@@ -171,4 +171,3 @@ class CaptureUnit : public StreamSource, public DeviceCallback {
 };
 
 }  // namespace icamera
-

@@ -274,4 +274,3 @@ bool CameraContext::checkUserRequestBySeq(int64_t sequence) {
 }
 
 }  // namespace icamera
-

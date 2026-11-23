@@ -28,6 +28,7 @@ cmake -DCMAKE_BUILD_TYPE=Release \
 -DIPU_VERSIONS="ipu7x;ipu75xa;ipu8" \
 -DUSE_STATIC_GRAPH=ON \
 -DUSE_STATIC_GRAPH_AUTOGEN=ON \
+-DDYNAMIC_PAC_BUFFERS=10 \
 ..
 make && sudo make install
 ```

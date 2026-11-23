@@ -448,4 +448,3 @@ int icamera_metadata_enum_snprint(uint32_t tag,
 #ifdef __cplusplus
 }
 #endif
-

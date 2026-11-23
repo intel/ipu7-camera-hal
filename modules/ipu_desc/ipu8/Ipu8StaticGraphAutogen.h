@@ -314,14 +314,6 @@ struct SwNntmOuterNodeConfiguration
     StaticGraphKernelBppConfiguration bppInfos[1];
 };
 
-struct SwNntmOutOuterNodeConfiguration
-{
-    uint8_t numberOfFragments = 0;
-    TuningModeMap tuningModes[4];
-    uint32_t streamId = 0;
-    uint8_t tuningMode = 0;
-};
-
 struct SwImvInOuterNodeConfiguration
 {
     uint8_t numberOfFragments = 0;
@@ -373,6 +365,46 @@ struct SwScalerOuterNodeConfiguration
 };
 
 struct SwScalerOutOuterNodeConfiguration
+{
+    uint8_t numberOfFragments = 0;
+    TuningModeMap tuningModes[4];
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+};
+
+struct SwNntmOutOuterNodeConfiguration
+{
+    uint8_t numberOfFragments = 0;
+    TuningModeMap tuningModes[4];
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+};
+
+struct SwFlipInOuterNodeConfiguration
+{
+    uint8_t numberOfFragments = 0;
+    TuningModeMap tuningModes[4];
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+};
+
+struct SwFlipUpscaleInOuterNodeConfiguration
+{
+    uint8_t numberOfFragments = 0;
+    TuningModeMap tuningModes[4];
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+};
+
+struct SwFlipOutOuterNodeConfiguration
+{
+    uint8_t numberOfFragments = 0;
+    TuningModeMap tuningModes[4];
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+};
+
+struct SwFlipUpscaleOutOuterNodeConfiguration
 {
     uint8_t numberOfFragments = 0;
     TuningModeMap tuningModes[4];
@@ -513,6 +545,32 @@ struct SwAinrOuterNodeConfiguration
     uint8_t tuningMode = 0;
     StaticGraphKernelRes resolutionHistories[1];
     StaticGraphKernelBppConfiguration bppInfos[1];
+};
+
+struct SwFlipOuterNodeConfiguration
+{
+    uint8_t numberOfFragments = 0;
+    KernelFragments fragmentConfigurations[1];
+    TuningModeMap tuningModes[4];
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+    StaticGraphKernelRes resolutionInfos[1];
+    StaticGraphKernelRes resolutionHistories[1];
+    StaticGraphKernelBppConfiguration bppInfos[1];
+    uint8_t systemApiConfiguration[12];
+};
+
+struct SwFlipUpscaleOuterNodeConfiguration
+{
+    uint8_t numberOfFragments = 0;
+    KernelFragments fragmentConfigurations[1];
+    TuningModeMap tuningModes[4];
+    uint32_t streamId = 0;
+    uint8_t tuningMode = 0;
+    StaticGraphKernelRes resolutionInfos[1];
+    StaticGraphKernelRes resolutionHistories[1];
+    StaticGraphKernelBppConfiguration bppInfos[1];
+    uint8_t systemApiConfiguration[12];
 };
 
 struct LbffBayerPdaf2NoGmvNoTnrNoSapOuterNodeConfiguration
@@ -1502,6 +1560,8 @@ struct GraphConfiguration200000
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[19];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1519,6 +1579,8 @@ struct GraphConfiguration200001
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[21];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1536,6 +1598,8 @@ struct GraphConfiguration200002
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[22];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1553,6 +1617,8 @@ struct GraphConfiguration200003
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[24];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1571,6 +1637,8 @@ struct GraphConfiguration200004
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[26];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1589,6 +1657,8 @@ struct GraphConfiguration200005
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[28];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1607,6 +1677,8 @@ struct GraphConfiguration200006
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[31];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1625,6 +1697,8 @@ struct GraphConfiguration200007
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwImvOuterNodeConfiguration swImvOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[33];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1639,6 +1713,8 @@ struct GraphConfiguration200008
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[22];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1653,6 +1729,8 @@ struct GraphConfiguration200009
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[24];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1667,6 +1745,8 @@ struct GraphConfiguration200010
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[25];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1681,6 +1761,8 @@ struct GraphConfiguration200011
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[27];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1696,6 +1778,8 @@ struct GraphConfiguration200012
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[29];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1711,6 +1795,8 @@ struct GraphConfiguration200013
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[31];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1726,6 +1812,8 @@ struct GraphConfiguration200014
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[34];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -1741,6 +1829,8 @@ struct GraphConfiguration200015
     SwGdcOuterNodeConfiguration swGdcOuterNodeConfiguration;
     SwNntmOuterNodeConfiguration swNntmOuterNodeConfiguration;
     SwScalerOuterNodeConfiguration swScalerOuterNodeConfiguration;
+    SwFlipOuterNodeConfiguration swFlipOuterNodeConfiguration;
+    SwFlipUpscaleOuterNodeConfiguration swFlipUpscaleOuterNodeConfiguration;
     int32_t numberOfActualLinks = 0;
     StaticGraphLinkConfiguration linkConfigurations[36];
     StaticGraphSwProcessingLinkDefinition swProcessingLinkDefinitions[10];
@@ -4003,16 +4093,6 @@ public:
     void configVanishStatus(VanishOption vanishStatus) override;
 
 };
-class SwNntmOutOuterNode : public OuterNode
-{
-public:
-    SwNntmOutOuterNode(): OuterNode(){}
-    void Init(SwNntmOutOuterNodeConfiguration* selectedGraphConfiguration);
-
-    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
-    void configVanishStatus(VanishOption vanishStatus) override;
-
-};
 class SwImvInOuterNode : public OuterNode
 {
 public:
@@ -4068,6 +4148,56 @@ class SwScalerOutOuterNode : public OuterNode
 public:
     SwScalerOutOuterNode(): OuterNode(){}
     void Init(SwScalerOutOuterNodeConfiguration* selectedGraphConfiguration);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+    void configVanishStatus(VanishOption vanishStatus) override;
+
+};
+class SwNntmOutOuterNode : public OuterNode
+{
+public:
+    SwNntmOutOuterNode(): OuterNode(){}
+    void Init(SwNntmOutOuterNodeConfiguration* selectedGraphConfiguration);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+    void configVanishStatus(VanishOption vanishStatus) override;
+
+};
+class SwFlipInOuterNode : public OuterNode
+{
+public:
+    SwFlipInOuterNode(): OuterNode(){}
+    void Init(SwFlipInOuterNodeConfiguration* selectedGraphConfiguration);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+    void configVanishStatus(VanishOption vanishStatus) override;
+
+};
+class SwFlipUpscaleInOuterNode : public OuterNode
+{
+public:
+    SwFlipUpscaleInOuterNode(): OuterNode(){}
+    void Init(SwFlipUpscaleInOuterNodeConfiguration* selectedGraphConfiguration);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+    void configVanishStatus(VanishOption vanishStatus) override;
+
+};
+class SwFlipOutOuterNode : public OuterNode
+{
+public:
+    SwFlipOutOuterNode(): OuterNode(){}
+    void Init(SwFlipOutOuterNodeConfiguration* selectedGraphConfiguration);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+    void configVanishStatus(VanishOption vanishStatus) override;
+
+};
+class SwFlipUpscaleOutOuterNode : public OuterNode
+{
+public:
+    SwFlipUpscaleOutOuterNode(): OuterNode(){}
+    void Init(SwFlipUpscaleOutOuterNodeConfiguration* selectedGraphConfiguration);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
     void configVanishStatus(VanishOption vanishStatus) override;
@@ -4178,6 +4308,26 @@ class SwAinrOuterNode : public OuterNode
 public:
     SwAinrOuterNode(): OuterNode(){}
     void Init(SwAinrOuterNodeConfiguration* selectedGraphConfiguration);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+    void configVanishStatus(VanishOption vanishStatus) override;
+
+};
+class SwFlipOuterNode : public OuterNode
+{
+public:
+    SwFlipOuterNode(): OuterNode(){}
+    void Init(SwFlipOuterNodeConfiguration* selectedGraphConfiguration);
+
+    void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
+    void configVanishStatus(VanishOption vanishStatus) override;
+
+};
+class SwFlipUpscaleOuterNode : public OuterNode
+{
+public:
+    SwFlipUpscaleOuterNode(): OuterNode(){}
+    void Init(SwFlipUpscaleOuterNodeConfiguration* selectedGraphConfiguration);
 
     void setInnerNode(InnerNodeOptionsFlags nodeInnerOptions);
     void configVanishStatus(VanishOption vanishStatus) override;
@@ -5248,6 +5398,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[19];
 
 };
@@ -5257,7 +5409,7 @@ class StaticGraph200000 : public IStaticGraphConfig
 public:
     StaticGraph200000(GraphConfiguration200000* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200000();
-    static const uint32_t hashCode = 2052509066;  // autogenerated
+    static const uint32_t hashCode = 351824982;  // autogenerated
 
 private:
     // Configuration
@@ -5272,6 +5424,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5298,6 +5452,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[21];
 
 };
@@ -5307,7 +5463,7 @@ class StaticGraph200001 : public IStaticGraphConfig
 public:
     StaticGraph200001(GraphConfiguration200001* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200001();
-    static const uint32_t hashCode = 2198922978;  // autogenerated
+    static const uint32_t hashCode = 2451475374;  // autogenerated
 
 private:
     // Configuration
@@ -5322,6 +5478,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5348,6 +5506,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[22];
 
 };
@@ -5357,7 +5517,7 @@ class StaticGraph200002 : public IStaticGraphConfig
 public:
     StaticGraph200002(GraphConfiguration200002* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200002();
-    static const uint32_t hashCode = 2851245214;  // autogenerated
+    static const uint32_t hashCode = 2178043514;  // autogenerated
 
 private:
     // Configuration
@@ -5372,6 +5532,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5398,6 +5560,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[24];
 
 };
@@ -5407,7 +5571,7 @@ class StaticGraph200003 : public IStaticGraphConfig
 public:
     StaticGraph200003(GraphConfiguration200003* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200003();
-    static const uint32_t hashCode = 1222919062;  // autogenerated
+    static const uint32_t hashCode = 2301296658;  // autogenerated
 
 private:
     // Configuration
@@ -5422,6 +5586,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5449,6 +5615,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[26];
 
 private:
@@ -5460,7 +5628,7 @@ class StaticGraph200004 : public IStaticGraphConfig
 public:
     StaticGraph200004(GraphConfiguration200004* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200004();
-    static const uint32_t hashCode = 3177094405;  // autogenerated
+    static const uint32_t hashCode = 2133567145;  // autogenerated
 
 private:
     // Configuration
@@ -5476,6 +5644,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5503,6 +5673,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[28];
 
 private:
@@ -5514,7 +5686,7 @@ class StaticGraph200005 : public IStaticGraphConfig
 public:
     StaticGraph200005(GraphConfiguration200005* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200005();
-    static const uint32_t hashCode = 2484825445;  // autogenerated
+    static const uint32_t hashCode = 2834408489;  // autogenerated
 
 private:
     // Configuration
@@ -5530,6 +5702,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5557,6 +5731,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[31];
 
 private:
@@ -5568,7 +5744,7 @@ class StaticGraph200006 : public IStaticGraphConfig
 public:
     StaticGraph200006(GraphConfiguration200006* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200006();
-    static const uint32_t hashCode = 1005668463;  // autogenerated
+    static const uint32_t hashCode = 1427316947;  // autogenerated
 
 private:
     // Configuration
@@ -5584,6 +5760,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5611,6 +5789,8 @@ public:
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwImvOuterNode* swImvOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[33];
 
 private:
@@ -5622,7 +5802,7 @@ class StaticGraph200007 : public IStaticGraphConfig
 public:
     StaticGraph200007(GraphConfiguration200007* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200007();
-    static const uint32_t hashCode = 4006082495;  // autogenerated
+    static const uint32_t hashCode = 3675415427;  // autogenerated
 
 private:
     // Configuration
@@ -5638,6 +5818,8 @@ private:
     SwNntmOuterNode _swNntmOuterNode;
     SwImvOuterNode _swImvOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5661,6 +5843,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[22];
 
 };
@@ -5670,7 +5854,7 @@ class StaticGraph200008 : public IStaticGraphConfig
 public:
     StaticGraph200008(GraphConfiguration200008* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200008();
-    static const uint32_t hashCode = 3512238053;  // autogenerated
+    static const uint32_t hashCode = 2944002761;  // autogenerated
 
 private:
     // Configuration
@@ -5682,6 +5866,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5705,6 +5891,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[24];
 
 };
@@ -5714,7 +5902,7 @@ class StaticGraph200009 : public IStaticGraphConfig
 public:
     StaticGraph200009(GraphConfiguration200009* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200009();
-    static const uint32_t hashCode = 2135088965;  // autogenerated
+    static const uint32_t hashCode = 1674913353;  // autogenerated
 
 private:
     // Configuration
@@ -5726,6 +5914,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5749,6 +5939,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[25];
 
 };
@@ -5758,7 +5950,7 @@ class StaticGraph200010 : public IStaticGraphConfig
 public:
     StaticGraph200010(GraphConfiguration200010* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200010();
-    static const uint32_t hashCode = 2505900109;  // autogenerated
+    static const uint32_t hashCode = 2263675521;  // autogenerated
 
 private:
     // Configuration
@@ -5770,6 +5962,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5793,6 +5987,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[27];
 
 };
@@ -5802,7 +5998,7 @@ class StaticGraph200011 : public IStaticGraphConfig
 public:
     StaticGraph200011(GraphConfiguration200011* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200011();
-    static const uint32_t hashCode = 3996242989;  // autogenerated
+    static const uint32_t hashCode = 689677953;  // autogenerated
 
 private:
     // Configuration
@@ -5814,6 +6010,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5838,6 +6036,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[29];
 
 private:
@@ -5849,7 +6049,7 @@ class StaticGraph200012 : public IStaticGraphConfig
 public:
     StaticGraph200012(GraphConfiguration200012* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200012();
-    static const uint32_t hashCode = 1569395406;  // autogenerated
+    static const uint32_t hashCode = 1662986410;  // autogenerated
 
 private:
     // Configuration
@@ -5862,6 +6062,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5886,6 +6088,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[31];
 
 private:
@@ -5897,7 +6101,7 @@ class StaticGraph200013 : public IStaticGraphConfig
 public:
     StaticGraph200013(GraphConfiguration200013* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200013();
-    static const uint32_t hashCode = 468308870;  // autogenerated
+    static const uint32_t hashCode = 2666022338;  // autogenerated
 
 private:
     // Configuration
@@ -5910,6 +6114,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5934,6 +6140,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[34];
 
 private:
@@ -5945,7 +6153,7 @@ class StaticGraph200014 : public IStaticGraphConfig
 public:
     StaticGraph200014(GraphConfiguration200014* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200014();
-    static const uint32_t hashCode = 3292135776;  // autogenerated
+    static const uint32_t hashCode = 1035507868;  // autogenerated
 
 private:
     // Configuration
@@ -5958,6 +6166,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology
@@ -5982,6 +6192,8 @@ public:
     SwGdcOuterNode* swGdcOuterNode = nullptr;
     SwNntmOuterNode* swNntmOuterNode = nullptr;
     SwScalerOuterNode* swScalerOuterNode = nullptr;
+    SwFlipOuterNode* swFlipOuterNode = nullptr;
+    SwFlipUpscaleOuterNode* swFlipUpscaleOuterNode = nullptr;
     GraphLink* subGraphLinks[36];
 
 private:
@@ -5993,7 +6205,7 @@ class StaticGraph200015 : public IStaticGraphConfig
 public:
     StaticGraph200015(GraphConfiguration200015* selectedGraphConfiguration, VirtualSinkMapping* sinkMappingConfiguration, SensorMode* selectedSensorMode, int32_t selectedSettingsId, int32_t additionalFeaturesBit, bool isIsysUnpacked, StaticGraphConfigurationInformation* configurationInformation);
     ~StaticGraph200015();
-    static const uint32_t hashCode = 2870535496;  // autogenerated
+    static const uint32_t hashCode = 2447905092;  // autogenerated
 
 private:
     // Configuration
@@ -6006,6 +6218,8 @@ private:
     SwGdcOuterNode _swGdcOuterNode;
     SwNntmOuterNode _swNntmOuterNode;
     SwScalerOuterNode _swScalerOuterNode;
+    SwFlipOuterNode _swFlipOuterNode;
+    SwFlipUpscaleOuterNode _swFlipUpscaleOuterNode;
 
     /*
         Topology

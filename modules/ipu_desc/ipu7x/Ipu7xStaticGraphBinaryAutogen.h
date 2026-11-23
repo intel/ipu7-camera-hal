@@ -41,6 +41,7 @@ struct SensorMode {
     uint16_t horizontalScalingDenominator = 0;
     uint16_t verticalScalingNumerator = 0;
     uint16_t verticalScalingDenominator = 0;
+    uint32_t cfaType = 0;
 };
 
 struct StreamConfig {

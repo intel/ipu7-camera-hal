@@ -172,4 +172,3 @@ class MainDevice : public DeviceBase {
     virtual bool needQueueBack(std::shared_ptr<CameraBuffer> buffer);
 };
 }  // namespace icamera
-
