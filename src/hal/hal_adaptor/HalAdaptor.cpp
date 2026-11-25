@@ -109,7 +109,8 @@ static void load_camera_hal_library() {
         libName += "ipu7x";
     } else if (strstr(gPciId, "0xb05d") != nullptr /* PTL */) {
         libName += "ipu75xa";
-    } else if (strstr(gPciId, "0xd719") != nullptr /* NVL */) {
+    } else if (strstr(gPciId, "0xd719") != nullptr ||  // NVL
+           strstr(gPciId, "0xd799") != nullptr) { // NVL AX
         libName += "ipu8";
     } else if (strstr(gPciId, "0x9a19") != nullptr /* TGL */) {
         libName += "ipu6";
