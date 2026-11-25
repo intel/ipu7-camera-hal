@@ -85,7 +85,17 @@ void GraphConfig::releaseGraphNodes() {
 }
 
 uint32_t GraphConfig::createQueryKeyAttribute(int cameraId) {
+
     uint32_t attributes = 0U;
+
+#ifdef IPU_SYSVER_ipu8
+    // IPU8 graph settings tag non-HDR settings with PipelineNormalLight; the compiled
+    // binary's key won't match unless this bit is present in the query too.
+    if (mConfigMode == CAMERA_STREAM_CONFIGURATION_MODE_NORMAL) {
+        attributes |= 0x80;
+    }
+#endif
+
     return attributes;
 }
 
