@@ -202,6 +202,7 @@ class GraphConfig {
 
  private:
     int32_t mCameraId;
+    ConfigMode mConfigMode;
 
     // <camera id, binary>
     // TODO: Save different bin data (depends on use case, ...) for one camera?
